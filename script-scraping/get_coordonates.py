@@ -1,36 +1,60 @@
+import json
 import requests
-import pandas as pd
+import time
 
-# Charger les données filtrées (remplace le chemin par ton fichier)
-filtered_data = pd.read_json('../data/auto_ecoles.json')
+# Charger le fichier JSON existant
+input_file = '../data/auto_ecoles.json'
+output_file = 'auto_ecoles_with_coords.json'
 
-# Fonction pour obtenir les coordonnées via Nominatim API
+with open(input_file, 'r', encoding='utf-8') as file:
+    auto_ecoles = json.load(file)
 
+# URL de l'API Nominatim pour le géocodage
+nominatim_url = "https://nominatim.openstreetmap.org/search"
 
-def get_coordinates_nominatim(address):
-    api_url = "https://nominatim.openstreetmap.org/search"
+# Fonction pour obtenir les coordonnées à partir d'une adresse
+def get_coordinates(address):
     params = {
         'q': address,
-        'format': 'json'
+        'format': 'json',
+        'addressdetails': 1,
+        'limit': 1
     }
-
-    response = requests.get(api_url, params=params)
-
-    if response.status_code == 200 and response.json():
-        data = response.json()[0]
-        return data['lat'], data['lon']
+    
+    response = requests.get(nominatim_url, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        if len(data) > 0:
+            # Retourner les coordonnées (latitude et longitude)
+            return data[0]['lat'], data[0]['lon']
     return None, None
 
+# Boucle sur chaque auto-école pour mettre à jour les coordonnées
+for auto_ecole in auto_ecoles:
+    # Construire l'adresse complète à partir des champs
+    full_address = f"{auto_ecole['Adresse']}, {auto_ecole['Commune']}"
+    print(f"Recherche des coordonnées pour : {full_address}")
+    
+    lat, lon = get_coordinates(full_address)
+    
+    if lat and lon:
+        print(f"Coordonnées trouvées : {lat}, {lon}")
+        auto_ecole['Lat'] = lat
+        auto_ecole['Long'] = lon
+    else:
+        print("Coordonnées non trouvées.")
+        
+    # Commune, Adresse
+    auto_ecole['Commune'] = auto_ecole['Commune'].title()
+    auto_ecole['Adresse'] = auto_ecole['Adresse'].title()
+    
+    
+    # Attendre un peu pour éviter de surcharger l'API Nominatim
+    time.sleep(1)
 
-# Ajouter les coordonnées latitude et longitude
-for index, row in filtered_data.iterrows():
-    address = row['Adresse'] + ', ' + row['Commune']
-    lat, lon = get_coordinates_nominatim(address)
-    filtered_data.at[index, 'Lat'] = lat
-    filtered_data.at[index, 'Long'] = lon
+# Sauvegarder le fichier JSON mis à jour avec les coordonnées
+with open(output_file, 'w', encoding='utf-8') as file:
+    json.dump(auto_ecoles, file, indent=4)
 
-# Sauvegarder le fichier mis à jour
-filtered_data.to_json('filtered_auto_ecoles_with_coords.json',
-                      orient='records', force_ascii=False)
-
-print("Coordonnées ajoutées et fichier JSON mis à jour.")
+print(f"Les coordonnées ont été ajoutées et sauvegardées dans le fichier {output_file}")
