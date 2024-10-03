@@ -1,6 +1,6 @@
 <?php
 // Charger les données JSON
-$json = file_get_contents('centres.json');
+$json = file_get_contents('data/centres_examens.json');
 $centres = json_decode($json, true);
 
 // Récupérer la liste unique des pays pour le filtre
@@ -103,7 +103,7 @@ $pays_disponibles = array_unique(array_column($centres['centres_examens'], 'coun
         .addTo(map)
         .bindPopup(
             "<b><?php echo $centre['name']; ?></b><br><?php echo $centre['formattedAddress']['address']; ?><br><?php echo $centre['formattedAddress']['ville']; ?>"
-            );
+        );
     <?php } ?>
     </script>
 
