@@ -1,6 +1,6 @@
 <?php
 // Charger les données JSON
-$json = file_get_contents('data/centres_examens.json');
+$json = file_get_contents('../../data/centres_examens.json');
 $centres = json_decode($json, true);
 
 // Récupérer l'ID du centre
