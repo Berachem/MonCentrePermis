@@ -23,6 +23,9 @@ Ce projet est une API créée avec Symfony pour servir de backend à une applica
 ## Prérequis
 Assurez-vous d'avoir les outils suivants installés sur votre machine avant de commencer l'installation :
 
+
+SUIVRE : https://symfony.com/doc/current/setup.html#:~:text=Installing%20%26%20Setting%20up%20the%20Symfony%20Framework 
+
 - PHP 8.2.1 : https://www.php.net/downloads.php
 - Composer : https://getcomposer.org/download/
 - Symfony CLI : https://symfony.com/download
