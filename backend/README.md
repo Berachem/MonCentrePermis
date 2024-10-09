@@ -93,17 +93,19 @@ SUIVRE : https://symfony.com/doc/current/setup.html#:~:text=Installing%20%26%20S
 
 ## Installer PostgreSQL
 
---> INSTALLER VERSION 17 de PostgreSQL : https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+>  INSTALLER VERSION 17 de PostgreSQL : https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 
 - Ouvrez le fichier php.ini : C:\path\to\php\php.ini
-- Cherchez la ligne -> ;extension=pdo_pgsql et la décommenté comme ceci -> extension=pdo_pgsql (Cela permet d'activer l'extension)
+- Cherchez la ligne -> `;extension=pdo_pgsql` et la décommenté comme ceci -> `extension=pdo_pgsql` (Cela permet d'activer l'extension)
 
 - Redémarrer Symfony : 
+    ```
     symfony server:stop
     symfony server:start
+    ```
 
 - Ouvrez le fichier .env -> /backend/.env , modifier la variable "DATABASE_URL" :
-    DATABASE_URL="postgresql://username:password@127.0.0.1:5432/BDD_NAME?serverVersion=17&charset=utf8"
+   `DATABASE_URL="postgresql://username:password@127.0.0.1:5432/BDD_NAME?serverVersion=17&charset=utf8"`
     -   username : Nom de votre user sur PostgreSQL
     -   password : Mot de passe de votre user sur PostgreSQL
     -   BDD_NAME : Nom que vous avez donné à votre base de données
