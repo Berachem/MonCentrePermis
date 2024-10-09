@@ -112,11 +112,11 @@ SUIVRE : https://symfony.com/doc/current/setup.html#:~:text=Installing%20%26%20S
 
 ### Extension pour géré votre base de données (Plus simple que pgAdmin 4)
 
--   Dans la barre de recherche des extensions VS code entrez -> "ckolkman.vscode-postgres"
+-   Dans la barre de recherche des extensions VS code entrez -> `ckolkman.vscode-postgres`
 -   Assurez-vous qu'elle soit bien dans votre tool bar gauche de VS, un logo éléphant
 -   Télécharger là, ajouter une connection à votre base de données
 -   Vous aurez besoins : 
     -   username (BDD)
     -   password (BDD)
-    -   Adresse (BDD) soit : 127.0.0.1
-    -   Port (BDD) soit : 5432 (PostgreSQL est toujours sur ce port)
+    -   Adresse (BDD) soit : `127.0.0.1`
+    -   Port (BDD) soit : `5432` (PostgreSQL est toujours sur ce port)
