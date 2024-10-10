@@ -1,0 +1,90 @@
+/* Home.css */
+
+.homepage {
+  font-family: Arial, sans-serif;
+}
+
+/* Section Héro */
+.hero-section {
+  background-color: #007ad9;
+  color: white;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+/* Section présentation */
+.about-section {
+  padding: 50px 20px;
+  background-color: #f5f5f5;
+  text-align: center;
+}
+
+.about-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+/* Section services */
+.services-section {
+  padding: 50px 20px;
+}
+
+.services-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+}
+
+.services-grid {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.service-card {
+  text-align: center;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  width: 30%;
+  background-color: #fff;
+}
+
+.service-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: #007ad9;
+}
+
+.service-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.service-card p {
+  font-size: 1rem;
+  color: #666;
+}
+
+/* Footer */
+.footer-section {
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.footer-section p {
+  margin: 0;
+  font-size: 1rem;
+}
