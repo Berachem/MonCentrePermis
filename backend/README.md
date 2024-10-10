@@ -38,7 +38,20 @@ Créer une entité :
 ```
 
 php bin/console make:entity
+```
 
+> ⚠️ Important : OUBLIEZ PAS d'ajouter ça à votre entité avant de faire une migration :
+
+```php
+use App\Entity\utils\Timestampable; // AJOUTEZ CA
+
+class ENTITY_NAME
+{
+
+    use Timestampable; // AJOUTEZ CA
+
+    ...
+}
 ```
 
 Démarrer le serveur local :
