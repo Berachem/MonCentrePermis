@@ -88,6 +88,10 @@
   line-height: 1.5;
 }
 
+body {
+  overflow: hidden; /* Désactive à la fois l'overflow en X et en Y */
+}
+
 
 @media (max-width: 768px) {
   .overlay {
