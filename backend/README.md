@@ -43,8 +43,11 @@ php bin/console make:entity
 > ⚠️ Important : OUBLIEZ PAS d'ajouter ça à votre entité avant de faire une migration :
 
 ```php
+
+use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
 use App\Entity\utils\Timestampable; // AJOUTEZ CA
 
+#[ApiResource] // AJOUTEZ CA
 class ENTITY_NAME
 {
 
