@@ -2,8 +2,12 @@ import "primereact/resources/themes/lara-light-indigo/theme.css"; // Un thème P
 import "primereact/resources/primereact.min.css"; // PrimeReact CSS
 import "primeicons/primeicons.css"; // PrimeIcons
 import "primeflex/primeflex.css"; // (Optionnel) PrimeFlex pour la mise en page
+import "./assets/css/App.css"; 
+import "leaflet/dist/leaflet.css";
 
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";

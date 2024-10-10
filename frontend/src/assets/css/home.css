@@ -1,90 +1,105 @@
-/* Home.css */
-
-.homepage {
-  font-family: Arial, sans-serif;
+/* Wrapper pour la carte */
+.map-wrapper {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
-/* Section Héro */
-.hero-section {
-  background-color: #007ad9;
-  color: white;
-  text-align: center;
-  padding: 100px 20px;
+/* La carte Leaflet */
+.map {
+  height: 100%;
+  width: 100%;
 }
 
-.hero-section h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
+/* Ajout d'un effet blur */
+.blur .map {
+  filter: blur(8px); /* Effet flou */
+  transition: filter 0.5s ease-in-out; /* Animation du flou */
 }
 
-.hero-section p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-}
-
-/* Section présentation */
-.about-section {
-  padding: 50px 20px;
-  background-color: #f5f5f5;
-  text-align: center;
-}
-
-.about-section h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-}
-
-/* Section services */
-.services-section {
-  padding: 50px 20px;
-}
-
-.services-section h2 {
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 40px;
-}
-
-.services-grid {
+/* Conteneur pour superposer le logo et le bouton */
+.overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
-  justify-content: space-around;
-  gap: 20px;
-}
-
-.service-card {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  width: 30%;
-  background-color: #fff;
+  z-index: 1000; /* S'assurer que cela soit au-dessus de la carte */
 }
 
-.service-icon {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  color: #007ad9;
+/* Style du logo */
+.logo {
+  max-width: 600px;
+  margin-bottom: 20px;
 }
 
-.service-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
+.logo-top-left {
+  position: absolute;
+  max-width: 200px; /* Ajuster la taille du logo en haut à gauche */
+  top: 20px;
+  left: 20px;
+  z-index: 1001; /* S'assurer que le logo est au-dessus de tout le reste */
 }
 
-.service-card p {
-  font-size: 1rem;
-  color: #666;
+/* Style du bouton */
+.start-btn {
+  font-size: 1.2rem;
+  padding: 10px 20px;
 }
 
-/* Footer */
-.footer-section {
-  background-color: #333;
-  color: white;
-  padding: 20px;
+/* Animation d'impulsion pour le bouton "Commencer" */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.starting-btn {
+  animation: pulse 4s infinite ease-in-out;
+  transition: transform 0.2s ease;
+}
+
+.starting-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Paragraphe descriptif entre le logo et le bouton */
+.description {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  max-width: 600px;
+  margin: 20px 0;
   text-align: center;
+  line-height: 1.5;
 }
 
-.footer-section p {
-  margin: 0;
-  font-size: 1rem;
+
+@media (max-width: 768px) {
+  .overlay {
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  .logo {
+    max-width: 350px;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
 }
