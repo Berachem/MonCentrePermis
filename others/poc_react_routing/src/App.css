@@ -1,0 +1,44 @@
+@import "leaflet/dist/leaflet.css";
+@import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+
+.App {
+  text-align: center;
+  padding: 20px;
+}
+
+.map {
+  height: 500px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.custom-tooltip {
+  background: none ; 
+  border: none ;     
+  box-shadow: none ; 
+  font-size: 16px;             
+  font-weight: bold;         
+  color: #000;                
+}
+
+.leaflet-routing-waypoint {
+  display: none !important;
+}
+
+.leaflet-routing-marker {
+  display: none !important;
+}

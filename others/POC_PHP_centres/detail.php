@@ -57,7 +57,7 @@ if (!$centre) {
     <div class="container">
         <h1><?php echo $centre['name']; ?></h1>
         <p><strong>Adresse:</strong> <?php echo $centre['formattedAddress']['address']; ?>,
-            <?php echo $centre['formattedAddress']['ville']; ?>, <?php echo $centre['formattedAddress']['cp']; ?></p>
+            <?php echo $centre['formattedAddress']['city']; ?>, <?php echo $centre['formattedAddress']['cp']; ?></p>
         <p><strong>Département:</strong> <?php echo $centre['dep']; ?></p>
         <p><strong>Pays:</strong> <?php echo $centre['country']; ?></p>
 
@@ -87,7 +87,7 @@ if (!$centre) {
     // Ajouter un marqueur pour le centre d'examen
     L.marker([<?php echo $centre['lat']; ?>, <?php echo $centre['long']; ?>]).addTo(map)
         .bindPopup(
-            "<b><?php echo $centre['name']; ?></b><br><?php echo $centre['formattedAddress']['address']; ?><br><?php echo $centre['formattedAddress']['ville']; ?>"
+            "<b><?php echo $centre['name']; ?></b><br><?php echo $centre['formattedAddress']['address']; ?><br><?php echo $centre['formattedAddress']['city']; ?>"
         ).openPopup();
 
     // Appel à l'API météo
