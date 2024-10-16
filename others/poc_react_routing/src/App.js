@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
@@ -9,6 +9,15 @@ const DefaultIcon = L.icon({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
   iconAnchor: [12, 41],
+});
+
+const UserIcon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 function ClickableMap({ addPoint }) {
@@ -25,6 +34,31 @@ function App() {
   const [routingControl, setRoutingControl] = useState(null);
   const [mapInstance, setMapInstance] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
+  const [userPosition, setUserPosition] = useState(null);
+  const [userAddress, setUserAddress] = useState("");
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const latlng = { lat: latitude, lng: longitude };
+        setUserPosition(latlng);
+        // Centrer la carte sur la position de l'utilisateur
+        if (mapInstance) {
+          mapInstance.setView(latlng, 13);
+        }
+        // Obtenir l'adresse via un service de géocodage (Nominatim)
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data && data.display_name) {
+              setUserAddress(data.display_name);
+            }
+          })
+          .catch((error) => console.error("Erreur lors de la récupération de l'adresse :", error));
+      });
+    }
+  }, [mapInstance]);
 
   const addPoint = (latlng) => {
     setPoints((prevPoints) => [...prevPoints, latlng]);
@@ -75,8 +109,10 @@ function App() {
   return (
     <div className="App">
       <h1>POC routing leaflet</h1>
+      <p>Vos coordonnées : {userPosition ? `${userPosition.lat}, ${userPosition.lng}` : "En cours de localisation..."}</p>
+      <p>{userAddress && `Adresse : ${userAddress}`}</p>
       <MapContainer
-        center={[48.8566, 2.3522]}
+        center={userPosition || [48.8566, 2.3522]}
         zoom={13}
         className="map"
         whenReady={(map) => {
@@ -88,6 +124,16 @@ function App() {
           url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
         />
         <ClickableMap addPoint={addPoint} />
+
+        {userPosition && !isRouting && (
+          <Marker position={userPosition} icon={UserIcon}>
+            <Tooltip direction="top" offset={[0, -20]} permanent className="custom-tooltip">
+              Vous êtes ici
+            </Tooltip>
+          </Marker>
+        )}
+
+
         {!isRouting && points.map((position, idx) => (
           <Marker
             key={idx}
