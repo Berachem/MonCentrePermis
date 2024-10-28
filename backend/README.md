@@ -71,6 +71,30 @@ php bin/console api:openapi:export > ../data/export_api.json
 et importer le fichier export_api.json dans PostMan
 
 
+
+script à lancer pour avoir des jeux de donnée : 
+
+  Pays : 
+    -insert :  php bin/console app:insert-pays-data
+    -delete :  php bin/console app:delete-pays
+
+  Ville :
+    -insert :  php bin/console app:insert-ville-data
+    -delete :  php bin/console app:delete-ville
+
+  Permis :
+    -insert :  php bin/console app:insert-permis
+    -delete :  php bin/console app:delete-permis
+
+  CentreExamen :
+    -insert :  php bin/console app:insert-centre-examen
+    -delete :  php bin/console app:delete-centre-examen
+
+  AutoEcoles :
+    -insert :  php bin/console app:insert-auto-ecoles
+    -delete :  php bin/console app:delete-auto-ecoles
+    
+
 Démarrer le serveur local :
 
 ```
