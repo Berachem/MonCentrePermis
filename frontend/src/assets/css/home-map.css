@@ -1,0 +1,67 @@
+/* Wrapper pour la carte */
+.map-wrapper {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+  
+  /* La carte Leaflet */
+  .map {
+    height: 100%;
+    width: 100%;
+  }
+  
+  /* SpeedDial bouton pour changer le style de la carte */
+  .p-speeddial {
+    z-index: 1000; /* S'assurer que le SpeedDial est au-dessus de la carte */
+  }
+  
+  /* Style du marqueur popup */
+  .leaflet-popup-content-wrapper {
+    background-color: var(--primary-color); /* Couleur de fond personnalisée */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre */
+    color: var(--primary-color-text); /* Couleur du texte */
+    text-align: center; /* Centrer le texte */
+  
+    /* Bordure et coins arrondis */
+    border: #ffffff 2px solid;
+    border-radius: 30px;
+  }
+  
+  .leaflet-popup-content {
+    font-size: 1.1rem; /* Taille de police */
+    color: var(--primary-color-text); /* Couleur du texte */
+    font-weight: 500; /* Texte en gras */
+  }
+  
+  .leaflet-popup-tip-container {
+    display: none; /* Cacher la flèche de la popup */
+  }
+  
+  /* Personnalisation du bouton de fermeture */
+  .leaflet-popup-close-button {
+    color: #ffffff; /* Couleur du bouton fermer */
+    font-size: 1.2rem; /* Taille du bouton fermer */
+    font-weight: 700; /* Texte en gras */
+  }
+  
+  /* Animation pour l'effet blur de la carte */
+  .blur .map {
+    filter: blur(8px); /* Appliquer un effet flou à la carte */
+    transition: filter 0.5s ease-in-out; /* Animation de transition pour le flou */
+  }
+  
+  /* Personnalisation pour les petites résolutions (responsive) */
+  @media (max-width: 768px) {
+    .map-wrapper {
+      height: 100vh;
+      width: 100vw;
+    }
+  
+    .p-speeddial {
+      right: 10px;
+      bottom: 10px;
+    }
+  }
+  

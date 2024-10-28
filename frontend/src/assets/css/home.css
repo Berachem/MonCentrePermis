@@ -1,0 +1,109 @@
+/* Wrapper pour la carte */
+.map-wrapper {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* La carte Leaflet */
+.map {
+  height: 100%;
+  width: 100%;
+}
+
+/* Ajout d'un effet blur */
+.blur .map {
+  filter: blur(8px); /* Effet flou */
+  transition: filter 0.5s ease-in-out; /* Animation du flou */
+}
+
+/* Conteneur pour superposer le logo et le bouton */
+.overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 1000; /* S'assurer que cela soit au-dessus de la carte */
+}
+
+/* Style du logo */
+.logo {
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.logo-top-left {
+  position: absolute;
+  max-width: 200px; /* Ajuster la taille du logo en haut à gauche */
+  top: 20px;
+  left: 20px;
+  z-index: 1001; /* S'assurer que le logo est au-dessus de tout le reste */
+}
+
+/* Style du bouton */
+.start-btn {
+  font-size: 1.2rem;
+  padding: 10px 20px;
+}
+
+/* Animation d'impulsion pour le bouton "Commencer" */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.starting-btn {
+  animation: pulse 4s infinite ease-in-out;
+  transition: transform 0.2s ease;
+}
+
+.starting-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Paragraphe descriptif entre le logo et le bouton */
+.description {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  max-width: 600px;
+  margin: 20px 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+body {
+  overflow: hidden; /* Désactive à la fois l'overflow en X et en Y */
+}
+
+
+@media (max-width: 768px) {
+  .overlay {
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  .logo {
+    max-width: 350px;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+}

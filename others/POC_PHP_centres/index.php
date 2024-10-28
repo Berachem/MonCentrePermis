@@ -62,13 +62,13 @@ $pays_disponibles = array_unique(array_column($centres['centres_examens'], 'coun
                 foreach ($centres['centres_examens'] as $centre) {
                     // Vérifier si le centre correspond à la recherche par nom/ville et au filtre par pays
                     $nomCorrespond = strpos(strtolower($centre['name']), $search) !== false ||
-                        strpos(strtolower($centre['formattedAddress']['ville']), $search) !== false;
+                        strpos(strtolower($centre['formattedAddress']['city']), $search) !== false;
                     $paysCorrespond = empty($country) || $centre['country'] == $country;
 
                     if ($nomCorrespond && $paysCorrespond) {
                         echo "<div class='centre'>
                                 <h2>{$centre['name']}</h2>
-                                <p>{$centre['formattedAddress']['ville']}, {$centre['dep']}</p>
+                                <p>{$centre['formattedAddress']['city']}, {$centre['dep']}</p>
                                 <a href='detail.php?id={$centre['id']}'>Voir plus</a>
                               </div>";
                     }
@@ -78,7 +78,7 @@ $pays_disponibles = array_unique(array_column($centres['centres_examens'], 'coun
                 foreach ($centres['centres_examens'] as $centre) {
                     echo "<div class='centre'>
                             <h2>{$centre['name']}</h2>
-                            <p>{$centre['formattedAddress']['ville']}, {$centre['dep']}</p>
+                            <p>{$centre['formattedAddress']['city']}, {$centre['dep']}</p>
                             <a href='detail.php?id={$centre['id']}'>Voir plus</a>
                           </div>";
                 }
@@ -102,7 +102,7 @@ $pays_disponibles = array_unique(array_column($centres['centres_examens'], 'coun
     L.marker([<?php echo $centre['lat']; ?>, <?php echo $centre['long']; ?>])
         .addTo(map)
         .bindPopup(
-            "<b><?php echo $centre['name']; ?></b><br><?php echo $centre['formattedAddress']['address']; ?><br><?php echo $centre['formattedAddress']['ville']; ?>"
+            "<b><?php echo $centre['name']; ?></b><br><?php echo $centre['formattedAddress']['address']; ?><br><?php echo $centre['formattedAddress']['city']; ?>"
         );
     <?php } ?>
     </script>
