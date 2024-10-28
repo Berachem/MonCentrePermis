@@ -48,6 +48,12 @@ use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
 use App\Entity\utils\Timestampable; // AJOUTEZ CA
 
 #[ApiResource] // AJOUTEZ CA
+#[ApiFilter(SearchFilter::class, properties: [
+    'nom' => 'partial', // Exemples de propriétés
+    'email' => 'exact', // GET /api/users?nom=Du&email=example@example.com
+    'age' => 'start',
+    'adresse' => 'end',
+])]
 class ENTITY_NAME
 {
 
