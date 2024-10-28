@@ -63,6 +63,14 @@ class ENTITY_NAME
 }
 ```
 
+Pour réexeporter les apis dans PostMan : 
+  
+```
+php bin/console api:openapi:export > ../data/export_api.json
+```
+et importer le fichier export_api.json dans PostMan
+
+
 Démarrer le serveur local :
 
 ```
