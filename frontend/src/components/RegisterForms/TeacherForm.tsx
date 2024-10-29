@@ -115,6 +115,15 @@ const TeacherForm = forwardRef((props, ref) =>{
                         <small className="p-error">{prenomError}</small>
                     </div>
 
+                    
+                    <div className="flex flex-column align-items-center">
+                        <FloatLabel >
+                            <label htmlFor="numeroCertification">Numéro de Certification</label>
+                            <InputText id="numeroCertification" value={numeroCertification} onChange={(e) => setNumeroCertification(e.target.value)} invalid={numeroCertificationError !== ''} />
+                        </FloatLabel>
+                        <small className="p-error">{numeroCertificationError}</small>
+                    </div>
+
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="email">Email</label>
@@ -139,13 +148,6 @@ const TeacherForm = forwardRef((props, ref) =>{
                         <small className="p-error">{confirmPasswordError}</small>
                     </div>
 
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="numeroCertification">Numéro de Certification</label>
-                            <InputText id="numeroCertification" value={numeroCertification} onChange={(e) => setNumeroCertification(e.target.value)} invalid={numeroCertificationError !== ''} />
-                        </FloatLabel>
-                        <small className="p-error">{numeroCertificationError}</small>
-                    </div>
 
                     <Divider align="left">
                         <div className="inline-flex align-items-center">

@@ -13,12 +13,14 @@ const AutoEcoleForm = forwardRef((props, ref) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [numeroAgrement, setNumeroAgrement] = useState('');
+    const [email, setEmail] = useState('');
     const [adresse, setAdresse] = useState('');
     const [telephone, setTelephone] = useState('');
     const [description, setDescription] = useState('');
 
     // Gestion des messages d'erreur
     const [raisonSocialeError, setRaisonSocialeError] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [numeroAgrementError, setNumeroAgrementError] = useState('');
@@ -38,6 +40,13 @@ const AutoEcoleForm = forwardRef((props, ref) => {
             hasError = true;
         } else {
             setRaisonSocialeError('');
+        }
+
+        if (!email) {
+            setEmailError('L\'email est requis.');
+            hasError = true;
+        } else {
+            setEmailError('');
         }
 
         if (!password) {
@@ -89,9 +98,25 @@ const AutoEcoleForm = forwardRef((props, ref) => {
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="raisonSociale">Raison sociale</label>
-                            <InputText id="raisonSociale" value={raisonSociale} onChange={(e) => setRaisonSociale(e.target.value)} invalid={raisonSocialeError !== ''} />
+                            <InputText id="raisonSociale" value={raisonSociale} onChange={(e) => setRaisonSociale(e.target.value)} invalid={raisonSocialeError !== ''} className="w-full"/>
                         </FloatLabel>
                         <small className="p-error">{raisonSocialeError}</small>
+                    </div>
+
+                    <div className="flex flex-column align-items-center">
+                        <FloatLabel>
+                            <label htmlFor="numeroAgrement">Numéro d'agrément</label>
+                            <InputText id="numeroAgrement" value={numeroAgrement} onChange={(e) => setNumeroAgrement(e.target.value)} invalid={numeroAgrementError !== ''} />
+                        </FloatLabel>
+                        <small className="p-error">{numeroAgrementError}</small>
+                    </div>
+
+                    <div className="flex flex-column align-items-center">
+                        <FloatLabel>
+                            <label htmlFor="email">Email</label>
+                            <InputText id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError !== ''} />
+                        </FloatLabel>   
+                        <small className="p-error">{emailError}</small>
                     </div>
 
                     <div className="flex flex-column align-items-center">
@@ -109,14 +134,7 @@ const AutoEcoleForm = forwardRef((props, ref) => {
                         </FloatLabel>
                         <small className="p-error">{confirmPasswordError}</small>
                     </div>
-
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="numeroAgrement">Numéro d'agrément</label>
-                            <InputText id="numeroAgrement" value={numeroAgrement} onChange={(e) => setNumeroAgrement(e.target.value)} invalid={numeroAgrementError !== ''} />
-                        </FloatLabel>
-                        <small className="p-error">{numeroAgrementError}</small>
-                    </div>
+               
 
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
@@ -135,7 +153,7 @@ const AutoEcoleForm = forwardRef((props, ref) => {
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="telephone">Téléphone</label>
-                            <InputText id="telephone" value={telephone} onChange={(e) => setTelephone(e.target.value)} />
+                            <InputText id="telephone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} />
                         </FloatLabel>
                     </div>
 

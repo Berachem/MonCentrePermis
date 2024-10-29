@@ -28,6 +28,19 @@ function Register() {
         }
     };
 
+    const getTypeUserString = (type: string | null) => {
+        switch (type) {
+            case 'student':
+                return '(Elève)';
+            case 'teacher':
+                return '(Moniteur)';
+            case 'school':
+                return '(Auto-école)';
+            default:
+                return '';
+        }
+    }
+
     const renderUserForm = () => {
         switch (userType) {
             case 'student':
@@ -55,7 +68,7 @@ function Register() {
             <img src={logoAppli} alt="logo" className="mx-auto w-25rem"/>
 
             <Stepper ref={stepperRef} >
-                <StepperPanel header="Qui êtes vous ? ">
+                <StepperPanel header={"Qui êtes vous ? " + getTypeUserString(userType)}>
                     <div className="flex flex-column h-12rem gap-2">
                         <Button label="Élève" onClick={() => {setUserType('student'); stepperRef.current.nextCallback();}} className={userType === 'student' ? 'p-button-primary' : ''} outlined={userType !== 'student'} icon="pi pi-user"/>
                         <Button label="Moniteur" onClick={() => {setUserType('teacher'); stepperRef.current.nextCallback();}} className={userType === 'teacher' ? 'p-button-primary' : ''} outlined={userType !== 'teacher'} icon="pi pi-address-book"/>
@@ -67,10 +80,15 @@ function Register() {
                         {renderUserForm()}
                     </div>
                     <Divider/>
-                    <ButtonGroup>
-                        <Button label="Retour" severity="secondary" icon="pi pi-arrow-left" onClick={() => stepperRef.current.prevCallback()} />
-                        <Button label="S'inscrire" onClick={handleSubmit} />
-                    </ButtonGroup>
+     
+ 
+                    <div className="flex justify-content-between w-full mt-3">
+                    <Button label="Retour" severity="secondary" icon="pi pi-arrow-left" onClick={() => stepperRef.current.prevCallback()} className="p-button-text"/>
+                    
+                    <Button label="S'inscrire" onClick={handleSubmit}  icon="pi pi-check"/>
+                </div>
+ 
+          
                 </StepperPanel>
             </Stepper>
        </div>

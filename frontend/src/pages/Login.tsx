@@ -7,6 +7,9 @@ import { Toast } from 'primereact/toast';
 import { Card } from "primereact/card";
 import { FloatLabel } from "primereact/floatlabel";
 import { Link } from "react-router-dom";
+import logoApp from '../assets/images/branding/logo_moncentrepermis.png';
+
+
 
 
 function Login() {
@@ -51,13 +54,14 @@ function Login() {
         <Toast ref={toastRef} />
 
         <div className="login-container">
-            <Card title="Connexion" >
+            <Card >
+                <img src={logoApp} alt="logo" className="mx-auto w-25rem mb-4"/>
                 <form onSubmit={handleLogin} className="flex flex-column gap-4">
                     
-                    <div>
+                    <div >
                         <FloatLabel>
                             <label htmlFor="email">Email</label>
-                            <InputText id="email" type="email" aria-describedby="email-help"  value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError!=''}/>
+                            <InputText id="email" type="email" aria-describedby="email-help"  value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError!=''} className="w-full"/>
                         </FloatLabel>
                         <small id="email-help" className="p-error">{emailError}</small>
                     </div>
@@ -65,13 +69,14 @@ function Login() {
                     <div>
                         <FloatLabel>
                             <label htmlFor="password">Mot de passe</label>
-                            <InputText id="password" type="password" aria-describedby="password-help" value={password} onChange={(e) => setPassword(e.target.value)} invalid={passwordError!=''}/>
+                            <InputText id="password" type="password" aria-describedby="password-help" value={password} onChange={(e) => setPassword(e.target.value)} invalid={passwordError!=''} className="w-full" />
                         </FloatLabel>
                         <small id="password-help" className="p-error">{passwordError}</small>
                     </div>
 
                     <Button label="Se connecter" type="submit" icon=" pi pi-sign-in"/>
-                    <Link to="/register" style={{textAlign:"center"}}>S'inscrire</Link>
+                    <Link to="/register" style={{textAlign:"center"}}><Button label="S'inscrire" className="p-button-text" /></Link>
+                   
                 </form>
             </Card>
         </div>
