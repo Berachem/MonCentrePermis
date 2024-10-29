@@ -4,37 +4,66 @@ import { SpeedDial } from 'primereact/speeddial';
 import "leaflet/dist/leaflet.css";
 import L from "leaflet"; 
 import "../../assets/css/home-map.css";
+import centresData from "../../../../data/centres_examens.json" // Importer les centres d'examen.
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
+import { IconField } from 'primereact/iconfield'
+import { InputIcon } from 'primereact/inputicon'
+import DetailsCentreMap from "./DetailsCentreMap";
 
-// Icône personnalisée pour le marqueur de localisation de l'utilisateur
+// Interface
+interface Centre {
+  id: number;
+  name: string;
+  lat: number | null;
+  long: number | null;
+  formattedAddress: {
+      address: string;
+      city: string;
+      cp: string;
+  };
+}
+
+// Icône personnalisée pour le marqueur de chaque centre d'examen
+const examCenterIcon = new L.Icon({
+  iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
+  iconSize: [30, 31], // Taille ajustée
+  iconAnchor: [15, 31], // Ancre ajustée
+  popupAnchor: [1, -34],
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  shadowSize: [31, 31],
+});
+
 const userIcon = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
-  iconSize: [40, 41], // Taille de l'icône
-  iconAnchor: [12, 41], // Ancre de l'icône (positionnement du point exact)
-  popupAnchor: [1, -34], // Position du popup par rapport à l'icône
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png", // Ombre du marqueur
-  shadowSize: [41, 41], // Taille de l'ombre
+  iconSize: [40, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  shadowSize: [41, 41],
 });
 
 // Composant pour recenter la carte une fois que la position est récupérée
 const RecenterMap = ({ position }: { position: [number, number] }) => {
   const map = useMap();
-  map.setView(position, 13); // Recentrer sur la position de l'utilisateur avec un zoom de 13
+  map.setView(position, 13);
   return null;
 };
 
-function HomePageMap ({blurred}: {blurred: boolean}) {
-  const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]); // Position par défaut (Paris)
+function HomePageMap() {
+  const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
-  const [tileLayerUrl, setTileLayerUrl] = useState("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"); // URL du style de la carte
-  const markerRef = useRef(null); // Référence pour le marqueur
+  const [tileLayerUrl, setTileLayerUrl] = useState("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+  const markerRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+  const [selectedCentre, setSelectedCentre] = useState<Centre>();
 
-  // Obtenir la localisation de l'utilisateur
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setPosition([latitude, longitude]);
-        setUserLocated(true); // Activer la localisation de l'utilisateur
+        setUserLocated(true);
       },
       (err) => {
         console.error("Erreur lors de la récupération de la géolocalisation", err);
@@ -43,20 +72,24 @@ function HomePageMap ({blurred}: {blurred: boolean}) {
   }, []);
 
   useEffect(() => {
-    // Ouvrir la popup automatiquement si la localisation de l'utilisateur est trouvée
     if (markerRef.current) {
       (markerRef.current as any).openPopup();
     }
   }, [userLocated]);
 
-  // Modèle pour SpeedDial avec les différents styles de carte
+  /* Selected Exam Center */
+  const handleMarkerClick = (centre: any) => {
+    setSelectedCentre(centre);
+    setVisible(true);
+  };
+
+  /* Skin de map */
   const items = [
     {
       label: 'OpenStreetMap',
       icon: 'pi pi-map',
       command: () => setTileLayerUrl('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
     },
-
     {
       label: 'Dark Mode',
       icon: 'pi pi-moon',
@@ -67,7 +100,6 @@ function HomePageMap ({blurred}: {blurred: boolean}) {
       icon: 'pi pi-globe',
       command: () => setTileLayerUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')
     },
-
     {
       label: 'CartoDB Positron',
       icon: 'pi pi-map',
@@ -82,25 +114,64 @@ function HomePageMap ({blurred}: {blurred: boolean}) {
 
   return (
     <div className="map-wrapper">
+      {/* Barre de recherche et boutons */}
+      <div className="search-container">
+        <span className="p-input-icon-left">
+          <IconField iconPosition="left" className="searchbar">
+              <InputIcon className="pi pi-search"> </InputIcon>
+              <InputText placeholder="Rechercher..." />
+          </IconField>
+          <Button label="Se connecter" className="p-button-outlined" />
+        </span>
+        <Button label="Auto écoles" className="p-button-outlined" />
+      </div>
+
       {/* Carte Leaflet */}
       <MapContainer center={position} zoom={13} className="map" zoomControl={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url={tileLayerUrl} // URL dynamique pour changer le style de la carte
+          url={tileLayerUrl}
         />
         {/* Si la localisation de l'utilisateur est obtenue, recentrer la carte */}
         {userLocated && <RecenterMap position={position} />}
-        
-        {/* Afficher un marqueur à la position de l'utilisateur avec la popup affichée par défaut */}
+
+        {/* Marqueur pour la position de l'utilisateur */}
         {userLocated && (
           <Marker position={position} icon={userIcon} ref={markerRef}>
             <Popup autoPan={false}>Vous📍</Popup>
           </Marker>
         )}
+
+        {/* Marqueurs pour chaque centre d'examen */}
+        {centresData.centres_examens.map((centre) => (
+          centre.lat !== null && centre.long !== null && (
+          <Marker
+            key={centre.id}
+            position={[centre.lat, centre.long]}
+            icon={examCenterIcon}
+            eventHandlers={{
+              click: () => handleMarkerClick(centre)
+            }}
+          >
+          </Marker>
+          )
+        ))}
       </MapContainer>
+      {selectedCentre && (
+                <DetailsCentreMap
+                    visible={visible}
+                    onHide={() => setVisible(false)}
+                    centre={{
+                        name: selectedCentre.name,
+                        address: selectedCentre.formattedAddress.address,
+                        city: selectedCentre.formattedAddress.city,
+                        postalCode: selectedCentre.formattedAddress.cp,
+                    }}
+                />
+            )}
 
       {/* SpeedDial pour changer le style de la carte */}
-      {!blurred && <SpeedDial model={items} direction="up" radius={60}  style={{ right: 30, bottom: 30 }} /> }
+      {<SpeedDial model={items} direction="up" radius={60} style={{ right: 30, bottom: 30 }} />}
     </div>
   );
 };
