@@ -1,5 +1,5 @@
 .formScrollbar .p-scrollpanel-wrapper {
-    border-right: 9px solid #f4f4f4;
+    border-right: 9px solid var( --surface-ground);
 }
 
 .formScrollbar .p-scrollpanel-bar {

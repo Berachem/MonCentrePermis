@@ -5,5 +5,5 @@
     align-items: center;
     justify-content: center;
     height: 100vh; 
-    background-color: grey;
+    background-color: var(--primary-color);
 }
