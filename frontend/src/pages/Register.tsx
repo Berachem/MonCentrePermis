@@ -10,6 +10,8 @@ import StudentForm from "../components/RegisterForms/StudentForm"
 import TeacherForm from '../components/RegisterForms/TeacherForm';
 import SchoolForm from '../components/RegisterForms/SchoolForm';
 
+import logoAppli from '../assets/images/branding/logo_moncentrepermis.png';
+
 
 function Register() {
     
@@ -48,13 +50,16 @@ function Register() {
       <>
         
         <Toast ref={toastRef}/>
+        <div className='lg:w-8 mx-auto'>
 
-            <Stepper ref={stepperRef}>
+            <img src={logoAppli} alt="logo" className="mx-auto w-25rem"/>
+
+            <Stepper ref={stepperRef} >
                 <StepperPanel header="Qui êtes vous ? ">
                     <div className="flex flex-column h-12rem gap-2">
-                        <Button label="Élève" onClick={() => {setUserType('student'); stepperRef.current.nextCallback();}} className={userType === 'student' ? 'p-button-primary' : ''} outlined={userType !== 'student'} />
-                        <Button label="Moniteur" onClick={() => {setUserType('teacher'); stepperRef.current.nextCallback();}} className={userType === 'teacher' ? 'p-button-primary' : ''} outlined={userType !== 'teacher'}/>
-                        <Button label="Auto-école" onClick={() => {setUserType('school'); stepperRef.current.nextCallback();}} className={userType === 'school' ? 'p-button-primary' : ''} outlined={userType !== 'school'}/>
+                        <Button label="Élève" onClick={() => {setUserType('student'); stepperRef.current.nextCallback();}} className={userType === 'student' ? 'p-button-primary' : ''} outlined={userType !== 'student'} icon="pi pi-user"/>
+                        <Button label="Moniteur" onClick={() => {setUserType('teacher'); stepperRef.current.nextCallback();}} className={userType === 'teacher' ? 'p-button-primary' : ''} outlined={userType !== 'teacher'} icon="pi pi-address-book"/>
+                        <Button label="Auto-école" onClick={() => {setUserType('school'); stepperRef.current.nextCallback();}} className={userType === 'school' ? 'p-button-primary' : ''} outlined={userType !== 'school'} icon="pi pi-building"/>
                     </div>
                 </StepperPanel>
                 <StepperPanel header="Vos informations">
@@ -68,7 +73,7 @@ function Register() {
                     </ButtonGroup>
                 </StepperPanel>
             </Stepper>
-       
+       </div>
        </>
     );
   };

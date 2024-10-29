@@ -71,7 +71,7 @@ function Login() {
                     </div>
 
                     <Button label="Se connecter" type="submit" icon=" pi pi-sign-in"/>
-                    <Link to="/" style={{textAlign:"center"}}>S'inscrire</Link>
+                    <Link to="/register" style={{textAlign:"center"}}>S'inscrire</Link>
                 </form>
             </Card>
         </div>
