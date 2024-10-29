@@ -8,9 +8,7 @@ import "leaflet/dist/leaflet.css";
 
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
+import AppRoutes from './routes/AppRoutes';
 import Navbar from "./components/utils/Navbar";
 
 function App() {
@@ -18,14 +16,7 @@ function App() {
     <>
       <Navbar />
       <Router>
-        <div>
-          {/* Routes */}
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
+        <AppRoutes/> {/* Centralisation et gestion des routes dans AppRoutes afin d'alléger App.tsx */}
       </Router>
     </>
   );
