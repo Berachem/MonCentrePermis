@@ -57,12 +57,12 @@ class InsertAutoEcolesCommand extends Command
             
                     if (isset($data['city']) && is_string($data['city'])) {
                         $ville = $this->entityManager->getRepository(Ville::class)
-                            ->findOneBy(['libelle' => strtoupper($data['city'])]);
+                            ->findOneBy(['libelle' => strtoupper(str_replace('-', ' ', $data['city']))]);
             
                         if ($ville) {
                             $autoEcole->setVille($ville);
                         } else {
-                            $io->warning("Ville non trouvée : " . strtoupper($data['city']));
+                            $io->warning("Ville non trouvée : " . strtoupper(str_replace('-', ' ', $data['city'])));
                         }
                     }
             

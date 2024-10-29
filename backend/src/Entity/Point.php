@@ -27,11 +27,11 @@ class Point
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
     private ?string $latitude = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
-    private ?string $longitude = null;
+    
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
+    private ?string $longitude = null;    
 
     #[ORM\ManyToOne(inversedBy: 'points')]
     private ?Media $media = null;

@@ -60,7 +60,7 @@ class InsertVilleCommand extends Command
             $ville->setLatitude($record['latitude'] !== '' ? $record['latitude'] : '0');
             $ville->setLongitude($record['longitude'] !== '' ? $record['longitude'] : '0');            
             $ville->setDepartement($record['department_name']);
-            $ville->setRegion($record['region_name']);
+            $ville->setRegion(strtoupper(str_replace('-', ' ', $record['region_name'])));
             // Remplissez les autres propriétés si nécessaire
 
             $this->entityManager->persist($ville);
