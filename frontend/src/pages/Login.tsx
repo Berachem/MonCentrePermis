@@ -59,7 +59,7 @@ function Login() {
                             <label htmlFor="email">Email</label>
                             <InputText id="email" type="email" aria-describedby="email-help"  value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError!=''}/>
                         </FloatLabel>
-                        <small id="email-help">{emailError}</small>
+                        <small id="email-help" className="p-error">{emailError}</small>
                     </div>
 
                     <div>
@@ -67,7 +67,7 @@ function Login() {
                             <label htmlFor="password">Mot de passe</label>
                             <InputText id="password" type="password" aria-describedby="password-help" value={password} onChange={(e) => setPassword(e.target.value)} invalid={passwordError!=''}/>
                         </FloatLabel>
-                        <small id="password-help">{passwordError}</small>
+                        <small id="password-help" className="p-error">{passwordError}</small>
                     </div>
 
                     <Button label="Se connecter" type="submit" icon=" pi pi-sign-in"/>
