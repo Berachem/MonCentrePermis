@@ -1,0 +1,30 @@
+.detail-head {
+    background-color: var(--primary-color);
+}
+
+.p-dialog-content {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+}
+
+.p-dialog-header {
+    background-color: var(--primary-color);
+}
+
+.p-dialog-title {
+    color: white;
+}
+
+.p-dialog-content {
+    color: black;
+}
+
+.reussir {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.b-reussir {
+    background-color: var(--primary-color);
+    color: white;
+}

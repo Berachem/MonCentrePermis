@@ -10,19 +10,8 @@ import { Button } from 'primereact/button';
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
 import DetailsCentreMap from "./DetailsCentreMap";
+import { Centre } from '../../interfaces/interfaces'
 
-// Interface
-interface Centre {
-  id: number;
-  name: string;
-  lat: number | null;
-  long: number | null;
-  formattedAddress: {
-      address: string;
-      city: string;
-      cp: string;
-  };
-}
 
 // Icône personnalisée pour le marqueur de chaque centre d'examen
 const examCenterIcon = new L.Icon({

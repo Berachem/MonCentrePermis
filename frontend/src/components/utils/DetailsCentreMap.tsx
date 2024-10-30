@@ -3,6 +3,7 @@
 import React from "react";
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button'
+import '../../assets/css/DetailsCentreMap.css'
 
 interface CentreDetailsProps {
     visible: boolean;
@@ -18,11 +19,13 @@ interface CentreDetailsProps {
 const DetailsCentreMap: React.FC<CentreDetailsProps> = ({ visible, onHide, centre }) => {
     return (
         <div className="centre-modal">
-            <Dialog header={centre.name} visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+            <Dialog header={centre.name} visible={visible} style={{ width: '50vw' }} onHide={onHide} draggable={false} resizable={false} position="bottom">
                 <p><strong>Adresse:</strong> {centre.address}</p>
                 <p><strong>Ville:</strong> {centre.city}</p>
                 <p><strong>Code Postal:</strong> {centre.postalCode}</p>
-                <Button label="Réussir mon Examen" className="p-button-outlined reussir"/>
+                <div className="reussir">
+                    <Button label="Réussir mon Examen" className="p-button-outlined b-reussir"/>
+                </div>
             </Dialog>
         </div>
     );
