@@ -115,5 +115,22 @@ button {
   }
 }
 
+.p-speeddial-action {
+  background-color: var(--primary-color);
+}
 
+.p-speeddial-button {
+  background-color: var(--primary-color);
+}
 
+.p-button-icon-only  {
+  background-color: var(--primary-color);
+}
+
+.card {
+  display: flex;
+}
+
+.side-button {
+  margin-right: 1rem;
+}
