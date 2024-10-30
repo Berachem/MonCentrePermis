@@ -57,13 +57,20 @@ class InsertCentreExamenCommand extends Command
                 $centre->setLongitude((string)$longitude);
                 $centre->setAdresse($data['formattedAddress']['address'] ?? '');
             
-                // Associer la ville si elle existe
+                // Associer la ville si elle existe d'abord par code postal, sinon par nom
                 $ville = $this->entityManager->getRepository(Ville::class)
-                    ->findOneBy(['libelle' => strtoupper($data['formattedAddress']['city']) ?? '']);
+                    ->findOneBy(['code_postal' => strtoupper($data['formattedAddress']['cp'] ?? '')]);
+
+                // Si la ville n'est pas trouvée par code postal, recherche par nom
+                if (!$ville && isset($data['formattedAddress']['city'])) {
+                $ville = $this->entityManager->getRepository(Ville::class)
+                    ->findOneBy(['libelle' => strtoupper(str_replace('-', ' ', $data['formattedAddress']['city']))]);
+                }
+
                 if ($ville) {
                     $centre->setVille($ville);
                 }
-            
+                            
                 $this->entityManager->persist($centre);
             
                 // Flush et clear par lots pour libérer la mémoire

@@ -72,15 +72,30 @@ et importer le fichier export_api.json dans PostMan
 
 
 
-script à lancer pour avoir des jeux de donnée : 
+Script à lancer pour avoir des jeux de donnée : 
+
+  Insertion : 
+
+    -   php bin/console doctrine:fixtures:load --append --group=InsertDataFixture
+
+  Suppression : (Cela va supprimé les données insèrer avec la commande du dessus)
+
+    -   php bin/console doctrine:fixtures:load --append --group=DeleteDataFixture
+
+Commande pour chaque script d'insertion de données
 
   Pays : 
     -insert :  php bin/console app:insert-pays-data
     -delete :  php bin/console app:delete-pays
 
-  Ville :
-    -insert :  php bin/console app:insert-ville-data
+  Ville (Toutes) : 
     -delete :  php bin/console app:delete-ville
+
+  Ville FR :
+    -insert :  php bin/console app:insert-ville-fr-data
+
+  Ville EN : 
+    -insert :  php bin/console app:insert-ville-en-data
 
   Permis :
     -insert :  php bin/console app:insert-permis

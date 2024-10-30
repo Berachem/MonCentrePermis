@@ -56,9 +56,16 @@ class InsertAutoEcolesCommand extends Command
                     $autoEcole->setAdresse($adresse);
             
                     if (isset($data['city']) && is_string($data['city'])) {
+                        // Associer la ville si elle existe d'abord par code postal, sinon par nom
+                        $ville = $this->entityManager->getRepository(Ville::class)
+                        ->findOneBy(['code_postal' => strtoupper((string) ($data['cp'] ?? ''))]);
+
+                        // Si la ville n'est pas trouvée par code postal, recherche par nom
+                        if (!$ville && isset($data['formattedAddress']['city'])) {
                         $ville = $this->entityManager->getRepository(Ville::class)
                             ->findOneBy(['libelle' => strtoupper(str_replace('-', ' ', $data['city']))]);
-            
+                        }
+
                         if ($ville) {
                             $autoEcole->setVille($ville);
                         } else {
@@ -75,9 +82,10 @@ class InsertAutoEcolesCommand extends Command
                     }
             
                     $i++;
-                } else {
-                    $io->warning("Enregistrement ignoré : numéro d'agrément manquant ou invalide pour : " . json_encode($data));
-                }
+                } 
+                // else {
+                    // $io->warning("Enregistrement ignoré : numéro d'agrément manquant ou invalide pour : " . json_encode($data));
+                // }
             }
             
             // Dernière opération flush pour les données restantes
