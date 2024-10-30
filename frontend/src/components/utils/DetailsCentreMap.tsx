@@ -19,7 +19,7 @@ interface CentreDetailsProps {
 const DetailsCentreMap: React.FC<CentreDetailsProps> = ({ visible, onHide, centre }) => {
     return (
         <div className="centre-modal">
-            <Dialog header={centre.name} visible={visible} style={{ width: '50vw' }} onHide={onHide} draggable={false} resizable={false} position="bottom">
+            <Dialog header={centre.name} visible={visible} style={{ width: '50vw' }} onHide={onHide} draggable={false} resizable={false} position="bottom" dismissableMask>
                 <p><strong>Adresse:</strong> {centre.address}</p>
                 <p><strong>Ville:</strong> {centre.city}</p>
                 <p><strong>Code Postal:</strong> {centre.postalCode}</p>
