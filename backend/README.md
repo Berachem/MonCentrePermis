@@ -1,31 +1,31 @@
 # Commandes utiles
 
-Installer les dépendances : (important)
+## Installer les dépendances : (important)
 
 ```
  composer install
 ```
 
-Créer la base de données :
+## Créer la base de données :
 
 ```
  php bin/console doctrine:database:create
 ```
 
-Créer les tables :
+## Créer les tables :
 
 ```
  php bin/console doctrine:migrations:migrate
 ```
 
-Créer une migration :
+## Créer une migration :
 
 ```
 
 php bin/console make:migration
 ```
 
-Exécuter les migrations :
+## Exécuter les migrations :
 
 ```
 
@@ -33,7 +33,7 @@ php bin/console doctrine:migrations:migrate
 
 ```
 
-Créer une entité :
+## Créer une entité :
 
 ```
 
@@ -63,7 +63,7 @@ class ENTITY_NAME
 }
 ```
 
-Pour réexeporter les apis dans PostMan : 
+## Pour réexeporter les apis dans PostMan : 
   
 ```
 php bin/console api:openapi:export > ../data/export_api.json
@@ -72,7 +72,7 @@ et importer le fichier export_api.json dans PostMan
 
 
 
-Script à lancer pour avoir des jeux de donnée : 
+## Script à lancer pour avoir des jeux de donnée : 
 
   Insertion : 
 
@@ -82,7 +82,7 @@ Script à lancer pour avoir des jeux de donnée :
 
     -   php bin/console doctrine:fixtures:load --append --group=DeleteDataFixture
 
-Commande pour chaque script d'insertion de données
+### Commande pour chaque script d'insertion de données
 
   Pays : 
     -insert :  php bin/console app:insert-pays-data
@@ -110,7 +110,7 @@ Commande pour chaque script d'insertion de données
     -delete :  php bin/console app:delete-auto-ecoles
     
 
-Démarrer le serveur local :
+## Démarrer le serveur local :
 
 ```
 
@@ -118,7 +118,7 @@ symfony serve
 
 ```
 
-Vider le cache :
+## Vider le cache :
 
 ```
 
@@ -126,7 +126,7 @@ php bin/console cache:clear
 
 ```
 
-Créer un contrôleur :
+## Créer un contrôleur :
 
 ```
 
@@ -134,7 +134,7 @@ php bin/console make:controller
 
 ```
 
-Générer les CRUD :
+## Générer les CRUD :
 
 ```
 
@@ -142,7 +142,7 @@ php bin/console make:crud
 
 ```
 
-Vérifier l'état de la base de données :
+## Vérifier l'état de la base de données :
 
 ```
 
@@ -150,7 +150,7 @@ php bin/console doctrine:schema:validate
 
 ```
 
-Afficher la liste des routes :
+## Afficher la liste des routes :
 
 ```
 
@@ -158,7 +158,7 @@ php bin/console debug:router
 
 ```
 
-Lister les services disponibles :
+## Lister les services disponibles :
 
 ```
 
@@ -166,7 +166,7 @@ php bin/console debug:container
 
 ```
 
-Créer une authentification :
+## Créer une authentification :
 
 ```
 
