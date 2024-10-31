@@ -1,0 +1,13 @@
+.formScrollbar .p-scrollpanel-wrapper {
+    border-right: 9px solid var( --surface-ground);
+}
+
+.formScrollbar .p-scrollpanel-bar {
+    background-color: var(--primary-color);
+    opacity: 1;
+    transition: background-color .3s;
+}
+
+.formScrollbar .p-scrollpanel-bar:hover {
+    background-color: var(--primary-color);
+}

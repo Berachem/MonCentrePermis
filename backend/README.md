@@ -46,8 +46,14 @@ php bin/console make:entity
 
 use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
 use App\Entity\utils\Timestampable; // AJOUTEZ CA
-
 #[ApiResource] // AJOUTEZ CA
+
+#[ApiFilter(SearchFilter::class, properties: [
+    'nom' => 'partial', // Exemples de propriétés
+    'email' => 'exact', // GET /api/users?nom=Du&email=example@example.com
+    'age' => 'start',
+    'adresse' => 'end',
+])]
 class ENTITY_NAME
 {
 
@@ -56,6 +62,14 @@ class ENTITY_NAME
     ...
 }
 ```
+
+Pour réexeporter les apis dans PostMan : 
+  
+```
+php bin/console api:openapi:export > ../data/export_api.json
+```
+et importer le fichier export_api.json dans PostMan
+
 
 Démarrer le serveur local :
 
