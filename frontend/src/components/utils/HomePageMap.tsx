@@ -113,9 +113,9 @@ function HomePageMap() {
               <InputIcon className="pi pi-search"> </InputIcon>
               <InputText placeholder="Rechercher..." />
           </IconField>
-          <Button label="Se connecter" className="p-button-outlined" />
+          <Button label="Se connecter" className="p-button-outlined button-map" />
         </span>
-        <Button label="Auto écoles" className="p-button-outlined" />
+        <Button label="Auto écoles" className="p-button-outlined button-map" />
       </div>
 
       {/* Carte Leaflet */}
