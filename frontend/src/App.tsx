@@ -7,14 +7,12 @@ import "leaflet/dist/leaflet.css";
 
 
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from './routes/AppRoutes';
-import Navbar from "./components/utils/Navbar";
 
 function App() {
   return (
     <>
-      <Navbar />
       <Router>
         <AppRoutes/> {/* Centralisation et gestion des routes dans AppRoutes afin d'alléger App.tsx */}
       </Router>

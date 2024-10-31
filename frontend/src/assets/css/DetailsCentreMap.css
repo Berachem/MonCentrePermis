@@ -6,20 +6,13 @@
     padding: 1rem 1.5rem 1rem 1.5rem;
 }
 
-.p-dialog {
-    width: 30%!important;
-}
 
 .p-dialog-header {
     background-color: var(--primary-color);
 }
 
 .p-dialog-title {
-    color: white;
-}
-
-.p-dialog-content {
-    color: black;
+    color: var(--surface-ground);
 }
 
 .reussir {
@@ -30,5 +23,16 @@
 
 .b-reussir {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--surface-ground);
 }
+
+/* Style personnalisé pour la croix de fermeture de la modal */
+.p-dialog .p-dialog-header-close {
+    border: 1px solid var(--surface-ground); /* Bordure de la couleur 'surface-ground' */
+    margin-left: 0.5rem;
+  }
+  
+  .p-dialog .p-dialog-header-close > * {
+    color: var(--surface-ground); /* Couleur de l'icône de fermeture 'surface-ground' */
+  }
+  

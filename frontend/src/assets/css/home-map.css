@@ -36,27 +36,22 @@
   width: 90%;
 }
 
-.searchbar {
-  margin-right: 8px;
+
+
+/* Style pour la chip-container avec une teinte de couleur primaire plus claire */
+
+.chip-container .p-chip {
+  transition: background-color 0.3s ease;
+  background-color: var(--surface-ground); /* Couleur de fond de la puce */
+  border : var(--primary-color) 2px solid;
 }
 
-.p-inputtext {
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); 
-  transition: box-shadow 0.3s ease;
+.chip-container .p-chip:hover {
+  background-color: var(--primary-color); /* Effet de survol avec une teinte un peu plus foncée */
+  color: var(--surface-ground); /* Couleur de texte de la puce */
+  
 }
 
-.shadow {
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); 
-  transition: box-shadow 0.3s ease; 
-}
-
-.search-bar {
-  flex: 1;
-}
-
-.p-input-icon-left {
-  display: flex;
-}
 
 /* SpeedDial bouton pour changer le style de la carte */
 .p-speeddial {
@@ -69,7 +64,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   color: var(--primary-color-text);
   text-align: center;
-  border: #ffffff 2px solid;
+  border:  2px solid;
   border-radius: 30px;
 }
 
@@ -77,6 +72,10 @@
   font-size: 1.1rem;
   color: var(--primary-color-text);
   font-weight: 500;
+}
+
+.leaflet-marker-icon{
+  box-shadow: rgba(15, 201, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px !important;
 }
 
 .leaflet-popup-tip-container {
@@ -112,6 +111,11 @@
   .p-speeddial {
     right: 10px;
     bottom: 10px;
+  }
+
+  .search-container {
+    top: 3%;
+    margin-left: -20px;
   }
 }
 
