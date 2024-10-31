@@ -32,12 +32,6 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-// Composant pour recenter la carte une fois que la position est récupérée
-const RecenterMap = ({ position }: { position: [number, number] }) => {
-  const map = useMap();
-  map.setView(position, 13);
-  return null;
-};
 
 function HomePageMap() {
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
@@ -46,6 +40,7 @@ function HomePageMap() {
   const markerRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [selectedCentre, setSelectedCentre] = useState<Centre>();
+  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -70,6 +65,7 @@ function HomePageMap() {
   const handleMarkerClick = (centre: any) => {
     setSelectedCentre(centre);
     setVisible(true);
+    setCenterPosition([centre.lat, centre.long]);
   };
 
   /* Skin de map */
@@ -101,6 +97,13 @@ function HomePageMap() {
     }
   ];
 
+  /* Recentrer la carte sur une position donnée */
+  const RecenterMap = ({ position }: { position: [number, number] }) => {
+    const map = useMap();
+    map.setView(position);
+    return null;
+  };
+
   return (
     <div className="map-wrapper">
       {/* Barre de recherche et boutons */}
@@ -123,6 +126,9 @@ function HomePageMap() {
         />
         {/* Si la localisation de l'utilisateur est obtenue, recentrer la carte */}
         {userLocated && <RecenterMap position={position} />}
+
+        {/* Recentrer sur le centre d'examen sélectionné lors du clic */}
+        {centerPosition && <RecenterMap position={centerPosition} />}
 
         {/* Marqueur pour la position de l'utilisateur */}
         {userLocated && (
