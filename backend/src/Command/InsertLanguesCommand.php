@@ -55,12 +55,12 @@ class InsertLanguesCommand extends Command
 
         foreach ($data as $langueData) {
             // Vérification si la langue existe déjà pour éviter les doublons
-            $langue = $this->entityManager->getRepository(Langue::class)->findOneBy(['code_iso' => $langueData['alpha2']]);
+            $langue = $this->entityManager->getRepository(Langue::class)->findOneBy(['code_iso' => $langueData['code']]);
             
             if (!$langue) {
                 $langue = new Langue();
-                $langue->setCodeIso($langueData['alpha2']);
-                $langue->setLibelle($langueData['langue']);
+                $langue->setCodeIso($langueData['code']);
+                $langue->setLibelle($langueData['nom']);
                 
                 $this->entityManager->persist($langue);
             }
