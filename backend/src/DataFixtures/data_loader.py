@@ -15,6 +15,10 @@ commands = {
         "insert": "php bin/console app:insert-ville-fr-data",
         "delete": "php bin/console app:delete-ville"
     },
+    "langues": {
+        "insert": "php bin/console app:insert-langues",
+        "delete": "php bin/console app:delete-langues"
+    },
     "Permis": {
         "insert": "php bin/console app:insert-permis",
         "delete": "php bin/console app:delete-permis"
