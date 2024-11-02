@@ -8,7 +8,6 @@ function AppRoutes() {
   return (
     <Routes>
       {Default}
-
     </Routes>
   );
 }
