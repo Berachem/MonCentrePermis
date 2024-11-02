@@ -179,7 +179,11 @@ SUIVRE : https://symfony.com/doc/current/setup.html#:~:text=Installing%20%26%20S
 - Symfony CLI : https://symfony.com/download
 - MySQL ou un autre SGBD compatible : https://dev.mysql.com/downloads/
 - Node.js (facultatif, pour certains packages Symfony) : https://nodejs.org/en/download/
+
+Ensuite, pour JWT, il faut :
 - Extension PHP : `pdo_pgsql , sodium, zip` (Pour installer les dépendances)
+- créer le dossier jwt dans le dossier config (backend/config/jwt) et y mettre le fichier public.pem et private.pem
+
 
 # Connection à la base de données
 
