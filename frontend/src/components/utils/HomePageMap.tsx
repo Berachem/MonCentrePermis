@@ -4,7 +4,7 @@ import { SpeedDial } from "primereact/speeddial";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "../../assets/css/home-map.css";
-import centresData from "../../../../data/centres_examens.json"; // Importer les centres d'examen.
+import centresData from "../../../../backend/data/centres_examens.json"; // Importer les centres d'examen.
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { IconField } from "primereact/iconfield";
