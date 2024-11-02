@@ -34,11 +34,11 @@ class Ville
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $departement = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
     private ?string $latitude = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
-    private ?string $longitude = null;
+    
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
+    private ?string $longitude = null;    
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $code_postal = null;

@@ -1,0 +1,452 @@
+[
+    {
+        "city": "Aberdeen",
+        "lat": "53.596715",
+        "lng": "-2.608897",
+        "region": "England"
+    },
+    {
+        "city": "Alnwick",
+        "lat": "55.411655",
+        "lng": "-1.705615",
+        "region": "England"
+    },
+    {
+        "city": "Ashford",
+        "lat": "51.097392",
+        "lng": "-4.0986808",
+        "region": "England"
+    },
+    {
+        "city": "Ashford",
+        "lat": "50.928465",
+        "lng": "-1.803464",
+        "region": "England"
+    },
+    {
+        "city": "Ashford",
+        "lat": "50.323048",
+        "lng": "-3.845888",
+        "region": "England"
+    },
+    {
+        "city": "Ashford",
+        "lat": "51.43507",
+        "lng": "-0.463501",
+        "region": "England"
+    },
+    {
+        "city": "Ashford",
+        "lat": "51.142897",
+        "lng": "0.848205",
+        "region": "England"
+    },
+    {
+        "city": "Atherton",
+        "lat": "53.525514",
+        "lng": "-2.4872274",
+        "region": "England"
+    },
+    {
+        "city": "Aylesbury",
+        "lat": "51.817205",
+        "lng": "-0.809617",
+        "region": "England"
+    },
+    {
+        "city": "Banbury",
+        "lat": "52.061411",
+        "lng": "-1.334826",
+        "region": "England"
+    },
+    {
+        "city": "Barking",
+        "lat": "52.134554",
+        "lng": "1.020167",
+        "region": "England"
+    },
+    {
+        "city": "Barking",
+        "lat": "51.538117",
+        "lng": "0.078948",
+        "region": "England"
+    },
+    {
+        "city": "Barnet",
+        "lat": "51.647337",
+        "lng": "-0.20338",
+        "region": "England"
+    },
+    {
+        "city": "Barnsley",
+        "lat": "53.553523",
+        "lng": "-1.4825931",
+        "region": "England"
+    },
+    {
+        "city": "Barnsley",
+        "lat": "52.533836",
+        "lng": "-2.360862",
+        "region": "England"
+    },
+    {
+        "city": "Barnsley",
+        "lat": "51.744199",
+        "lng": "-1.8906152",
+        "region": "England"
+    },
+    {
+        "city": "Barnstaple",
+        "lat": "51.081021",
+        "lng": "-4.058438",
+        "region": "England"
+    },
+    {
+        "city": "Barrow-In-Furness",
+        "lat": "54.111364",
+        "lng": "-3.227192",
+        "region": "England"
+    },
+    {
+        "city": "Basildon",
+        "lat": "51.573323",
+        "lng": "0.49505629",
+        "region": "England"
+    },
+    {
+        "city": "Basingstoke",
+        "lat": "51.267752",
+        "lng": "-1.0883364",
+        "region": "England"
+    },
+    {
+        "city": "Beaumont",
+        "lat": "54.924285",
+        "lng": "-3.018154",
+        "region": "England"
+    },
+    {
+        "city": "Beaumont",
+        "lat": "51.447344",
+        "lng": "-0.5767893",
+        "region": "England"
+    },
+    {
+        "city": "Beaumont",
+        "lat": "51.880831",
+        "lng": "1.148943",
+        "region": "England"
+    },
+    {
+        "city": "Bedford",
+        "lat": "53.482382",
+        "lng": "-2.491073",
+        "region": "England"
+    },
+    {
+        "city": "Bedford",
+        "lat": "52.136844",
+        "lng": "-0.46849019",
+        "region": "England"
+    },
+    {
+        "city": "Belvedere",
+        "lat": "51.488271",
+        "lng": "0.155518",
+        "region": "England"
+    },
+    {
+        "city": "Beverley",
+        "lat": "53.846272",
+        "lng": "-0.419912",
+        "region": "England"
+    },
+    {
+        "city": "Birmingham",
+        "lat": "52.479255",
+        "lng": "-1.90295",
+        "region": "England"
+    },
+    {
+        "city": "Blackburn",
+        "lat": "53.746901",
+        "lng": "-2.480778",
+        "region": "England"
+    },
+    {
+        "city": "Blackburn",
+        "lat": "53.430375",
+        "lng": "-1.426423",
+        "region": "England"
+    },
+    {
+        "city": "Blyth",
+        "lat": "55.124639",
+        "lng": "-1.502556",
+        "region": "England"
+    },
+    {
+        "city": "Blyth",
+        "lat": "53.374883",
+        "lng": "-1.0608631",
+        "region": "England"
+    },
+    {
+        "city": "Bodmin",
+        "lat": "50.471237",
+        "lng": "-4.717638",
+        "region": "England"
+    },
+    {
+        "city": "Bolton",
+        "lat": "55.416596",
+        "lng": "-1.833627",
+        "region": "England"
+    },
+    {
+        "city": "Bolton",
+        "lat": "54.602574",
+        "lng": "-2.5623596",
+        "region": "England"
+    },
+    {
+        "city": "Bolton",
+        "lat": "53.577709",
+        "lng": "-2.4310408",
+        "region": "England"
+    },
+    {
+        "city": "Bolton",
+        "lat": "53.813988",
+        "lng": "-1.748151",
+        "region": "England"
+    },
+    {
+        "city": "Bolton",
+        "lat": "53.95994",
+        "lng": "-0.823498",
+        "region": "England"
+    },
+    {
+        "city": "Borehamwood",
+        "lat": "51.656936",
+        "lng": "-0.289747",
+        "region": "England"
+    },
+    {
+        "city": "Boston",
+        "lat": "52.976302",
+        "lng": "-0.02712",
+        "region": "England"
+    },
+    {
+        "city": "Bradford",
+        "lat": "53.790778",
+        "lng": "-1.7545611",
+        "region": "England"
+    },
+    {
+        "city": "Bradford",
+        "lat": "53.485733",
+        "lng": "-2.204171",
+        "region": "England"
+    },
+    {
+        "city": "Bradford",
+        "lat": "53.173576",
+        "lng": "-1.684295",
+        "region": "England"
+    },
+    {
+        "city": "Bradford",
+        "lat": "50.842254",
+        "lng": "-4.2455198",
+        "region": "England"
+    },
+    {
+        "city": "Bradford",
+        "lat": "50.548242",
+        "lng": "-4.656208",
+        "region": "England"
+    },
+    {
+        "city": "Brentwood",
+        "lat": "51.621335",
+        "lng": "0.305773",
+        "region": "England"
+    },
+    {
+        "city": "Bridgend",
+        "lat": "54.524945",
+        "lng": "-2.931431",
+        "region": "England"
+    },
+    {
+        "city": "Bridgend",
+        "lat": "51.739887",
+        "lng": "-2.288172",
+        "region": "England"
+    },
+    {
+        "city": "Bridgend",
+        "lat": "50.40648",
+        "lng": "-4.660093",
+        "region": "England"
+    },
+    {
+        "city": "Bridgend",
+        "lat": "50.315026",
+        "lng": "-4.030293",
+        "region": "England"
+    },
+    {
+        "city": "Northbourne",
+        "lat": "50.761236",
+        "lng": "-1.8889049",
+        "region": "England"
+    },
+    {
+        "city": "Northbourne",
+        "lat": "51.220806",
+        "lng": "1.3410129",
+        "region": "England"
+    },
+    {
+        "city": "Solihull",
+        "lat": "52.41272",
+        "lng": "-1.777556",
+        "region": "England"
+    },
+    {
+        "city": "South Yardley",
+        "lat": "52.459983",
+        "lng": "-1.81526",
+        "region": "England"
+    },
+    {
+        "city": "Sutton Coldfield",
+        "lat": "52.567802",
+        "lng": "-1.833987",
+        "region": "England"
+    },
+    {
+        "city": "Alnwick",
+        "lat": "55.409115",
+        "lng": "-1.692115",
+        "region": "England"
+    },
+    {
+        "city": "Ashford",
+        "lat": "51.094234",
+        "lng": "-4.097272",
+        "region": "England"
+    },
+    {
+        "city": "Aylesbury",
+        "lat": "51.814559",
+        "lng": "-0.81211",
+        "region": "England"
+    },
+    {
+        "city": "Banbury",
+        "lat": "52.059922",
+        "lng": "-1.338582",
+        "region": "England"
+    },
+    {
+        "city": "Barking",
+        "lat": "52.137738",
+        "lng": "1.028246",
+        "region": "England"
+    },
+    {
+        "city": "Barnsley",
+        "lat": "51.748169",
+        "lng": "-1.885795",
+        "region": "England"
+    },
+    {
+        "city": "Barnstaple",
+        "lat": "51.080694",
+        "lng": "-4.05197",
+        "region": "England"
+    },
+    {
+        "city": "Basildon",
+        "lat": "51.492336",
+        "lng": "-1.135834",
+        "region": "England"
+    },
+    {
+        "city": "Beaumont",
+        "lat": "54.904436",
+        "lng": "-3.006985",
+        "region": "England"
+    },
+    {
+        "city": "Beverley",
+        "lat": "53.84279",
+        "lng": "-0.421715",
+        "region": "England"
+    },
+    {
+        "city": "Blyth",
+        "lat": "53.381887",
+        "lng": "-1.053569",
+        "region": "England"
+    },
+    {
+        "city": "Blyth",
+        "lat": "55.117557",
+        "lng": "-1.536557",
+        "region": "England"
+    },
+    {
+        "city": "Bodmin",
+        "lat": "50.466593",
+        "lng": "-4.717358",
+        "region": "England"
+    },
+    {
+        "city": "Bolton",
+        "lat": "54.604331",
+        "lng": "-2.576249",
+        "region": "England"
+    },
+    {
+        "city": "Bradford",
+        "lat": "50.827837",
+        "lng": "-4.24809",
+        "region": "England"
+    },
+    {
+        "city": "Northbourne",
+        "lat": "51.227075",
+        "lng": "1.332249",
+        "region": "England"
+    },
+    {
+        "city": "Sutton Coldfield",
+        "lat": "52.561703",
+        "lng": "-1.813225",
+        "region": "England"
+    },
+    {
+        "city": "Basildon",
+        "lat": "51.57067",
+        "lng": "0.45239571",
+        "region": "England"
+    },
+    {
+        "city": "Beverley",
+        "lat": "53.869731",
+        "lng": "-2.2101954",
+        "region": "England"
+    },
+    {
+        "city": "Montpellier",
+        "lat": "51.894064",
+        "lng": "-2.082436",
+        "region": "England"
+    }
+]

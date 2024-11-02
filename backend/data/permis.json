@@ -1,0 +1,62 @@
+[
+    {
+        "code_permis": "AM",
+        "libelle": "Cyclomoteurs jusqu'à 50 cm³ (accessible dès 14 ans)"
+    },
+    {
+        "code_permis": "A1",
+        "libelle": "Motos légères jusqu'à 125 cm³ et 11 kW (accessible dès 16 ans)"
+    },
+    {
+        "code_permis": "A2",
+        "libelle": "Motos jusqu'à 35 kW (accessible dès 18 ans)"
+    },
+    {
+        "code_permis": "A",
+        "libelle": "Toutes motos, sans limitation de puissance (accessible après 2 ans de permis A2)"
+    },
+    {
+        "code_permis": "B",
+        "libelle": "Permis voiture, boîte manuelle"
+    },
+    {
+        "code_permis": "BEA",
+        "libelle": "Permis voiture, boîte automatique"
+    },
+    {
+        "code_permis": "BE",
+        "libelle": "Transport de remorque de plus de 750 kg (ensemble de max 7 tonnes)"
+    },
+    {
+        "code_permis": "C1",
+        "libelle": "Poids lourds entre 3,5 et 7,5 tonnes"
+    },
+    {
+        "code_permis": "C1E",
+        "libelle": "Poids lourds (C1) avec remorque de plus de 750 kg (ensemble de max 12 tonnes)"
+    },
+    {
+        "code_permis": "C",
+        "libelle": "Tous poids lourds de plus de 3,5 tonnes"
+    },
+    {
+        "code_permis": "CE",
+        "libelle": "Poids lourds (C) avec remorque de plus de 750 kg"
+    },
+    {
+        "code_permis": "D1",
+        "libelle": "Transport en commun jusqu’à 16 passagers, max 8 mètres"
+    },
+    {
+        "code_permis": "D1E",
+        "libelle": "Transport en commun (D1) avec remorque de plus de 750 kg"
+    },
+    {
+        "code_permis": "D",
+        "libelle": "Tous véhicules de transport en commun sans limite de passagers"
+    },
+    {
+        "code_permis": "DE",
+        "libelle": "Transport en commun (D) avec remorque de plus de 750 kg"
+    }
+]
