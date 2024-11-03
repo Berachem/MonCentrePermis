@@ -21,11 +21,11 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Fonction pour gérer les requêtes GET avec extraction de `member`
+// Fonction pour gérer les requêtes GET
 export const getRequest = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
   try {
-    const response = await apiClient.get<{ member: T }>(url, config);
-    return response.data.member;
+    const response = await apiClient.get<T>(url, config);
+    return response.data;
   } catch (error) {
     handleApiError(error);
     throw error;

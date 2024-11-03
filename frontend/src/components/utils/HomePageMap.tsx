@@ -8,7 +8,7 @@ import { InputText } from "primereact/inputtext";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import DetailsCentreMap from "./DetailsCentreMap";
-import { CentreExamen } from "../../interfaces/CentreExamen"; // Interface mise à jour
+import { CentreExamen } from "../../interfaces/interfaces"; // Interface mise à jour
 import { Chip } from "primereact/chip";
 import SideBarCustom from "./SideBarCustom";
 import { getRequest } from "../../interfaces/utils/api";
@@ -69,7 +69,8 @@ function HomePageMap() {
           "Erreur lors de la récupération de la géolocalisation",
           err
         );
-      }
+      },
+      { timeout: 10000 }
     );
   }, []);
 
@@ -82,7 +83,7 @@ function HomePageMap() {
   useEffect(() => {
     const fetchCentresData = async () => {
       try {
-        const data = await getRequest<CentreExamen[]>("/centre_examens");
+        const data = await getRequest<CentreExamen[]>("/custom/centre_examens");
         console.log("Données des centres d'examen :");
         console.log(data);
         setCentresData(data);
@@ -243,8 +244,8 @@ function HomePageMap() {
             centre={{
               name: selectedCentre.libelle,
               address: selectedCentre.adresse,
-              city: selectedCentre.ville, // Extraire le nom de la ville si nécessaire
-              postalCode: "", // Ajouter le code postal si disponible
+              city: selectedCentre.ville.libelle, // Extraire le nom de la ville si nécessaire
+              postalCode: selectedCentre.ville.code_postal ?? "N/A",
             }}
           />
         )}
