@@ -4,7 +4,6 @@ import About from "../pages/About";
 import NotFound from "../pages/NotFound";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import Profile from "../pages/Profile";
 
 function DefaultRoutes() {
     return (
@@ -14,9 +13,7 @@ function DefaultRoutes() {
         <Route path="*" element={<NotFound />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/404" element={<NotFound />} />
-        
       </>
     );
   }
