@@ -6,6 +6,17 @@
  composer install
 ```
 
+## Créer la base de données :
+
+```
+ php bin/console doctrine:database:create
+```
+
+## Créer les tables :
+
+```
+ php bin/console doctrine:migrations:migrate
+```
 
 ## Créer une migration :
 
@@ -21,16 +32,6 @@ php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 
 ```
-
-## Script à lancer pour avoir des jeux de donnée : 
-
-  Insertion : 
-
-    php bin/console doctrine:fixtures:load --append --group=InsertDataFixture
-
-  Suppression : (Cela va supprimé les données insèrer avec la commande du dessus)
-
-    php bin/console doctrine:fixtures:load --append --group=DeleteDataFixture
 
 ## Créer une entité :
 
@@ -71,6 +72,15 @@ et importer le fichier export_api.json dans PostMan
 
 
 
+## Script à lancer pour avoir des jeux de donnée : 
+
+  Insertion : 
+
+    -   php bin/console doctrine:fixtures:load --append --group=InsertDataFixture
+
+  Suppression : (Cela va supprimé les données insèrer avec la commande du dessus)
+
+    -   php bin/console doctrine:fixtures:load --append --group=DeleteDataFixture
 
 ### Commande pour chaque script d'insertion de données
 
@@ -179,11 +189,6 @@ SUIVRE : https://symfony.com/doc/current/setup.html#:~:text=Installing%20%26%20S
 - Symfony CLI : https://symfony.com/download
 - MySQL ou un autre SGBD compatible : https://dev.mysql.com/downloads/
 - Node.js (facultatif, pour certains packages Symfony) : https://nodejs.org/en/download/
-
-Ensuite, pour JWT, il faut :
-- Extension PHP : `pdo_pgsql , sodium, zip` (Pour installer les dépendances)
-- créer le dossier jwt dans le dossier config (backend/config/jwt) et y mettre le fichier public.pem et private.pem
-
 
 # Connection à la base de données
 

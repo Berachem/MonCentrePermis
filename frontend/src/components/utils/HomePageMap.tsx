@@ -4,18 +4,23 @@ import { SpeedDial } from "primereact/speeddial";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "../../assets/css/home-map.css";
+import centresData from "../../../../data/centres_examens.json"; // Importer les centres d'examen.
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import DetailsCentreMap from "./DetailsCentreMap";
-import { CentreExamen } from "../../interfaces/interfaces"; // Interface mise à jour
-import TopBar from "./TopBar";
-import { getRequest } from "../../interfaces/utils/api";
-import { Toast } from "primereact/toast";
+import { Centre } from "../../interfaces/interfaces";
+import { Link } from "react-router-dom";
+import { Menu } from "primereact/menu";
+import { Chip } from "primereact/chip";
+import SideBarCustom from "./SideBarCustom";
 
-
-/* Icones */
+// Icône personnalisée pour le marqueur de chaque centre d'examen
 const examCenterIcon = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
-  iconSize: [30, 31],
-  iconAnchor: [15, 31],
+  iconSize: [30, 31], // Taille ajustée
+  iconAnchor: [15, 31], // Ancre ajustée
   popupAnchor: [1, -34],
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
@@ -33,18 +38,46 @@ const userIcon = new L.Icon({
 });
 
 function HomePageMap() {
-
-  const toast = useRef<Toast>(null);
-  const markerRef = useRef(null);
-
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
-  const [tileLayerUrl, setTileLayerUrl] = useState("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+  const [tileLayerUrl, setTileLayerUrl] = useState(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  );
+  const markerRef = useRef(null);
   const [visible, setVisible] = useState(false);
-  const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(null);
-  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(null);
-  const [centresData, setCentresData] = useState<CentreExamen[]>([]);
+  const [selectedCentre, setSelectedCentre] = useState<Centre>();
+  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(
+    null
+  );
 
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setPosition([latitude, longitude]);
+        setUserLocated(true);
+      },
+      (err) => {
+        console.error(
+          "Erreur lors de la récupération de la géolocalisation",
+          err
+        );
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (markerRef.current) {
+      (markerRef.current as any).openPopup();
+    }
+  }, [userLocated]);
+
+  /* Selected Exam Center */
+  const handleMarkerClick = (centre: any) => {
+    setSelectedCentre(centre);
+    setVisible(true);
+    setCenterPosition([centre.lat, centre.long]);
+  };
 
   /* Skin de map */
   const items = [
@@ -88,150 +121,103 @@ function HomePageMap() {
     },
   ];
 
-
-  //récupération de la localisation
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setPosition([latitude, longitude]);
-        setUserLocated(true);
-      },
-      (err) => {
-        toast.current?.show({
-          severity: "warn",
-          summary: "Erreur",
-          detail: "Erreur lors de la récupération de la géolocalisation",
-          life: 3000,
-        });
-        console.error(
-          "Erreur lors de la récupération de la géolocalisation",
-          err
-        );
-      },
-      { timeout: 10000 }
-    );
-  }, []);
-
-  //affichage du marker de localisation
-  useEffect(() => {
-    if (markerRef.current) {
-      (markerRef.current as any).openPopup();
-    }
-  }, [userLocated]);
-
-  //récupération des données de centre d'examen
-  useEffect(() => {
-    const fetchCentresData = async () => {
-      try {
-        const data = await getRequest<CentreExamen[]>("/custom/centre_examens");
-        console.log("Données des centres d'examen :");
-        console.log(data);
-        setCentresData(data);
-        toast.current?.show({
-          severity: "success",
-          summary: "Succès",
-          detail: "Centres d'examen récupérés avec succès (" + data.length + " centres)",
-          life: 3000,
-        });
-      } catch (error) {
-        toast.current?.show({
-          severity: "error",
-          summary: "Erreur",
-          detail: "Erreur lors de la récupération des centres d'examen",
-          life: 3000,
-        });
-        console.error(
-          "Erreur lors de la récupération des centres d'examen",
-          error
-        );
-      }
-    };
-    fetchCentresData();
-  }, []);
-
-  /* Centre sélectionné */
-  const handleMarkerClick = (centre: CentreExamen) => {
-    setSelectedCentre(centre);
-    setVisible(true);
-    setCenterPosition([
-      parseFloat(centre.latitude),
-      parseFloat(centre.longitude),
-    ]);
-  };
-
-  
+  /* Recentrer la carte sur une position donnée */
   const RecenterMap = ({ position }: { position: [number, number] }) => {
     const map = useMap();
     map.setView(position);
     return null;
   };
 
+  function topBar() {
+    return (
+      <div className="search-container md:flex-row align-items-center md:px-4 px-2">
+      <div className="flex">
+        <SideBarCustom isOnMap={true} />
+
+
+        <IconField iconPosition="right">
+          <InputIcon className="pi pi-search"> </InputIcon>
+          <InputText placeholder="Rechercher" className="border-round-3xl shadow-6" />
+        </IconField>
+      </div>
+      <div className="chip-container">
+        <Chip label="Circuits"  icon="fa fa-road" className="mr-2 shadow-3"/>
+        <Chip label="Moniteurs" icon="fa-solid fa-chalkboard-user" className="mr-2 shadow-3"  />
+      </div>
+    </div>
+    )
+  }
+
   return (
-    <>
-      <Toast ref={toast} />
-      <div className="map-wrapper">
-        <TopBar/>
+    <div className="map-wrapper">
+      {/* Barre de recherche avec menu et chips en dessous */}
+      {topBar()}
 
-        <MapContainer
-          center={position}
-          zoom={13}
-          className="map"
-          zoomControl={false}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url={tileLayerUrl}
-          />
-          {userLocated && <RecenterMap position={position} />}
-          {centerPosition && <RecenterMap position={centerPosition} />}
 
-          {userLocated && (
-            <Marker position={position} icon={userIcon} ref={markerRef}>
-              <Popup autoPan={false}>Vous📍</Popup>
-            </Marker>
-          )}
+      {/* Carte Leaflet */}
+      <MapContainer
+        center={position}
+        zoom={13}
+        className="map"
+        zoomControl={false}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url={tileLayerUrl}
+        />
+        {/* Si la localisation de l'utilisateur est obtenue, recentrer la carte */}
+        {userLocated && <RecenterMap position={position} />}
 
-          { centresData &&
-          centresData.map(
-              (centre) =>
-                centre.latitude !== null &&
-                centre.longitude !== null && (
-                  <Marker
-                    key={centre.id}
-                    position={[
-                      parseFloat(centre.latitude),
-                      parseFloat(centre.longitude),
-                    ]}
-                    icon={examCenterIcon}
-                    eventHandlers={{
-                      click: () => handleMarkerClick(centre),
-                    }}
-                  ></Marker>
-                )
-            )}
-        </MapContainer>
-        {selectedCentre && (
-          <DetailsCentreMap
-            visible={visible}
-            onHide={() => setVisible(false)}
-            centre={{
-              name: selectedCentre.libelle,
-              address: selectedCentre.adresse,
-              city: selectedCentre.ville.libelle, // Extraire le nom de la ville si nécessaire
-              postalCode: selectedCentre.ville.code_postal ?? "N/A",
-            }}
-          />
+        {/* Recentrer sur le centre d'examen sélectionné lors du clic */}
+        {centerPosition && <RecenterMap position={centerPosition} />}
+
+        {/* Marqueur pour la position de l'utilisateur */}
+        {userLocated && (
+          <Marker position={position} icon={userIcon} ref={markerRef}>
+            <Popup autoPan={false}>Vous📍</Popup>
+          </Marker>
         )}
 
+        {/* Marqueurs pour chaque centre d'examen */}
+        {centresData.centres_examens.map(
+          (centre) =>
+            centre.lat !== null &&
+            centre.long !== null && (
+              <Marker
+                key={centre.id}
+                position={[centre.lat, centre.long]}
+                icon={examCenterIcon}
+                eventHandlers={{
+                  click: () => handleMarkerClick(centre),
+                }}
+                
+              ></Marker>
+            )
+        )}
+      </MapContainer>
+      {selectedCentre && (
+        <DetailsCentreMap
+          visible={visible}
+          onHide={() => setVisible(false)}
+          centre={{
+            name: selectedCentre.name,
+            address: selectedCentre.formattedAddress.address,
+            city: selectedCentre.formattedAddress.city,
+            postalCode: selectedCentre.formattedAddress.cp,
+          }}
+        />
+      )}
+
+      {/* SpeedDial pour changer le style de la carte */}
+      {
         <SpeedDial
           model={items}
           direction="up"
           radius={60}
           style={{ right: 30, bottom: 30 }}
         />
-      </div>
-    </>
+      }
+    </div>
   );
 }
 
