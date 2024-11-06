@@ -37,6 +37,9 @@ function Login() {
 
     if (!hasError) {
       if (email === "test@example.com" && password === "password") {
+
+        // faire une requête à l'API pour obtenir le token JWT
+
         toastRef.current?.show({
           severity: "success",
           summary: "Connexion réussie!",
