@@ -7,6 +7,7 @@ import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import useAuth from '../hooks/useAuth';
 import { UserType }from '../enum/user'
+import SchoolsPage from '../pages/visitor/SchoolsPage';
 
 function AppRoutes() {
   const { userRole } = useAuth();
@@ -19,6 +20,7 @@ function AppRoutes() {
           <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/schools" element={<SchoolsPage />} />
           <Route path="*" element={<NotFound />} />
         </>
       )}
