@@ -26,3 +26,15 @@ export interface Ville {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface AutoEcole {
+    id: number;
+    numero_agrement: string;
+    libelle : string;
+    adresse: string;
+    ville: Ville | null;
+    createdAt: string; 
+    updatedAt: string; 
+
+    distance: number | null;
+  }

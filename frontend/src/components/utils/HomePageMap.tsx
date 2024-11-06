@@ -98,12 +98,12 @@ function HomePageMap() {
         setUserLocated(true);
       },
       (err) => {
-        toast.current?.show({
+      /*   toast.current?.show({
           severity: "warn",
           summary: "Erreur",
           detail: "Erreur lors de la récupération de la géolocalisation",
           life: 3000,
-        });
+        }); */
         console.error(
           "Erreur lors de la récupération de la géolocalisation",
           err
