@@ -1,43 +1,14 @@
-import { Routes, Route } from 'react-router-dom';
-import Home from "../pages/Home";
-import About from "../pages/About";
-import NotFound from "../pages/NotFound";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import Profile from "../pages/Profile";
-import useAuth from '../hooks/useAuth';
-import { UserType }from '../enum/user'
+import { Routes } from 'react-router-dom';
+import DefaultRoutes from './DefaultRoutes';
 
 function AppRoutes() {
-  const { userRole } = useAuth();
+  const Default = DefaultRoutes(); 
+
 
   return (
     <Routes>
-      {userRole === UserType.Visitor && (
-        <>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
-        </>
-      )}
-      {userRole === UserType.Student && (
-        <>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<NotFound />} />
-        </>
-      )}
-      {userRole === UserType.Teacher && (
-        <>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<NotFound />} />
-        </>
-      )}
+      {Default}
+
     </Routes>
   );
 }
