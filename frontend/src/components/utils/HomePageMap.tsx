@@ -4,16 +4,14 @@ import { SpeedDial } from "primereact/speeddial";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "../../assets/css/home-map.css";
-import { InputText } from "primereact/inputtext";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
 import DetailsCentreMap from "./DetailsCentreMap";
 import { CentreExamen } from "../../interfaces/interfaces"; // Interface mise à jour
-import { Chip } from "primereact/chip";
-import SideBarCustom from "./SideBarCustom";
+import TopBar from "./TopBar";
 import { getRequest } from "../../interfaces/utils/api";
 import { Toast } from "primereact/toast";
 
+
+/* Icones */
 const examCenterIcon = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
   iconSize: [30, 31],
@@ -35,89 +33,18 @@ const userIcon = new L.Icon({
 });
 
 function HomePageMap() {
+
   const toast = useRef<Toast>(null);
+  const markerRef = useRef(null);
+
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
-  const [tileLayerUrl, setTileLayerUrl] = useState(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  );
-  const markerRef = useRef(null);
+  const [tileLayerUrl, setTileLayerUrl] = useState("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
   const [visible, setVisible] = useState(false);
-  const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(
-    null
-  );
-  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(
-    null
-  );
+  const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(null);
+  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(null);
   const [centresData, setCentresData] = useState<CentreExamen[]>([]);
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setPosition([latitude, longitude]);
-        setUserLocated(true);
-      },
-      (err) => {
-        toast.current?.show({
-          severity: "warn",
-          summary: "Erreur",
-          detail: "Erreur lors de la récupération de la géolocalisation",
-          life: 3000,
-        });
-        console.error(
-          "Erreur lors de la récupération de la géolocalisation",
-          err
-        );
-      },
-      { timeout: 10000 }
-    );
-  }, []);
-
-  useEffect(() => {
-    if (markerRef.current) {
-      (markerRef.current as any).openPopup();
-    }
-  }, [userLocated]);
-
-  useEffect(() => {
-    const fetchCentresData = async () => {
-      try {
-        const data = await getRequest<CentreExamen[]>("/custom/centre_examens");
-        console.log("Données des centres d'examen :");
-        console.log(data);
-        setCentresData(data);
-        toast.current?.show({
-          severity: "success",
-          summary: "Succès",
-          detail: "Centres d'examen récupérés avec succès (" + data.length + " centres)",
-          life: 3000,
-        });
-      } catch (error) {
-        toast.current?.show({
-          severity: "error",
-          summary: "Erreur",
-          detail: "Erreur lors de la récupération des centres d'examen",
-          life: 3000,
-        });
-        console.error(
-          "Erreur lors de la récupération des centres d'examen",
-          error
-        );
-      }
-    };
-    fetchCentresData();
-  }, []);
-
-  /* Centre sélectionné */
-  const handleMarkerClick = (centre: CentreExamen) => {
-    setSelectedCentre(centre);
-    setVisible(true);
-    setCenterPosition([
-      parseFloat(centre.latitude),
-      parseFloat(centre.longitude),
-    ]);
-  };
 
   /* Skin de map */
   const items = [
@@ -161,43 +88,90 @@ function HomePageMap() {
     },
   ];
 
+
+  //récupération de la localisation
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setPosition([latitude, longitude]);
+        setUserLocated(true);
+      },
+      (err) => {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Erreur",
+          detail: "Erreur lors de la récupération de la géolocalisation",
+          life: 3000,
+        });
+        console.error(
+          "Erreur lors de la récupération de la géolocalisation",
+          err
+        );
+      },
+      { timeout: 10000 }
+    );
+  }, []);
+
+  //affichage du marker de localisation
+  useEffect(() => {
+    if (markerRef.current) {
+      (markerRef.current as any).openPopup();
+    }
+  }, [userLocated]);
+
+  //récupération des données de centre d'examen
+  useEffect(() => {
+    const fetchCentresData = async () => {
+      try {
+        const data = await getRequest<CentreExamen[]>("/custom/centre_examens");
+        console.log("Données des centres d'examen :");
+        console.log(data);
+        setCentresData(data);
+        toast.current?.show({
+          severity: "success",
+          summary: "Succès",
+          detail: "Centres d'examen récupérés avec succès (" + data.length + " centres)",
+          life: 3000,
+        });
+      } catch (error) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Erreur",
+          detail: "Erreur lors de la récupération des centres d'examen",
+          life: 3000,
+        });
+        console.error(
+          "Erreur lors de la récupération des centres d'examen",
+          error
+        );
+      }
+    };
+    fetchCentresData();
+  }, []);
+
+  /* Centre sélectionné */
+  const handleMarkerClick = (centre: CentreExamen) => {
+    setSelectedCentre(centre);
+    setVisible(true);
+    setCenterPosition([
+      parseFloat(centre.latitude),
+      parseFloat(centre.longitude),
+    ]);
+  };
+
+  
   const RecenterMap = ({ position }: { position: [number, number] }) => {
     const map = useMap();
     map.setView(position);
     return null;
   };
 
-  function topBar() {
-    return (
-      <div className="search-container md:flex-row align-items-center md:px-4 px-2">
-        <div className="flex">
-          <SideBarCustom isOnMap={true} />
-          <IconField iconPosition="right">
-            <InputIcon className="pi pi-search"> </InputIcon>
-            <InputText
-              placeholder="Rechercher"
-              className="border-round-3xl shadow-6"
-            />
-          </IconField>
-        </div>
-        <div className="chip-container">
-          <Chip label="Circuits" icon="fa fa-road" className="mr-2 shadow-3" key={1} />
-          <Chip
-            label="Moniteurs"
-            icon="fa-solid fa-chalkboard-user"
-            className="mr-2 shadow-3"
-            key={2}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <Toast ref={toast} />
       <div className="map-wrapper">
-        {topBar()}
+        <TopBar/>
 
         <MapContainer
           center={position}
