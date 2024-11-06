@@ -44,6 +44,9 @@ class AutoEcole
     #[ORM\OneToMany(targetEntity: Eleve::class, mappedBy: 'auto_ecole')]
     private Collection $eleves;
 
+    #[ORM\Column(length: 255)]
+    private ?string $libelle = null;
+
     public function __construct()
     {
         $this->moniteurs = new ArrayCollection();
@@ -156,6 +159,18 @@ class AutoEcole
                 $elefe->setAutoEcole(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLibelle(): ?string
+    {
+        return $this->libelle;
+    }
+
+    public function setLibelle(string $libelle): static
+    {
+        $this->libelle = $libelle;
 
         return $this;
     }

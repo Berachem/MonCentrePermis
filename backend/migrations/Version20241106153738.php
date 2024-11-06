@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20241102155800 extends AbstractMigration
+final class Version20241106153738 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -33,7 +33,7 @@ final class Version20241102155800 extends AbstractMigration
         $this->addSql('CREATE SEQUENCE permis_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE point_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE ville_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
-        $this->addSql('CREATE TABLE auto_ecole (id INT NOT NULL, ville_id INT DEFAULT NULL, compte_id INT DEFAULT NULL, numero_agrement VARCHAR(255) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE auto_ecole (id INT NOT NULL, ville_id INT DEFAULT NULL, compte_id INT DEFAULT NULL, numero_agrement VARCHAR(255) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, libelle VARCHAR(255) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_FD0557A73F0036 ON auto_ecole (ville_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_FD0557F2C56620 ON auto_ecole (compte_id)');
         $this->addSql('CREATE TABLE centre_examen (id INT NOT NULL, ville_id INT DEFAULT NULL, libelle VARCHAR(255) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, latitude NUMERIC(12, 8) NOT NULL, longitude NUMERIC(12, 8) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');

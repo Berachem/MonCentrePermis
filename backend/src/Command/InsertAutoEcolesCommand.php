@@ -52,6 +52,7 @@ class InsertAutoEcolesCommand extends Command
                     $autoEcole = new AutoEcole();
                     
                     $autoEcole->setNumeroAgrement($data['num_agrement']);
+                    $autoEcole->setLibelle($data['name']);
                     $adresse = $data['address'] ?? null;
                     $autoEcole->setAdresse($adresse);
             
