@@ -1,16 +1,19 @@
-import "../../assets/css/Register.css"
+import "../../assets/css/Register.css";
 
-import React, { useState,useImperativeHandle,forwardRef  } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
-import { ScrollPanel } from "primereact/scrollpanel"
+import { ScrollPanel } from "primereact/scrollpanel";
 import { FloatLabel } from 'primereact/floatlabel';
 import { InputTextarea } from "primereact/inputtextarea";
 import { Divider } from "primereact/divider";
+import { postRequest } from "../../interfaces/utils/api";
+import { ApiResponse } from "../../interfaces/interfaces";
+import { Navigate } from "react-router-dom";
 
-const StudentForm = forwardRef((props, ref) =>{
+const StudentForm = forwardRef((props, ref) => {
     const [nom, setNom] = useState('');
     const [prenom, setPrenom] = useState('');
     const [email, setEmail] = useState('');
@@ -34,7 +37,7 @@ const StudentForm = forwardRef((props, ref) =>{
         handleSubmit
     }));
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let hasError = false;
 
         // Validation des champs obligatoires
@@ -73,9 +76,36 @@ const StudentForm = forwardRef((props, ref) =>{
             setConfirmPasswordError('');
         }
 
+        // Si aucune erreur
         if (!hasError) {
-            toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
-            // Envoyer les données au backend ici
+            // Préparer les données du formulaire
+            const formData = {
+                nom,
+                prenom,
+                email,
+                password,
+                telephone,
+                genre,
+                dateNaissance,
+                dateExamen,
+                description,
+                role: "eleve",  
+            };
+    
+            try {
+                // Utilisation de la fonction `postRequest` pour envoyer les données
+                const response: ApiResponse = await postRequest('custom/create-compte', formData);
+                
+                // Si l'inscription est réussie, afficher un message de succès
+                toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
+
+
+
+            } catch (error) {
+                // Affichage des erreurs dans la console
+                console.error('Erreur lors de l\'inscription:', error);
+                toastRef.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue.', life: 3000 });
+            }
         }
     };
 
@@ -84,7 +114,6 @@ const StudentForm = forwardRef((props, ref) =>{
             <Toast ref={toastRef} />
             <ScrollPanel style={{ width: '100%', height: '70vh' }} className='formScrollbar'>
                 <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="flex flex-column gap-4">
-                    
                     <Divider align="left">
                         <div className="inline-flex align-items-center">
                             <b>Champs obligatoires</b>
@@ -94,7 +123,7 @@ const StudentForm = forwardRef((props, ref) =>{
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="nom">Nom</label>
-                            <InputText id="nom" value={nom} onChange={(e) => setNom(e.target.value)} invalid={nomError!=''}/>
+                            <InputText id="nom" value={nom} onChange={(e) => setNom(e.target.value)} invalid={nomError != ''} />
                         </FloatLabel>
                         <small className="p-error">{nomError}</small>
                     </div>
@@ -102,7 +131,7 @@ const StudentForm = forwardRef((props, ref) =>{
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="prenom">Prénom</label>
-                            <InputText id="prenom" value={prenom} onChange={(e) => setPrenom(e.target.value)}  invalid={prenomError!=''} />
+                            <InputText id="prenom" value={prenom} onChange={(e) => setPrenom(e.target.value)} invalid={prenomError != ''} />
                         </FloatLabel>
                         <small className="p-error">{prenomError}</small>
                     </div>
@@ -110,15 +139,15 @@ const StudentForm = forwardRef((props, ref) =>{
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="email">Email</label>
-                            <InputText id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError!=''} />
-                        </FloatLabel>   
+                            <InputText id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError != ''} />
+                        </FloatLabel>
                         <small className="p-error">{emailError}</small>
                     </div>
 
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="password">Mot de passe</label>
-                            <InputText id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} invalid={passwordError!=''} />
+                            <InputText id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} invalid={passwordError != ''} />
                         </FloatLabel>
                         <small className="p-error">{passwordError}</small>
                     </div>
@@ -126,7 +155,7 @@ const StudentForm = forwardRef((props, ref) =>{
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="confirmPassword">Confirmez le mot de passe</label>
-                            <InputText id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} invalid={confirmPasswordError!=''}/>
+                            <InputText id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} invalid={confirmPasswordError != ''} />
                         </FloatLabel>
                         <small className="p-error">{confirmPasswordError}</small>
                     </div>
@@ -136,7 +165,7 @@ const StudentForm = forwardRef((props, ref) =>{
                             <b>Champs non obligatoires</b>
                         </div>
                     </Divider>
-                    
+
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="telephone">Téléphone</label>
@@ -150,10 +179,10 @@ const StudentForm = forwardRef((props, ref) =>{
                             <InputText id="genre" value={genre} onChange={(e) => setGenre(e.target.value)} />
                         </FloatLabel>
                     </div>
-                    
+
                     <label htmlFor="dateNaissance">Date de naissance</label>
                     <Calendar id="dateNaissance" value={dateNaissance} onChange={(e) => setDateNaissance(e.value as Date)} dateFormat="dd/mm/yy" showIcon />
-                
+
                     <label htmlFor="dateExamen">Date d'examen prévue</label>
                     <Calendar id="dateExamen" value={dateExamen} onChange={(e) => setDateExamen(e.value as Date)} dateFormat="dd/mm/yy" showIcon />
 

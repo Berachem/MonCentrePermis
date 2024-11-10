@@ -38,3 +38,10 @@ export interface AutoEcole {
 
     distance: number | null;
   }
+
+
+export interface ApiResponse {
+    token?: string; // Le token peut être présent ou non
+    message?: string;
+    errors?: string;
+  }
