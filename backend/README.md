@@ -181,7 +181,7 @@ SUIVRE : https://symfony.com/doc/current/setup.html#:~:text=Installing%20%26%20S
 - Node.js (facultatif, pour certains packages Symfony) : https://nodejs.org/en/download/
 
 Ensuite, pour JWT, il faut :
-- Extension PHP : `pdo_pgsql , sodium, zip` (Pour installer les dépendances)
+- Extension PHP dans le fichier php.ini (décommenter les extensions) : `pdo_pgsql , sodium, zip` (Pour installer les dépendances)
 - créer le dossier jwt dans le dossier config (backend/config/jwt) et y mettre le fichier public.pem et private.pem
 
 
