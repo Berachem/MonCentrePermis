@@ -5,10 +5,10 @@ import L from "leaflet";
 import "../../assets/css/home-map.css";
 import DetailsCentreMap from "./DetailsCentreMap";
 import { CentreExamen } from "../../interfaces/interfaces"; // Interface mise à jour
-import TopBar from "./TopBar";
 import { getRequest } from "../../interfaces/utils/api";
 import { Toast } from "primereact/toast";
 import Loader from "./Loader";
+import HomePageTopBar from "./HomePageTopBar";
 
 
 /* Icones */
@@ -135,7 +135,7 @@ function HomePageMap() {
      
       <Toast ref={toast} />
       <div className="map-wrapper">
-        <TopBar/>
+        <HomePageTopBar/>
 
         <MapContainer
           center={position}
