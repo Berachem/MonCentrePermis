@@ -39,7 +39,9 @@ function HomePageMap() {
 
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
-  const [tileLayerUrl, setTileLayerUrl] = useState("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+  const [tileLayerUrl, setTileLayerUrl] = useState(
+    localStorage.getItem('tileLayerUrl') || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+);
   const [visible, setVisible] = useState(false);
   const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(null);
   const [centerPosition, setCenterPosition] = useState<[number, number] | null>(null);

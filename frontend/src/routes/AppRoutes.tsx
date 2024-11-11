@@ -8,6 +8,7 @@ import Profile from "../pages/Profile";
 import useAuth from '../hooks/useAuth';
 import { UserType }from '../enum/user'
 import SchoolsPage from '../pages/visitor/SchoolsPage';
+import Settings from '../pages/Settings';
 
 function AppRoutes() {
   const { userRole } = useAuth();
@@ -21,6 +22,7 @@ function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/schools" element={<SchoolsPage />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </>
       )}
