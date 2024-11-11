@@ -5,10 +5,12 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
 import { FloatLabel } from "primereact/floatlabel";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoApp from "../assets/images/branding/logo_moncentrepermis.png";
 import loginStory from "../assets/images/stories/login-storie.svg";
 import SideBarCustom from "../components/utils/SideBarCustom";
+import { ApiResponse } from "../interfaces/interfaces";
+import { postRequest } from "../interfaces/utils/api";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -17,7 +19,9 @@ function Login() {
   const [passwordError, setPasswordError] = useState("");
   const toastRef = React.createRef<Toast>();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     let hasError = false;
 
@@ -36,17 +40,27 @@ function Login() {
     }
 
     if (!hasError) {
-      if (email === "test@example.com" && password === "password") {
+      const formData = {'username':email, password}
 
-        // faire une requête à l'API pour obtenir le token JWT
+      console.log(formData)
+      try {
+        const response: ApiResponse = await postRequest('login', formData);
 
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Connexion réussie!",
-          detail: "Bienvenue!",
-          life: 3000,
-        });
-      } else {
+        if (response && response.token) {
+            localStorage.setItem('jwtToken', response.token);
+            toastRef.current?.show({
+              severity: "success",
+              summary: "Connexion réussie!",
+              detail: "Bienvenue!",
+              life: 3000,
+            });
+
+            navigate('/');
+        } else {
+          throw new Error('Identifiants incorrects');
+        }
+        
+      } catch (error) {
         toastRef.current?.show({
           severity: "error",
           summary: "Erreur de connexion",

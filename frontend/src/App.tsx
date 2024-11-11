@@ -1,22 +1,21 @@
-import "primereact/resources/themes/lara-light-indigo/theme.css"; // Un thème PrimeReact
-import "primereact/resources/primereact.min.css"; // PrimeReact CSS
-import "primeicons/primeicons.css"; // PrimeIcons
-import "primeflex/primeflex.css"; // (Optionnel) PrimeFlex pour la mise en page
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import "primeflex/primeflex.css";
 import "./assets/css/App.css"; 
 import "leaflet/dist/leaflet.css";
 
-
-
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from './routes/AppRoutes';
+import { AuthProvider } from './hooks/useAuth'; // Importer AuthProvider
 
 function App() {
   return (
-    <>
+    <AuthProvider> {/* Encapsuler l'application avec AuthProvider */}
       <Router>
-        <AppRoutes/> {/* Centralisation et gestion des routes dans AppRoutes afin d'alléger App.tsx */}
+        <AppRoutes />
       </Router>
-    </>
+    </AuthProvider>
   );
 }
 

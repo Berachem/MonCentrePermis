@@ -5,16 +5,18 @@ import NotFound from "../pages/NotFound";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Profile from "../pages/Profile";
-import useAuth from '../hooks/useAuth';
-import { UserType }from '../enum/user'
 import SchoolsPage from '../pages/visitor/SchoolsPage';
+import { useAuth } from '../hooks/useAuth'; // Utiliser le hook pour accéder au contexte d'auth
+import { UserType } from '../enum/user';
 
 function AppRoutes() {
-  const { userRole } = useAuth();
-
+  // Utiliser le hook useAuth pour obtenir le rôle de l'utilisateur
+  const { userRole, isAuthenticated } = useAuth();
+  console.log("In AppRoute : ROLE == ", userRole, isAuthenticated)
   return (
     <Routes>
-      {userRole === UserType.Visitor && (
+      {/* Routes pour les visiteurs */}
+      {!isAuthenticated && userRole === UserType.Visitor && (
         <>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -24,18 +26,26 @@ function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </>
       )}
-      {userRole === UserType.Student && (
+
+      {/* Routes pour les élèves */}
+      {isAuthenticated && userRole === UserType.Student && (
         <>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </>
       )}
-      {userRole === UserType.Teacher && (
+
+      {/* Routes pour les enseignants */}
+      {isAuthenticated && userRole === UserType.Teacher && (
         <>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </>

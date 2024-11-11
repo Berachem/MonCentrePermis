@@ -96,10 +96,13 @@ const StudentForm = forwardRef((props, ref) => {
                 // Utilisation de la fonction `postRequest` pour envoyer les données
                 const response: ApiResponse = await postRequest('custom/create-compte', formData);
                 
-                // Si l'inscription est réussie, afficher un message de succès
-                toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
-
-
+                if (response.token) {
+                    localStorage.setItem('jwtToken', response.token);
+                    console.log('Token ', response.token)
+                    // Si l'inscription est réussie, afficher un message de succès
+                    toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
+                    window.location.href = '/';
+                }
 
             } catch (error) {
                 // Affichage des erreurs dans la console

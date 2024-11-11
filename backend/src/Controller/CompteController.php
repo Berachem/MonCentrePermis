@@ -46,7 +46,7 @@ class CompteController extends AbstractController
         ValidatorInterface $validator,
         UserPasswordHasherInterface $passwordHasher,
         SerializerInterface $serializer
-    ): RedirectResponse {
+    ): JsonResponse {
         // Désérialiser les données de la requête dans le DTO
         $dto = $serializer->deserialize($request->getContent(), CreateCompteDTO::class, 'json');
 
@@ -116,7 +116,6 @@ class CompteController extends AbstractController
         // Générer un JWT pour l'utilisateur
         $token = $this->jwtManager->create($compte);
 
-        $redirectUrl = 'http://localhost:3000?token=' . $token;
-        return new RedirectResponse($redirectUrl);
+        return new JsonResponse(['message' => 'Inscription réussie', 'token' => $token], 200);
     }
 }
