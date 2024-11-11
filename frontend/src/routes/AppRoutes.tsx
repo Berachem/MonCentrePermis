@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import SchoolsPage from '../pages/visitor/SchoolsPage';
+import Settings from '../pages/Settings';
 import { useAuth } from '../hooks/useAuth'; // Utiliser le hook pour accéder au contexte d'auth
 import { UserType } from '../enum/user';
 
@@ -23,6 +24,7 @@ function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/schools" element={<SchoolsPage />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </>
       )}
