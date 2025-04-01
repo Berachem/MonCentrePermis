@@ -8,6 +8,8 @@ import { FloatLabel } from 'primereact/floatlabel';
 import { InputTextarea } from "primereact/inputtextarea";
 import { Divider } from "primereact/divider";
 import { ScrollPanel } from "primereact/scrollpanel"
+import { ApiResponse } from "../../interfaces/interfaces";
+import { postRequest } from "../../interfaces/utils/api";
 
 const TeacherForm = forwardRef((props, ref) =>{
     const [nom, setNom] = useState('');
@@ -35,7 +37,7 @@ const TeacherForm = forwardRef((props, ref) =>{
         handleSubmit
     }));
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let hasError = false;
 
         // Validation des champs obligatoires
@@ -82,8 +84,36 @@ const TeacherForm = forwardRef((props, ref) =>{
         }
 
         if (!hasError) {
-            toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
-            // Envoyer les données au backend ici
+            const formData = {
+                nom,
+                prenom,
+                numeroCertification,
+                email,
+                password,
+                telephone,
+                genre,
+                dateDebutCarriere,
+                dateNaissance,
+                description,
+                role: "moniteur",  
+            };
+            try {
+                // Utilisation de la fonction `postRequest` pour envoyer les données
+                const response: ApiResponse = await postRequest('custom/create-compte', formData);
+                
+                if (response.token) {
+                    localStorage.setItem('jwtToken', response.token);
+                    console.log('Token ', response.token)
+                    // Si l'inscription est réussie, afficher un message de succès
+                    toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
+                    window.location.href = '/';
+                }
+
+            } catch (error) {
+                // Affichage des erreurs dans la console
+                console.error('Erreur lors de l\'inscription:', error);
+                toastRef.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue.', life: 3000 });
+            }
         }
     };
 

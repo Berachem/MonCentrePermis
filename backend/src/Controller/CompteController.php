@@ -91,8 +91,10 @@ class CompteController extends AbstractController
             $em->flush();
             $moniteur = new Moniteur();
             $moniteur->setCompte($compte);
-            $moniteur->setCompteValide($dto->compteValide);
-            $moniteur->setDateDebutCarriere(new \DateTime($dto->dateDebutCarriere));
+            $moniteur->setCompteValide($dto->compteValide ?? false);
+            if (!empty($dto->date_debut_carriere)) {
+                $moniteur->setDateDebutCarriere(new \DateTime($dto->dateDebutCarriere));
+            }
             $moniteur->setStatusActivite($dto->statusActivite);
             $moniteur->setNumeroCertification($dto->NumeroCertification);
 

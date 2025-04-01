@@ -17,7 +17,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -64,7 +64,7 @@ const login = useCallback((token: string) => {
     const token = localStorage.getItem('jwtToken');
     if (token) {
       const decoded = decodeToken(token);
-      console.log("Token décodé :", decoded);
+      // console.log("Token décodé :", decoded);
       if (decoded && decoded.exp * 1000 > Date.now()) {
         const userRole = decoded.roles && decoded.roles.length > 0 ? decoded.roles[0].split('_')[1].toLowerCase() : 'visitor';
         setUserRole(userRole);
@@ -77,7 +77,6 @@ const login = useCallback((token: string) => {
       setIsAuthenticated(false);
     }
 
-    console.log("ROLE ACTUEL = ", userRole);
   }, [logout]);
 
   return (
@@ -86,3 +85,5 @@ const login = useCallback((token: string) => {
     </AuthContext.Provider>
   );
 };
+
+export default useAuth;

@@ -136,6 +136,11 @@ function HomePageMap() {
       <Toast ref={toast} />
       <div className="map-wrapper">
         <HomePageTopBar/>
+        
+        {/* 
+        Si connecté -> NOM PRENOM image de profil
+        Sinon, boutton Connexion & Inscription
+        */}
 
         <MapContainer
           center={position}

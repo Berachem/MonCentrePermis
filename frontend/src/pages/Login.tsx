@@ -42,7 +42,7 @@ function Login() {
     if (!hasError) {
       const formData = {'username':email, password}
 
-      console.log(formData)
+      // console.log(formData)
       try {
         const response: ApiResponse = await postRequest('login', formData);
 
@@ -54,8 +54,8 @@ function Login() {
               detail: "Bienvenue!",
               life: 3000,
             });
-
-            navigate('/');
+            window.location.assign('/');
+            // navigate('/');
         } else {
           throw new Error('Identifiants incorrects');
         }

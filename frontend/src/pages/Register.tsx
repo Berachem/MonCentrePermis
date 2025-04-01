@@ -101,6 +101,7 @@ function Register() {
                   className={userType === "school" ? "p-button-primary" : ""}
                   outlined={userType !== "school"}
                   icon="pi pi-building"
+                  disabled
                 />
               </div>
             </StepperPanel>

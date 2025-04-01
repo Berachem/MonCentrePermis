@@ -61,7 +61,7 @@ class CreateCompteDTO
     /**
      * @Assert\Type("bool")
      */
-    public bool $compteValide; 
+    public bool $compteValide = false; 
 
     /**
      * @Assert\Type("\DateTime")
@@ -71,10 +71,12 @@ class CreateCompteDTO
 
 
         /**
-     * @Assert\NotBlank()
      * @Assert\Type("\DateTime")
+     * @Assert\GreaterThan("today")
+     * 
+     * Note: Cette propriété est optionnelle et peut être null
      */
-    public $dateDebutCarriere;
+    public ?\DateTime $dateDebutCarriere = null;
 
     /**
      * @Assert\NotBlank()

@@ -68,7 +68,9 @@ class Moniteur
 
     public function setDateDebutCarriere(?\DateTimeInterface $date_debut_carriere): static
     {
-        $this->date_debut_carriere = $date_debut_carriere;
+        if ($date_debut_carriere) {
+            $this->date_debut_carriere = $date_debut_carriere;
+        }
 
         return $this;
     }

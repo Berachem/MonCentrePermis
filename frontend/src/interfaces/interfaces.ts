@@ -1,3 +1,5 @@
+import { UserType } from "../enum/user";
+
 export interface CentreExamen {
     "@id": string | null;
     "@type": string | null;
@@ -39,9 +41,17 @@ export interface AutoEcole {
     distance: number | null;
   }
 
-
 export interface ApiResponse {
     token?: string; // Le token peut être présent ou non
     message?: string;
     errors?: string;
   }
+
+export interface User {
+  // Informations du User en cours, seulement pour les users authentifier !
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserType;
+  
+}

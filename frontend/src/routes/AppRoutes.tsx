@@ -7,8 +7,8 @@ import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import SchoolsPage from '../pages/visitor/SchoolsPage';
 import Settings from '../pages/Settings';
-import { useAuth } from '../hooks/useAuth'; // Utiliser le hook pour accéder au contexte d'auth
-import { UserType } from '../enum/user';
+import  useAuth  from '../hooks/useAuth'; // Utiliser le hook pour accéder au contexte d'auth
+import { UserType } from '../enum/user'; // E
 
 function AppRoutes() {
   // Utiliser le hook useAuth pour obtenir le rôle de l'utilisateur

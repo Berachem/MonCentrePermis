@@ -1,5 +1,5 @@
 export enum UserType {
     Visitor = "visitor",
     Student = "eleve",
-    Teacher = "teacher"
+    Teacher = "moniteur"
 }
