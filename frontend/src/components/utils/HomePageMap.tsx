@@ -10,10 +10,19 @@ import { Toast } from "primereact/toast";
 import Loader from "./Loader";
 import HomePageTopBar from "./HomePageTopBar";
 
-
 /* Icones */
-const examCenterIcon = new L.Icon({
+const examCenterIconFrance = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
+  iconSize: [30, 31],
+  iconAnchor: [15, 31],
+  popupAnchor: [1, -34],
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  shadowSize: [31, 31],
+});
+
+const examCenterIconUK = new L.Icon({
+  iconUrl: "https://i.postimg.cc/v8fyVYvk/output-onlinepngtools-2.png",
   iconSize: [30, 31],
   iconAnchor: [15, 31],
   popupAnchor: [1, -34],
@@ -33,22 +42,24 @@ const userIcon = new L.Icon({
 });
 
 function HomePageMap() {
-
   const toast = useRef<Toast>(null);
   const markerRef = useRef(null);
 
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
   const [tileLayerUrl] = useState(
-    localStorage.getItem('tileLayerUrl') || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-);
+    localStorage.getItem("tileLayerUrl") ||
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  );
   const [visible, setVisible] = useState(false);
-  const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(null);
-  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(null);
+  const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(
+    null
+  );
+  const [centerPosition, setCenterPosition] = useState<[number, number] | null>(
+    null
+  );
   const [centresData, setCentresData] = useState<CentreExamen[]>([]);
   const [loading, setLoading] = useState(true);
-
-
 
   //récupération de la localisation
   useEffect(() => {
@@ -59,7 +70,7 @@ function HomePageMap() {
         setUserLocated(true);
       },
       (err) => {
-      /*   toast.current?.show({
+        /*   toast.current?.show({
           severity: "warn",
           summary: "Erreur",
           detail: "Erreur lors de la récupération de la géolocalisation",
@@ -93,7 +104,10 @@ function HomePageMap() {
         toast.current?.show({
           severity: "success",
           summary: "Succès",
-          detail: "Centres d'examen récupérés avec succès (" + data.length + " centres)",
+          detail:
+            "Centres d'examen récupérés avec succès (" +
+            data.length +
+            " centres)",
           life: 3000,
         });
       } catch (error) {
@@ -123,7 +137,6 @@ function HomePageMap() {
     ]);
   };
 
-  
   const RecenterMap = ({ position }: { position: [number, number] }) => {
     const map = useMap();
     map.setView(position);
@@ -132,11 +145,10 @@ function HomePageMap() {
 
   return (
     <>
-     
       <Toast ref={toast} />
       <div className="map-wrapper">
-        <HomePageTopBar/>
-        
+        <HomePageTopBar />
+
         {/* 
         Si connecté -> NOM PRENOM image de profil
         Sinon, boutton Connexion & Inscription
@@ -160,14 +172,14 @@ function HomePageMap() {
               <Popup autoPan={false}>Vous📍</Popup>
             </Marker>
           )}
-         
-         {loading && (
-         <div className="loader-container">
-         <Loader />
-          </div>
+
+          {loading && (
+            <div className="loader-container">
+              <Loader />
+            </div>
           )}
-          { centresData &&
-          centresData.map(
+          {centresData &&
+            centresData.map(
               (centre) =>
                 centre.latitude !== null &&
                 centre.longitude !== null && (
@@ -177,7 +189,11 @@ function HomePageMap() {
                       parseFloat(centre.latitude),
                       parseFloat(centre.longitude),
                     ]}
-                    icon={examCenterIcon}
+                    icon={
+                      centre.pays === "France"
+                        ? examCenterIconFrance
+                        : examCenterIconUK
+                    }
                     eventHandlers={{
                       click: () => handleMarkerClick(centre),
                     }}

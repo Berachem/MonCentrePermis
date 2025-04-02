@@ -28,7 +28,7 @@ class CentreExamenController extends AbstractController
                 'latitude' => $centreExamen->getLatitude(),
                 'longitude' => $centreExamen->getLongitude(),
                 'ville' => $ville ? [
-                    'id' => $ville->getId() ,
+                    'id' => $ville->getId(),
                     'code' => $ville->getCode(),
                     'libelle' => $ville->getLibelle(),
                     'region' => $ville->getRegion(),
@@ -39,6 +39,7 @@ class CentreExamenController extends AbstractController
                     'createdAt' => $ville->getCreatedAt()->format('Y-m-d H:i:s'),
                     'updatedAt' => $ville->getUpdatedAt()->format('Y-m-d H:i:s'),
                 ] : null,
+                'pays' => $ville ?  $ville->getPays()->getLibelle() : null,
                 'createdAt' => $centreExamen->getCreatedAt()->format('Y-m-d H:i:s'),
                 'updatedAt' => $centreExamen->getUpdatedAt()->format('Y-m-d H:i:s'),
             ];
