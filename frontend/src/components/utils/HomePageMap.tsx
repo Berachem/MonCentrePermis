@@ -9,6 +9,9 @@ import { getRequest } from "../../interfaces/utils/api";
 import { Toast } from "primereact/toast";
 import Loader from "./Loader";
 import HomePageTopBar from "./HomePageTopBar";
+import { Button } from "primereact/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocation } from "@fortawesome/free-solid-svg-icons";
 
 /* Icones */
 const examCenterIconFrance = new L.Icon({
@@ -41,13 +44,57 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
+// Nouveau composant de contrôles de la carte
+function MapControls({
+  userPos,
+  setTileLayerUrl,
+}: {
+  userPos: [number, number];
+  setTileLayerUrl: (url: string) => void;
+}) {
+  const map = useMap();
+
+  const handleRecenter = () => {
+    map.setView(userPos, map.getZoom());
+  };
+
+  const handleZoomIn = () => {
+    map.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    map.zoomOut();
+  };
+
+  return (
+    <div className="map-controls">
+      <Button
+        onClick={handleRecenter}
+        className="p-button-rounded justify-content-center w-9 h-9"
+      >
+        <FontAwesomeIcon icon={faLocation} className="text-2xl" />
+      </Button>
+      <Button
+        icon="pi pi-plus"
+        onClick={handleZoomIn}
+        className="p-button-rounded "
+      />
+      <Button
+        icon="pi pi-minus"
+        onClick={handleZoomOut}
+        className="p-button-rounded "
+      />
+    </div>
+  );
+}
+
 function HomePageMap() {
   const toast = useRef<Toast>(null);
   const markerRef = useRef(null);
 
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
-  const [tileLayerUrl] = useState(
+  const [tileLayerUrl, setTileLayerUrl] = useState(
     localStorage.getItem("tileLayerUrl") ||
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   );
@@ -179,27 +226,44 @@ function HomePageMap() {
             </div>
           )}
           {centresData &&
-            centresData.map(
-              (centre) =>
-                centre.latitude !== null &&
-                centre.longitude !== null && (
-                  <Marker
-                    key={centre.id}
-                    position={[
-                      parseFloat(centre.latitude),
-                      parseFloat(centre.longitude),
-                    ]}
-                    icon={
-                      centre.pays === "France"
-                        ? examCenterIconFrance
-                        : examCenterIconUK
-                    }
-                    eventHandlers={{
-                      click: () => handleMarkerClick(centre),
-                    }}
-                  ></Marker>
-                )
-            )}
+            centresData.map((centre) => {
+              if (centre.latitude === null || centre.longitude === null)
+                return null;
+              const pos = [
+                parseFloat(centre.latitude),
+                parseFloat(centre.longitude),
+              ];
+              const icon =
+                centre.pays === "France"
+                  ? examCenterIconFrance
+                  : examCenterIconUK;
+              return (
+                <Marker
+                  key={centre.id}
+                  position={pos}
+                  icon={icon}
+                  eventHandlers={{
+                    click: () => handleMarkerClick(centre),
+                    mouseover: (e) => {
+                      e.target.setIcon(
+                        new L.Icon({
+                          iconUrl: icon.options.iconUrl,
+                          iconSize: [36, 37], // agrandi
+                          iconAnchor: [18, 37],
+                          popupAnchor: [1, -34],
+                          shadowUrl: icon.options.shadowUrl,
+                          shadowSize: icon.options.shadowSize,
+                        })
+                      );
+                    },
+                    mouseout: (e) => {
+                      e.target.setIcon(icon);
+                    },
+                  }}
+                />
+              );
+            })}
+          <MapControls userPos={position} setTileLayerUrl={setTileLayerUrl} />
         </MapContainer>
         {selectedCentre && (
           <DetailsCentreMap
