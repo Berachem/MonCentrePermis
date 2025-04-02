@@ -40,26 +40,25 @@ function Login() {
     }
 
     if (!hasError) {
-      const formData = {'username':email, password}
+      const formData = { username: email, password };
 
       // console.log(formData)
       try {
-        const response: ApiResponse = await postRequest('login', formData);
+        const response: ApiResponse = await postRequest("login", formData);
 
         if (response && response.token) {
-            localStorage.setItem('jwtToken', response.token);
-            toastRef.current?.show({
-              severity: "success",
-              summary: "Connexion réussie!",
-              detail: "Bienvenue!",
-              life: 3000,
-            });
-            window.location.assign('/');
-            // navigate('/');
+          localStorage.setItem("jwtToken", response.token);
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Connexion réussie!",
+            detail: "Bienvenue!",
+            life: 3000,
+          });
+          window.location.assign("/");
+          // navigate('/');
         } else {
-          throw new Error('Identifiants incorrects');
+          throw new Error("Identifiants incorrects");
         }
-        
       } catch (error) {
         toastRef.current?.show({
           severity: "error",
@@ -76,7 +75,7 @@ function Login() {
       <Toast ref={toastRef} />
 
       <div className="flex align-items-center justify-content-center col-12 mt-4">
-        <SideBarCustom  />
+        <SideBarCustom />
         <img src={logoApp} alt="logo" className="mx-auto md:w-2 w-13rem" />
       </div>
 
