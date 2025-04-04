@@ -91,7 +91,9 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
             <hr className="mb-3 mx-3 border-top-1 surface-border" />
             {isAuthenticated ? (
               <>
-                <a className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
+                <a className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
+                  onClick={() => {navigate("/profile")}}
+                >
                   <FontAwesomeIcon
                     icon={faUser}
                     className="text-lg text-primary border-round-3xl p-1 bg-primary-100"
