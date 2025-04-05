@@ -10,7 +10,7 @@ import { Tooltip } from 'primereact/tooltip';
 
 
 const Profile: React.FC = () => {
-  const { isAuthenticated, prenom, nom, logout } = useAuth();
+  const { isAuthenticated, prenom, nom } = useAuth();
   const navigate = useNavigate()
   const [studentCount, setStudentCount] = useState<number | null>(null);
   const [viewCount, setViewCount] = useState<number | null>(null);
@@ -152,7 +152,7 @@ const Profile: React.FC = () => {
               <Button
                 label="Voir mes cours"
                 className="button-text text-sm mr-auto mt-3 md:mt-4"
-                onClick={() => console.log('Voir les cours')}
+                onClick={()=>{navigate('/classes')}}
               />
             </div>
           </Card>
@@ -201,7 +201,7 @@ const Profile: React.FC = () => {
                 />
                 <div className="flex flex-column align-items-start relative">
                   <i className="pi pi-star text-yellow-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-                  <span className="text-yellow-500 text-4xl my-2">4 / 5</span>
+                  <span className="text-yellow-500 text-4xl my-2">{rating} / 5</span>
                   <span className="text-xl text-gray-500">Note</span>
                 </div>
             </Card>
