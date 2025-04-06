@@ -17,6 +17,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [loginError, setLoginError] = useState("");
   const toastRef = React.createRef<Toast>();
 
   const navigate = useNavigate();
@@ -39,6 +40,8 @@ function Login() {
       setPasswordError("");
     }
 
+    setLoginError("");
+
     if (!hasError) {
       const formData = { username: email, password };
 
@@ -60,6 +63,7 @@ function Login() {
           throw new Error("Identifiants incorrects");
         }
       } catch (error) {
+        setLoginError("Identifiants incorrect");
         toastRef.current?.show({
           severity: "error",
           summary: "Erreur de connexion",
@@ -91,7 +95,7 @@ function Login() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="inputtext-sm d-block"
+                    className={`inputtext-sm d-block ${loginError ? 'p-invalid' : ''}`}
                   />
                 </FloatLabel>
                 <small className="p-error">{emailError}</small>
@@ -105,11 +109,17 @@ function Login() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="inputtext-sm d-block"
+                    className={`inputtext-sm d-block ${loginError ? 'p-invalid' : ''}`}
                   />
                 </FloatLabel>
                 <small className="p-error">{passwordError}</small>
               </div>
+
+              {loginError && (
+                <div style={{ textAlign: "center", marginTop: "1rem" }}>
+                  <small className="p-error">{loginError}</small>
+                </div>
+              )}
 
               <Button
                 label="Se connecter"
