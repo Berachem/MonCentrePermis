@@ -1,15 +1,26 @@
 import "../../assets/css/Register.css";
 
-import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
 import { FloatLabel } from 'primereact/floatlabel';
 import { InputTextarea } from "primereact/inputtextarea";
 import { Divider } from "primereact/divider";
+import { Genre, GenreLabels } from '../../enum/genre';
 import { ScrollPanel } from "primereact/scrollpanel"
 import { ApiResponse } from "../../interfaces/interfaces";
 import { postRequest } from "../../interfaces/utils/api";
+import { Dropdown } from "primereact/dropdown";
+
+const isPasswordStrong = (pwd: string) => {
+    const lengthOK = pwd.length >= 12;
+    const hasLower = /[a-z]/.test(pwd);
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasNumber = /\d/.test(pwd);
+    const hasSpecial = /[\W_]/.test(pwd);
+    return lengthOK && hasLower && hasUpper && hasNumber && hasSpecial;
+};
 
 const TeacherForm = forwardRef((props, ref) =>{
     const [nom, setNom] = useState('');
@@ -22,100 +33,132 @@ const TeacherForm = forwardRef((props, ref) =>{
     const [dateNaissance, setDateNaissance] = useState<Date | null>(null);
     const [dateDebutCarriere, setDateDebutCarriere] = useState<Date | null>(null);
     const [numeroCertification, setNumeroCertification] = useState('');
-    const [description, setDescription] = useState('');
+    const [biographie, setBiographie] = useState('');
 
-    // Gestion des messages d'erreur
-    const [nomError, setNomError] = useState('');
-    const [prenomError, setPrenomError] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [confirmPasswordError, setConfirmPasswordError] = useState('');
-    const [numeroCertificationError, setNumeroCertificationError] = useState('');
     const toastRef = useRef<Toast>(null);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useImperativeHandle(ref, () => ({
         handleSubmit
     }));
 
-    const handleSubmit = async () => {
-        let hasError = false;
-
-        // Validation des champs obligatoires
-        if (!nom) {
-            setNomError('Le nom est requis.');
-            hasError = true;
-        } else {
-            setNomError('');
-        }
-
-        if (!prenom) {
-            setPrenomError('Le prénom est requis.');
-            hasError = true;
-        } else {
-            setPrenomError('');
-        }
-
-        if (!email) {
-            setEmailError('L\'email est requis.');
-            hasError = true;
-        } else {
-            setEmailError('');
-        }
-
+    const validateFields = () => {
+        const newErrors: Record<string, string> = {};
+        if (!nom) newErrors.nom = "Le nom est requis.";
+        if (!prenom) newErrors.prenom = "Le prénom est requis.";
+        if (!email) newErrors.email = "L'email est requis.";
         if (!password) {
-            setPasswordError('Le mot de passe est requis.');
-            hasError = true;
-        } else {
-            setPasswordError('');
+            newErrors.password = "Le mot de passe est requis.";
+        } else if (!isPasswordStrong(password)) {
+            newErrors.password = "Le mot de passe n'est pas assez sécurisé.";
+        }        
+        if (password !== confirmPassword) newErrors.confirmPassword = "Les mots de passe ne correspondent pas.";
+        if (!numeroCertification) newErrors.numeroCertification = "Le numéro de certification est requis.";
+        if (!genre) newErrors.genre = "Le genre est requis.";
+        if (Object.keys(newErrors).length > 0) {
+            let errorMessage = (
+            <ul>
+                {Object.entries(newErrors).map(([field, message]) => (
+                <li key={field}>{message}</li>
+                ))}
+            </ul>
+            );
+            toastRef.current?.show({ severity: 'error', summary: 'Erreur', detail: errorMessage, life: 4000 });
         }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-        if (password !== confirmPassword) {
-            setConfirmPasswordError('Les mots de passe ne correspondent pas.');
-            hasError = true;
-        } else {
-            setConfirmPasswordError('');
-        }
+    const handleSubmit = async () => {
 
-        if (!numeroCertification) {
-            setNumeroCertificationError('Le numéro d\'agrément est requis.');
-            hasError = true;
-        } else {
-            setNumeroCertificationError('');
-        }
+        if (!validateFields()) return;
 
-        if (!hasError) {
-            const formData = {
-                nom,
-                prenom,
-                numeroCertification,
-                email,
-                password,
-                telephone,
-                genre,
-                dateDebutCarriere,
-                dateNaissance,
-                description,
-                role: "moniteur",  
-            };
-            try {
-                // Utilisation de la fonction `postRequest` pour envoyer les données
-                const response: ApiResponse = await postRequest('custom/create-compte', formData);
-                
-                if (response.token) {
-                    localStorage.setItem('jwtToken', response.token);
-                    console.log('Token ', response.token)
-                    // Si l'inscription est réussie, afficher un message de succès
-                    toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
-                    window.location.href = '/';
+        const formData = {
+            nom,
+            prenom,
+            numeroCertification,
+            email,
+            password,
+            telephone,
+            genre,
+            dateDebutCarriere,
+            dateNaissance,
+            biographie,
+            role: "moniteur",  
+        };
+
+        try {
+
+            // Envoi de la requête POST à l'API
+            const response: ApiResponse = await postRequest('custom/create-compte', formData);
+
+            // console.log("Réponse de l'API:", response);
+            if (response.token) {
+                localStorage.setItem('jwtToken', response.token);
+                toastRef.current?.show({ severity: 'success', summary: 'Inscription réussie!', detail: 'Bienvenue!', life: 3000 });
+                window.location.href = '/';
+            } else {
+                toastRef.current?.show({ severity: 'warn', summary: 'Attention', detail: 'Inscription possible mais réponse inattendue.', life: 3000 });
+            }
+
+        } catch (error: any) {
+            console.error("Erreur lors de l'inscription:", error);
+
+            // Symfony - violations structurées
+            if (error.response?.data?.violations) {
+                const newErrors: Record<string, string> = {};
+                const messages: string[] = [];
+
+                for (const violation of error.response.data.violations) {
+                    newErrors[violation.propertyPath] = violation.message;
+                    messages.push(`${violation.message}`);
                 }
 
-            } catch (error) {
-                // Affichage des erreurs dans la console
-                console.error('Erreur lors de l\'inscription:', error);
-                toastRef.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue.', life: 3000 });
+                setErrors(newErrors);
+
+                // 🔔 Affichage popup explicite avec les messages
+                toastRef.current?.show({
+                    severity: 'error',
+                    summary: 'Erreur de validation',
+                    detail: (
+                        <ul className="pl-3 m-0">
+                            {messages.map((msg, idx) => (
+                                <li key={idx}>{msg}</li>
+                            ))}
+                        </ul>
+                    ),
+                    life: 6000
+                });
+
+            } else if (error.response?.data?.message) {
+                // ⚠️ Erreur générique du backend
+                toastRef.current?.show({
+                    severity: 'error',
+                    summary: 'Erreur serveur',
+                    detail: error.response.data.message,
+                    life: 5000
+                });
+            } else {
+                // ❌ Erreur inconnue
+                toastRef.current?.show({
+                    severity: 'error',
+                    summary: 'Erreur inconnue',
+                    detail: 'Une erreur est survenue. Veuillez réessayer plus tard.',
+                    life: 5000
+                });
             }
         }
     };
+
+    const renderInput = (label: string, value: string, setter: (val: string) => void, fieldName: string, type: string = "text") => (
+        <div className="flex flex-column align-items-center">
+            <FloatLabel>
+                <label htmlFor={fieldName}>{label}</label>
+                <InputText id={fieldName} type={type} value={value} onChange={(e) => setter(e.target.value)} invalid={!!errors[fieldName]} />
+            </FloatLabel>
+            <small className="p-error">{errors[fieldName]}</small>
+        </div>
+    );
 
     return (
         <>
@@ -129,74 +172,71 @@ const TeacherForm = forwardRef((props, ref) =>{
                         </div>
                     </Divider>
 
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="nom">Nom</label>
-                            <InputText id="nom" value={nom} onChange={(e) => setNom(e.target.value)} invalid={nomError !== ''} />
-                        </FloatLabel>
-                        <small className="p-error">{nomError}</small>
-                    </div>
-
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="prenom">Prénom</label>
-                            <InputText id="prenom" value={prenom} onChange={(e) => setPrenom(e.target.value)} invalid={prenomError !== ''} />
-                        </FloatLabel>
-                        <small className="p-error">{prenomError}</small>
-                    </div>
-
-                    
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel >
-                            <label htmlFor="numeroCertification">Numéro de Certification</label>
-                            <InputText id="numeroCertification" value={numeroCertification} onChange={(e) => setNumeroCertification(e.target.value)} invalid={numeroCertificationError !== ''} />
-                        </FloatLabel>
-                        <small className="p-error">{numeroCertificationError}</small>
-                    </div>
-
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="email">Email</label>
-                            <InputText id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} invalid={emailError !== ''} />
-                        </FloatLabel>   
-                        <small className="p-error">{emailError}</small>
-                    </div>
-
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="password">Mot de passe</label>
-                            <InputText id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} invalid={passwordError !== ''} />
-                        </FloatLabel>
-                        <small className="p-error">{passwordError}</small>
+                    {renderInput("Nom", nom, setNom, "nom")}
+                    {renderInput("Prénom", prenom, setPrenom, "prenom")}
+                    {renderInput("Email", email, setEmail, "email", "email")}
+                    {renderInput("Numéro de certification", numeroCertification, setNumeroCertification, "numeroCertification")}
+                    {renderInput("Mot de passe", password, setPassword, "password", "password")}
+                    <div className="flex flex-column align-items-start text-center px-3 mb-3" style={{ margin: '0 auto', width: 'fit-content' }}>
+                        <small className={password.length >= 12 ? 'text-green-600' : 'text-orange-600'}>
+                            <span>{password.length >= 12 ? '✅' : '❌'}</span> Minimum 12 caractères 
+                        </small>
+                        <small className={/[A-Z]/.test(password) ? 'text-green-600' : 'text-orange-600'}>
+                            <span>{/[A-Z]/.test(password) ? '✅' : '❌'}</span> Une majuscule
+                        </small>
+                        <small className={/[a-z]/.test(password) ? 'text-green-600' : 'text-orange-600'}>
+                            <span>{/[a-z]/.test(password) ? '✅' : '❌'}</span> Une minuscule
+                        </small>
+                        <small className={/\d/.test(password) ? 'text-green-600' : 'text-orange-600'}>
+                            <span>{/\d/.test(password) ? '✅' : '❌'}</span> Un chiffre
+                        </small>
+                        <small className={/[\W_]/.test(password) ? 'text-green-600' : 'text-orange-600'}>
+                            <span>{/[\W_]/.test(password) ? '✅' : '❌'}</span> Un caractère spécial
+                        </small>
                     </div>
 
                     <div className="flex flex-column align-items-center">
                         <FloatLabel>
                             <label htmlFor="confirmPassword">Confirmez le mot de passe</label>
-                            <InputText id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} invalid={confirmPasswordError !== ''}/>
+                            <InputText
+                                id="confirmPassword"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                invalid={!!errors.confirmPassword}
+                                style={{
+                                    border: confirmPassword
+                                        ? confirmPassword === password
+                                            ? '1px solid green'
+                                            : '1px solid red'
+                                        : undefined
+                                }}
+                            />
                         </FloatLabel>
-                        <small className="p-error">{confirmPasswordError}</small>
+                        <small className="p-error">{errors.confirmPassword}</small>
                     </div>
+                    
+                    <Divider align="left"><b>Champs non obligatoires</b></Divider>
+                    {renderInput("Téléphone", telephone, setTelephone, "telephone")}
 
-
-                    <Divider align="left">
-                        <div className="inline-flex align-items-center">
-                            <b>Champs non obligatoires</b>
-                        </div>
-                    </Divider>
-
-                    <div className="flex flex-column align-items-center">
-                        <FloatLabel>
-                            <label htmlFor="telephone">Téléphone</label>
-                            <InputText id="telephone" value={telephone} onChange={(e) => setTelephone(e.target.value)} />
-                        </FloatLabel>
-                    </div>
-
-                    <div className="flex flex-column align-items-center">
+                    <div className="flex flex-column align-items-center w-full">
                         <FloatLabel>
                             <label htmlFor="genre">Genre</label>
-                            <InputText id="genre" value={genre} onChange={(e) => setGenre(e.target.value)} />
+                            <Dropdown
+                                id="genre"
+                                value={genre}
+                                options={Object.entries(Genre).map(([_, value]) => ({
+                                    label: GenreLabels[value],
+                                    value
+                                }))}
+                                onChange={(e) => setGenre(e.value)}
+                                placeholder="Sélectionner un genre"
+                                optionLabel="label"
+                                optionValue="value"
+                                className="w-full"
+                            />
                         </FloatLabel>
+                        <small className="p-error">{errors.genre}</small>
                     </div>
 
                     <label htmlFor="dateNaissance">Date de naissance</label>
@@ -205,8 +245,8 @@ const TeacherForm = forwardRef((props, ref) =>{
                     <label htmlFor="dateDebutCarriere">Date de début de carrière</label>
                     <Calendar id="dateDebutCarriere" value={dateDebutCarriere} onChange={(e) => setDateDebutCarriere(e.value as Date)} dateFormat="dd/mm/yy" showIcon />
 
-                    <label htmlFor="description">Description</label>
-                    <InputTextarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+                    <label htmlFor="biograhpie">Biograhpie</label>
+                    <InputTextarea id="biograhpie" value={biographie} onChange={(e) => setBiographie(e.target.value)} />
                 </form>
             </ScrollPanel>
         </>
