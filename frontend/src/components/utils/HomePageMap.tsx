@@ -12,7 +12,7 @@ import HomePageTopBar from "./HomePageTopBar";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocation } from "@fortawesome/free-solid-svg-icons";
-
+import { Chip } from "primereact/chip";
 /* Icones */
 const examCenterIconFrance = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
@@ -195,7 +195,7 @@ function HomePageMap() {
       <Toast ref={toast} />
       <div className="map-wrapper">
         <HomePageTopBar />
-
+        
         {/* 
         Si connecté -> NOM PRENOM image de profil
         Sinon, boutton Connexion & Inscription
@@ -274,6 +274,7 @@ function HomePageMap() {
               address: selectedCentre.adresse,
               city: selectedCentre.ville.libelle, // Extraire le nom de la ville si nécessaire
               postalCode: selectedCentre.ville.code_postal ?? "N/A",
+              id: selectedCentre.id
             }}
           />
         )}

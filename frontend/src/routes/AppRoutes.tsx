@@ -7,6 +7,7 @@ import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import SchoolsPage from "../pages/visitor/SchoolsPage";
 import Settings from "../pages/Settings";
+import ExamPage from "../pages/student/ExamPage";
 import useAuth from "../hooks/useAuth"; // Utiliser le hook pour accéder au contexte d'auth
 import { UserType } from "../enum/user";
 import UserIndicator from "../components/UserIndicator";
@@ -41,6 +42,7 @@ function AppRoutes() {
             <Route path="/register" element={<Register />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/examen/:id" element={<ExamPage />} />
             <Route path="*" element={<NotFound />} />
           </>
         )}

@@ -1,0 +1,63 @@
+/* assets/css/exam-page.css */
+.map-wrapper {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  .map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+  
+  /* Style pour les centres favoris */
+  .centres-chips .p-chip {
+    transition: background-color 0.3s ease;
+    background-color: var(--surface-ground); /* Couleur de fond de la puce */
+    border: var(--primary-color) 2px solid;
+    position: relative;
+    z-index: 1000;
+    margin-right: 0.5rem;
+    top: 100px;
+    left: 7.5%;
+    cursor: pointer;
+  }
+  
+  .centres-chips .p-chip:hover {
+    background-color: var(--primary-color); /* Effet de survol */
+    color: var(--surface-ground); /* Couleur de texte */
+  }
+  
+  /* État sélectionné pour les centres favoris */
+  .centres-chips .p-chip.p-chip-selected {
+    background-color: var(--primary-color); /* Bleu quand sélectionné */
+    color: var(--surface-ground); /* Texte blanc */
+  }
+  
+  /* Style pour les circuits */
+  .circuits-chips .p-chip {
+    transition: background-color 0.3s ease;
+    background-color: var(--surface-ground);
+    border: var(--primary-color) 2px solid;
+    position: relative;
+    z-index: 1000;
+    margin-right: 0.5rem;
+    top: 150px; /* Juste en dessous des centres favoris */
+    left: 7.5%;
+    cursor: pointer;
+  }
+  
+  .circuits-chips .p-chip:hover {
+    background-color: var(--primary-color);
+    color: var(--surface-ground);
+  }
+  
+  /* État sélectionné pour les circuits */
+  .circuits-chips .p-chip.p-chip-selected {
+    background-color: var(--primary-color);
+    color: var(--surface-ground);
+  }
