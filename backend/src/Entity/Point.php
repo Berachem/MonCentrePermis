@@ -29,9 +29,9 @@ class Point
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
     private ?string $latitude = null;
-    
+
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
-    private ?string $longitude = null;    
+    private ?string $longitude = null;
 
     #[ORM\ManyToOne(inversedBy: 'points')]
     private ?Media $media = null;
