@@ -1,7 +1,14 @@
 // pages/ExamPage.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CSSTransition } from "react-transition-group";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import HomePageTopBar from "../../components/utils/HomePageTopBar";
@@ -9,9 +16,16 @@ import { Chip } from "primereact/chip";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
-import "../../assets/css/ExamPage.css";
+import { useNavigate } from "react-router-dom";
+import {
+  CircuitsCollection,
+  Circuit,
+} from "../../interfaces/circuit.interface";
+import { MapControls } from "../../components/utils/HomePageMap";
 
-// Icône pour les points du circuit
+/**
+ * Définition de l'icône pour les points du circuit
+ */
 const pointIcon = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
   iconSize: [20, 20],
@@ -19,36 +33,68 @@ const pointIcon = new L.Icon({
   popupAnchor: [0, -10],
 });
 
-// Composant ExamPage
+/**
+ * Interface pour les props du composant MapView
+ */
+interface MapViewProps {
+  center: [number, number];
+}
+
+/**
+ * Composant pour centrer la vue de la carte
+ */
+const MapView: React.FC<MapViewProps> = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, map.getZoom());
+    }
+  }, [center, map]);
+
+  return null;
+};
+
+/**
+ * Composant ExamPage pour afficher les circuits d'examen
+ */
 const ExamPage: React.FC = () => {
+  // Détection du mode mobile
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
+
   // Position par défaut (Paris)
   const defaultPosition: [number, number] = [48.8566, 2.3522];
 
+  // État pour les circuits développés
   const [expandedCircuits, setExpandedCircuits] = useState<string[]>([]);
 
-  // État pour le modal
-  const [circuitModalVisible, setCircuitModalVisible] = useState<boolean>(false);
+  // État pour la visibilité du modal
+  const [circuitModalVisible, setCircuitModalVisible] =
+    useState<boolean>(false);
 
-  // Liste des centres favoris en dur
-  const centresFavoris = ["Centre 1", "Centre 2", "Centre 3"];
+  // Navigation
+  const navigate = useNavigate();
 
-  // Données en dur pour les circuits avec ajout des créateurs
-  const circuitsData: { 
-    [key: string]: { 
-      nom: string; 
-      description: string; 
-      createur: string;
-      points: { latitude: number; longitude: number; description: string }[] 
-    }[] 
-  } = {
-    "Centre 1": [
+  // Liste des centres d'examen disponibles
+  const centresExamen = ["Noisy-Le-Grand"];
+
+  // Données des circuits par centre d'examen
+  const circuitsData: CircuitsCollection = {
+    "Noisy-Le-Grand": [
       {
         nom: "Circuit N° 1",
         description: "Circuit facile autour du centre 1",
         createur: "Jean Baptiste Bernard",
         points: [
-          { latitude: 48.8566, longitude: 2.3522, description: "Point de départ" },
-          { latitude: 48.8586, longitude: 2.3542, description: "Virage à droite" },
+          {
+            latitude: 48.8566,
+            longitude: 2.3522,
+            description: "Point de départ",
+          },
+          {
+            latitude: 48.8586,
+            longitude: 2.3542,
+            description: "Virage à droite",
+          },
           { latitude: 48.8606, longitude: 2.3502, description: "Arrivée" },
         ],
       },
@@ -63,144 +109,218 @@ const ExamPage: React.FC = () => {
         ],
       },
     ],
-    "Centre 2": [
-      {
-        nom: "Circuit N° 3",
-        description: "Circuit difficile autour du centre 2",
-        createur: "Jordan MAN",
-        points: [
-          { latitude: 48.8466, longitude: 2.3422, description: "Départ" },
-          { latitude: 48.8486, longitude: 2.3442, description: "Virage serré" },
-          { latitude: 48.8506, longitude: 2.3402, description: "Arrivée" },
-        ],
-      },
-      {
-        nom: "Circuit N° 4",
-        description: "Circuit rapide autour du centre 2",
-        createur: "Sophie PANINI",
-        points: [
-          { latitude: 48.8466, longitude: 2.3422, description: "Départ" },
-          { latitude: 48.8486, longitude: 2.3442, description: "Virage serré" },
-          { latitude: 48.8506, longitude: 2.3402, description: "Arrivée" },
-        ],
-      },
-    ],
-    "Centre 3": [
-      {
-        nom: "Circuit N° 5",
-        description: "Circuit rapide autour du centre 3",
-        createur: "Paul GASTON",
-        points: [
-          { latitude: 48.8666, longitude: 2.3622, description: "Départ" },
-          { latitude: 48.8686, longitude: 2.3642, description: "Point intermédiaire" },
-          { latitude: 48.8706, longitude: 2.3602, description: "Fin" },
-        ],
-      },
-    ],
   };
 
-  // État pour le centre sélectionné (par défaut : Centre 1)
-  const [selectedCentre, setSelectedCentre] = useState<string>("Centre 1");
+  // États pour le centre et le circuit sélectionnés
+  const [selectedCentre, setSelectedCentre] = useState<string>(
+    centresExamen[0]
+  );
+  const [selectedCircuit, setSelectedCircuit] = useState<string>("");
+  const [mapCenter, setMapCenter] = useState<[number, number]>(defaultPosition);
 
-  // État pour le circuit sélectionné (par défaut : premier circuit du centre sélectionné)
-  const [selectedCircuit, setSelectedCircuit] = useState<string>(circuitsData["Centre 1"][0].nom);
+  // Effet pour initialiser le circuit par défaut
+  useEffect(() => {
+    if (selectedCentre && circuitsData[selectedCentre]?.length > 0) {
+      setSelectedCircuit(circuitsData[selectedCentre][0].nom);
+    }
+  }, [selectedCentre]);
 
-  // Mettre à jour le circuit sélectionné quand le centre change
+  // Effet pour mettre à jour le centre de la carte quand le circuit change
+  useEffect(() => {
+    const currentCircuit = findCurrentCircuit();
+    if (currentCircuit && currentCircuit.points.length > 0) {
+      // Centrer sur le premier point du circuit
+      setMapCenter([
+        currentCircuit.points[0].latitude,
+        currentCircuit.points[0].longitude,
+      ]);
+    }
+  }, [selectedCircuit]);
+
+  // Effet pour gérer le redimensionnement de la fenêtre
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  /**
+   * Trouve le circuit actuellement sélectionné
+   */
+  const findCurrentCircuit = (): Circuit | null => {
+    for (const centre in circuitsData) {
+      const found = circuitsData[centre].find(
+        (circuit) => circuit.nom === selectedCircuit
+      );
+      if (found) return found;
+    }
+    return circuitsData[selectedCentre]?.[0] || null;
+  };
+
+  /**
+   * Change le centre d'examen sélectionné
+   */
   const handleCentreChange = (centre: string) => {
     setSelectedCentre(centre);
-    setSelectedCircuit(circuitsData[centre][0].nom); // Sélectionne le premier circuit du nouveau centre
-  };
-
-  // Fonction pour gérer l'expansion/réduction des circuits
-  const toggleCircuitExpansion = (circuitNom: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Empêche le déclenchement de la sélection du circuit
-    
-    if (expandedCircuits.includes(circuitNom)) {
-      setExpandedCircuits(expandedCircuits.filter(name => name !== circuitNom));
-    } else {
-      setExpandedCircuits([...expandedCircuits, circuitNom]);
+    if (circuitsData[centre]?.length > 0) {
+      setSelectedCircuit(circuitsData[centre][0].nom);
     }
   };
 
-  // Fonction pour sélectionner un circuit et fermer le modal
+  /**
+   * Bascule l'état d'expansion d'un circuit
+   */
+  const toggleCircuitExpansion = (
+    circuitNom: string,
+    event: React.MouseEvent
+  ) => {
+    event.stopPropagation();
+    setExpandedCircuits((prev) =>
+      prev.includes(circuitNom)
+        ? prev.filter((name) => name !== circuitNom)
+        : [...prev, circuitNom]
+    );
+  };
+
+  /**
+   * Sélectionne un circuit et ferme le modal
+   */
   const handleCircuitSelection = (circuitNom: string) => {
     setSelectedCircuit(circuitNom);
     setCircuitModalVisible(false);
   };
 
-  // Points du circuit sélectionné pour affichage sur la carte
-  const currentCircuit = (() => {
-    for (const centre in circuitsData) {
-      const found = circuitsData[centre].find(circuit => circuit.nom === selectedCircuit);
-      if (found) return found;
-    }
-    return circuitsData[selectedCentre][0];
-  })();
-  
-  const circuitPoints = currentCircuit ? currentCircuit.points : [];
-  const polylinePositions = circuitPoints.map((point) => [point.latitude, point.longitude] as [number, number]);
+  // Récupération des données du circuit actuel
+  const currentCircuit = findCurrentCircuit();
+  const circuitPoints = currentCircuit?.points || [];
+  const polylinePositions = circuitPoints.map(
+    (point) => [point.latitude, point.longitude] as [number, number]
+  );
+
+  // Styles pour les composants
+  const styles = {
+    mapContainer: {
+      position: "relative" as const,
+      height: "100vh",
+      width: "100%",
+    },
+    map: {
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      zIndex: 1,
+    },
+    chipContainer: {
+      position: "absolute" as const,
+      top: "10%",
+      left: "50%",
+      transform: "translateX(-50%)",
+      zIndex: 1000,
+      display: "flex",
+      justifyContent: "center",
+      width: "100%",
+    },
+    buttonBase: {
+      position: "fixed" as const,
+      bottom: "30px",
+      zIndex: 1000,
+    },
+    circuitSelectorButton: {
+      position: "fixed" as const,
+      bottom: "30px",
+      left: "30px",
+      zIndex: 1000,
+    },
+    homeButton: {
+      position: "fixed" as const,
+      bottom: "30px",
+      right: "30px",
+      zIndex: 1000,
+    },
+  };
 
   return (
-    <div className="map-wrapper">
-      <HomePageTopBar /> {/* Barre de recherche et top bar */}
+    <div style={styles.mapContainer}>
+      <HomePageTopBar />
 
-      {/* Sélection des centres favoris avec Chip */}
-      <div className="centres-chips">
-        {centresFavoris.map((centre, index) => (
+      {/* Sélection des centres avec Chip */}
+      <div
+        style={styles.chipContainer}
+        className="flex gap-2 justify-content-center"
+      >
+        <Button
+          icon="pi pi-arrow-left"
+          className="p-button-rounded shadow-4"
+          onClick={() => navigate("/")}
+          tooltip="Retour à l'accueil"
+          tooltipOptions={{ position: "top" }}
+        />
+        {centresExamen.map((centre, index) => (
           <Chip
             key={index}
             label={centre}
-            className={`p-chip ${selectedCentre === centre ? "p-chip-selected" : ""}`}
+            className={`cursor-pointer border-2 border-primary transition-colors transition-duration-300 hover:bg-primary hover:text-white ${
+              selectedCentre === centre
+                ? "bg-primary text-white"
+                : "bg-surface-ground"
+            }`}
             onClick={() => handleCentreChange(centre)}
           />
         ))}
       </div>
 
-      <MapContainer
-        center={defaultPosition}
-        zoom={13}
-        className="map"
-        zoomControl={false}
-      >
-        <TileLayer
-          attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        {/* Afficher les points du circuit */}
-        {circuitPoints.map((point, index) => (
-          <Marker
-            key={index}
-            position={[point.latitude, point.longitude]}
-            icon={pointIcon}
-          >
-            <Popup>{point.description}</Popup>
-          </Marker>
-        ))}
-
-        {/* Tracer le circuit avec une Polyline */}
-        {polylinePositions.length > 1 && (
-          <Polyline
-            positions={polylinePositions}
-            color="blue"
-            weight={4}
-            opacity={0.7}
+      <div style={styles.map}>
+        <MapContainer
+          center={defaultPosition}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+          zoomControl={false}
+        >
+          <MapView center={mapCenter} />
+          <MapControls userPos={defaultPosition} />
+          <TileLayer
+            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-        )}
-      </MapContainer>
+
+          {/* Afficher les points du circuit */}
+          {circuitPoints.map((point, index) => (
+            <Marker
+              key={index}
+              position={[point.latitude, point.longitude]}
+              icon={pointIcon}
+            >
+              <Popup>{point.description}</Popup>
+            </Marker>
+          ))}
+
+          {/* Tracer le circuit avec une Polyline */}
+          {polylinePositions.length > 1 && (
+            <Polyline
+              positions={polylinePositions}
+              color="var(--primary-color)"
+              weight={4}
+              opacity={0.7}
+            />
+          )}
+        </MapContainer>
+      </div>
 
       {/* Bouton pour ouvrir le modal de sélection de circuit */}
-      <div className="circuit-selector-button">
-        <Button 
-          icon="pi pi-list" 
-          className="p-button-rounded p-button-info" 
+      <div style={styles.circuitSelectorButton}>
+        <Button
+          icon="pi pi-flag"
+          label={isMobile ? undefined : "Sélectionner un circuit"}
+          className="p-button-rounded shadow-4"
           onClick={() => setCircuitModalVisible(true)}
-          tooltip="Voir les circuits"
-          tooltipOptions={{ position: 'top' }}
+          tooltip={isMobile ? "Sélectionner un circuit" : undefined}
+          tooltipOptions={{ position: "top" }}
         />
       </div>
 
-      {/* Modal de sélection de circuit style maquette */}
+      {/* Modal de sélection de circuit */}
       <Dialog
         visible={circuitModalVisible}
         onHide={() => setCircuitModalVisible(false)}
@@ -209,63 +329,102 @@ const ExamPage: React.FC = () => {
         showHeader={false}
         closeOnEscape={true}
         dismissableMask={true}
-        contentClassName="circuit-modal-content"
-        className="circuit-modal"
+        className="border-round-top-3xl mx-auto"
+        style={{ width: "95vw", maxWidth: "1200px" }}
         transitionOptions={{ timeout: 400 }}
       >
-        <div className="circuit-list">
-          <div className="circuit-modal-header">
-            <i className="pi pi-heart" style={{ color: 'blue' }}></i>
-            <Button 
-              icon="pi pi-times" 
-              className="p-button-text" 
-              onClick={() => setCircuitModalVisible(false)} 
+        <div className="overflow-y-auto" style={{ maxHeight: "70vh" }}>
+          <div className="flex justify-content-between align-items-center p-3 border-bottom-1 border-200">
+            <h2 className="text-xl font-bold m-0">Sélectionner un circuit</h2>
+            <Button
+              icon="pi pi-times"
+              className="p-button-text p-button-rounded text-white"
+              onClick={() => setCircuitModalVisible(false)}
             />
           </div>
-          
-          {/* Afficher uniquement les circuits du centre sélectionné */}
-          {circuitsData[selectedCentre].map((circuit, index) => (
-          <div 
-            key={index} 
-            className={`circuit-item ${selectedCircuit === circuit.nom ? 'selected' : ''}`}
-            onClick={() => handleCircuitSelection(circuit.nom)}
-          >
-            <div className="circuit-item-content">
-              <div className="circuit-item-title">
-                {circuit.nom}
-              </div>
-              <div className="circuit-item-info">
-                <Avatar icon="pi pi-user" className="p-mr-2" />
-                <span className="circuit-creator">{circuit.createur}</span>
-              </div>
-              {selectedCircuit === circuit.nom && (
-                <span className="circuit-applied">appliqué <i className="pi pi-check-circle"></i></span>
-              )}
-              <i 
-                className={`pi ${expandedCircuits.includes(circuit.nom) ? 'pi-chevron-up' : 'pi-chevron-down'} circuit-expand-icon`}
-                onClick={(e) => toggleCircuitExpansion(circuit.nom, e)}
-              ></i>
-            </div>
-            
-            {/* Liste des points avec animation */}
-            <CSSTransition
-              in={expandedCircuits.includes(circuit.nom)}
-              timeout={300}
-              classNames="circuit-points"
-              unmountOnExit
+
+          {/* Liste des circuits disponibles */}
+          {circuitsData[selectedCentre]?.map((circuit, index) => (
+            <div
+              key={index}
+              className={`p-3 border-bottom-1 border-200 cursor-pointer transition-colors transition-duration-300 hover:surface-hover ${
+                selectedCircuit === circuit.nom ? "bg-primary-50" : ""
+              }`}
+              onClick={() => handleCircuitSelection(circuit.nom)}
             >
-              <div className="circuit-points-list">
-                {circuit.points.map((point, pointIndex) => (
-                  <div key={pointIndex} className="circuit-point-item">
-                    <span className="point-number">{pointIndex + 1}</span>
-                    <i className="pi pi-map-marker point-icon"></i>
-                    <span className="point-description">{point.description}</span>
+              <div className="relative">
+                <div className="font-medium mb-2 text-900">{circuit.nom}</div>
+                <div className="flex align-items-center justify-content-between">
+                  <div className="flex align-items-center">
+                    <Avatar
+                      icon="pi pi-user"
+                      className="mr-2"
+                      style={{
+                        backgroundColor: "var(--primary-color)",
+                        color: "#fff",
+                      }}
+                    />
+                    <span className="text-600">{circuit.createur}</span>
                   </div>
-                ))}
+
+                  <div className="flex align-items-center">
+                    {selectedCircuit === circuit.nom && (
+                      <span className="mr-2 font-medium flex align-items-center text-green-500">
+                        appliqué <i className="pi pi-check-circle ml-1"></i>
+                      </span>
+                    )}
+                    <i
+                      className={`pi ${
+                        expandedCircuits.includes(circuit.nom)
+                          ? "pi-chevron-up"
+                          : "pi-chevron-down"
+                      } text-primary cursor-pointer p-1`}
+                      onClick={(e) => toggleCircuitExpansion(circuit.nom, e)}
+                    ></i>
+                  </div>
+                </div>
               </div>
-            </CSSTransition>
-          </div>
-        ))}
+
+              {/* Liste des points avec animation */}
+              <CSSTransition
+                in={expandedCircuits.includes(circuit.nom)}
+                timeout={300}
+                classNames={{
+                  enter: "max-h-0 opacity-0 overflow-hidden",
+                  enterActive:
+                    "max-h-30rem opacity-100 transition-all transition-duration-300",
+                  exit: "max-h-30rem opacity-100 overflow-hidden",
+                  exitActive:
+                    "max-h-0 opacity-0 transition-all transition-duration-300",
+                }}
+                unmountOnExit
+              >
+                <div className="mt-3 pt-2 border-top-1 border-100">
+                  {circuit.points.map((point, pointIndex) => (
+                    <div
+                      key={pointIndex}
+                      className="flex align-items-center py-2 ml-2"
+                    >
+                      <span
+                        className="flex justify-content-center align-items-center border-circle w-2rem h-2rem mr-2 text-white text-xs font-medium"
+                        style={{ backgroundColor: "var(--primary-color)" }}
+                      >
+                        {pointIndex + 1}
+                      </span>
+                      <i className="pi pi-map-marker text-primary mr-2"></i>
+                      <span className="text-900">{point.description}</span>
+                    </div>
+                  ))}
+                </div>
+              </CSSTransition>
+            </div>
+          ))}
+
+          {circuitsData[selectedCentre]?.length === 0 && (
+            <div className="p-4 text-center text-500">
+              Aucun circuit disponible pour ce centre.
+            </div>
+          )}
         </div>
       </Dialog>
     </div>

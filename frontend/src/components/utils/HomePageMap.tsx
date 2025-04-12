@@ -45,13 +45,7 @@ const userIcon = new L.Icon({
 });
 
 // Nouveau composant de contrôles de la carte
-function MapControls({
-  userPos,
-  setTileLayerUrl,
-}: {
-  userPos: [number, number];
-  setTileLayerUrl: (url: string) => void;
-}) {
+export function MapControls({ userPos }: { userPos: [number, number] }) {
   const map = useMap();
 
   const handleRecenter = () => {
@@ -88,7 +82,7 @@ function MapControls({
   );
 }
 
-function HomePageMap() {
+export function HomePageMap() {
   const toast = useRef<Toast>(null);
   const markerRef = useRef(null);
 
@@ -195,7 +189,7 @@ function HomePageMap() {
       <Toast ref={toast} />
       <div className="map-wrapper">
         <HomePageTopBar />
-        
+
         {/* 
         Si connecté -> NOM PRENOM image de profil
         Sinon, boutton Connexion & Inscription
@@ -263,7 +257,7 @@ function HomePageMap() {
                 />
               );
             })}
-          <MapControls userPos={position} setTileLayerUrl={setTileLayerUrl} />
+          <MapControls userPos={position} />
         </MapContainer>
         {selectedCentre && (
           <DetailsCentreMap
@@ -274,7 +268,7 @@ function HomePageMap() {
               address: selectedCentre.adresse,
               city: selectedCentre.ville.libelle, // Extraire le nom de la ville si nécessaire
               postalCode: selectedCentre.ville.code_postal ?? "N/A",
-              id: selectedCentre.id
+              id: selectedCentre.id,
             }}
           />
         )}
@@ -282,5 +276,3 @@ function HomePageMap() {
     </>
   );
 }
-
-export default HomePageMap;

@@ -18,7 +18,11 @@ interface CentreDetailsProps {
   };
 }
 
-const DetailsCentreMap: React.FC<CentreDetailsProps> = ({ visible, onHide, centre }) => {
+const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
+  visible,
+  onHide,
+  centre,
+}) => {
   const navigate = useNavigate(); // Hook pour la navigation
   const { userRole, isAuthenticated } = useAuth();
   const handleSuccessClick = () => {
@@ -51,7 +55,8 @@ const DetailsCentreMap: React.FC<CentreDetailsProps> = ({ visible, onHide, centr
         </p>
         <div className="reussir">
           <Button
-            label="Réussir mon Examen"
+            label="Voir les circuits"
+            icon="pi pi-eye"
             className="p-button-outlined b-reussir"
             onClick={handleSuccessClick} // Ajout du gestionnaire
           />
