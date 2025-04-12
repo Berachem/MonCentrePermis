@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CSSTransition } from "react-transition-group";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-routing-machine";
@@ -37,7 +31,18 @@ interface Circuit {
   points: Point[];
 }
 
-// Interface pour une ville (centre d'examen)
+// Interface pour un centre d'examen
+interface Centre {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  latitude?: string;
+  longitude?: string;
+}
+
+// Interface pour une ville
 interface Ville {
   id: number;
   libelle: string;
@@ -74,7 +79,14 @@ interface CircuitsCollectionResponse {
   member: CircuitApiResponse[];
 }
 
-// Types de points avec icônes SVG (copié depuis CircuitEditionPage.tsx)
+// Types de points avec icônes SVG
+interface PointType {
+  value: string;
+  label: string;
+  color: string;
+  svgIcon: string;
+}
+
 const pointTypes: PointType[] = [
   {
     value: "depart",
@@ -131,6 +143,25 @@ const pointTypes: PointType[] = [
     </svg>`,
   },
 ];
+
+// Fonction pour calculer la distance avec la formule de Haversine (en km)
+const haversineDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371; // Rayon de la Terre en km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 // Créer une icône Leaflet à partir de SVG
 const createIconFromSvg = (svgString: string): L.DivIcon => {
@@ -222,42 +253,53 @@ const ExamPage: React.FC = () => {
   const [selectedCircuit, setSelectedCircuit] = useState<string>("");
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultPosition);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [centre, setCentre] = useState<Ville | null>(null);
+  const [centre, setCentre] = useState<Centre | null>(null);
 
-  // Récupérer le centre d'examen depuis la navigation
+  // Récupérer le centre d'examen depuis location.state
   useEffect(() => {
-    const state = location.state as { centreId?: number; centreLibelle?: string };
-    if (state?.centreId) {
-      const fetchCentre = async () => {
-        try {
-          const centreData = await getRequest<Ville>(`/villes/${state.centreId}`);
-          setCentre(centreData);
-          setMapCenter([
-            parseFloat(centreData.latitude),
-            parseFloat(centreData.longitude),
-          ]);
-        } catch (error) {
-          console.error("Erreur lors du chargement du centre:", error);
-          toast.current?.show({
-            severity: "error",
-            summary: "Erreur",
-            detail: "Impossible de charger les données du centre",
-            life: 3000,
-          });
-        }
-      };
-      fetchCentre();
+    const state = location.state as { centre?: Centre };
+    if (state?.centre) {
+      setCentre(state.centre);
     }
   }, [location.state]);
 
-  // Charger tous les circuits
+  // Charger les circuits proches du centre
   useEffect(() => {
     const fetchCircuits = async () => {
+      if (!centre) return;
+
       try {
         setIsLoading(true);
+
+        // Récupérer les coordonnées du centre
+        let centreLat: number, centreLon: number;
+        try {
+          const centreData = await getRequest<{ latitude: string; longitude: string }>(
+            `/custom/centre_examens/${centre.id}`
+          );
+          if (centreData.latitude && centreData.longitude) {
+            centreLat = parseFloat(centreData.latitude);
+            centreLon = parseFloat(centreData.longitude);
+            setMapCenter([centreLat, centreLon]);
+          } else {
+            throw new Error("Coordonnées du centre non disponibles");
+          }
+        } catch (error) {
+          console.error("Erreur lors du chargement des coordonnées du centre:", error);
+          toast.current?.show({
+            severity: "warn",
+            summary: "Avertissement",
+            detail: "Impossible de charger les coordonnées du centre, filtrage approximatif",
+            life: 3000,
+          });
+          centreLat = defaultPosition[0];
+          centreLon = defaultPosition[1];
+        }
+
+        // Charger tous les circuits
         const circuitsResponse = await getRequest<CircuitsCollectionResponse>("/circuits");
 
-        // Récupérer les détails des points pour chaque circuit
+        // Filtrer les circuits proches
         const formattedCircuits = await Promise.all(
           circuitsResponse.member.map(async (circuit) => {
             // Récupérer les points si disponibles
@@ -276,20 +318,62 @@ const ExamPage: React.FC = () => {
               })
             );
 
-            return {
-              id: circuit.id,
-              nom: circuit.libelle,
-              description: circuit.description || "Aucune description",
-              createur: circuit.createur || "Anonyme",
-              points: points.sort((a, b) => a.rang - b.rang),
-            };
+            // Déterminer les coordonnées du circuit
+            let circuitLat: number, circuitLon: number;
+            if (points.length > 0) {
+              circuitLat = points[0].latitude;
+              circuitLon = points[0].longitude;
+            } else {
+              const villeId = circuit.ville_centre.split("/").pop();
+              const villeData = await getRequest<Ville>(`/villes/${villeId}`);
+              circuitLat = parseFloat(villeData.latitude);
+              circuitLon = parseFloat(villeData.longitude);
+            }
+
+            // Calculer la distance
+            const distance = haversineDistance(
+              centreLat,
+              centreLon,
+              circuitLat,
+              circuitLon
+            );
+
+            // Filtrer les circuits à moins de 10 km
+            if (distance <= 10) {
+              return {
+                id: circuit.id,
+                nom: circuit.libelle,
+                description: circuit.description || "Aucune description",
+                createur: circuit.createur || "Anonyme",
+                points: points.sort((a, b) => a.rang - b.rang),
+              };
+            }
+            return null;
           })
         );
 
-        setCircuits(formattedCircuits);
+        // Supprimer les circuits non valides
+        const validCircuits = formattedCircuits.filter(
+          (circuit): circuit is Circuit => circuit !== null
+        );
 
-        if (formattedCircuits.length > 0) {
-          setSelectedCircuit(formattedCircuits[0].nom);
+        setCircuits(validCircuits);
+
+        if (validCircuits.length > 0) {
+          setSelectedCircuit(validCircuits[0].nom);
+          if (validCircuits[0].points.length > 0) {
+            setMapCenter([
+              validCircuits[0].points[0].latitude,
+              validCircuits[0].points[0].longitude,
+            ]);
+          }
+        } else {
+          toast.current?.show({
+            severity: "info",
+            summary: "Information",
+            detail: "Aucun circuit trouvé à proximité du centre",
+            life: 3000,
+          });
         }
       } catch (error) {
         console.error("Erreur lors du chargement des circuits:", error);
@@ -304,8 +388,10 @@ const ExamPage: React.FC = () => {
       }
     };
 
-    fetchCircuits();
-  }, []);
+    if (centre) {
+      fetchCircuits();
+    }
+  }, [centre]);
 
   // Mettre à jour le centre de la carte quand le circuit change
   useEffect(() => {
@@ -317,13 +403,8 @@ const ExamPage: React.FC = () => {
         currentCircuit.points[0].latitude,
         currentCircuit.points[0].longitude,
       ]);
-    } else if (centre) {
-      setMapCenter([
-        parseFloat(centre.latitude),
-        parseFloat(centre.longitude),
-      ]);
     }
-  }, [selectedCircuit, circuits, centre]);
+  }, [selectedCircuit, circuits]);
 
   // Gérer le redimensionnement
   useEffect(() => {
@@ -362,7 +443,7 @@ const ExamPage: React.FC = () => {
   // Obtenir l'icône d'un point
   const getPointIcon = (type: string) => {
     const pointType =
-      pointTypes.find((pt) => pt.value === type) || pointTypes[5]; // Fallback sur "information"
+      pointTypes.find((pt) => pt.value === type) || pointTypes[4]; // Fallback sur "information"
     return createIconFromSvg(pointType.svgIcon);
   };
 
@@ -423,7 +504,7 @@ const ExamPage: React.FC = () => {
         />
         {centre && (
           <Chip
-            label={centre.libelle}
+            label={centre.name}
             className="bg-primary text-white border-2 border-primary"
           />
         )}
@@ -441,10 +522,12 @@ const ExamPage: React.FC = () => {
             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {circuitPoints.length > 0 && <RoutingMachineControl points={circuitPoints} />}
+          {circuitPoints.length > 0 && (
+            <RoutingMachineControl points={circuitPoints} />
+          )}
           {circuitPoints.map((point) => (
             <Marker
-              key={point.rang}
+              key={point.id}
               position={[point.latitude, point.longitude]}
               icon={getPointIcon(point.type)}
             >
@@ -543,9 +626,9 @@ const ExamPage: React.FC = () => {
                   {circuit.points.length > 0 ? (
                     circuit.points
                       .sort((a, b) => a.rang - b.rang)
-                      .map((point) => (
+                      .map((point, index) => (
                         <div
-                          key={point.rang}
+                          key={point.id}
                           className="flex align-items-center py-2 ml-2"
                         >
                           <span
@@ -553,10 +636,10 @@ const ExamPage: React.FC = () => {
                             style={{
                               backgroundColor:
                                 pointTypes.find((pt) => pt.value === point.type)
-                                  ?.color || "cyan",
+                                  ?.color || "#9C27B0",
                             }}
                           >
-                            {point.rang + 1}
+                            {index + 1}
                           </span>
                           <i className="pi pi-map-marker text-primary mr-2"></i>
                           <span className="text-900">{point.description}</span>
@@ -573,7 +656,7 @@ const ExamPage: React.FC = () => {
           ))}
           {circuits.length === 0 && (
             <div className="p-4 text-center text-500">
-              Aucun circuit disponible.
+              Aucun circuit disponible à proximité du centre.
             </div>
           )}
         </div>

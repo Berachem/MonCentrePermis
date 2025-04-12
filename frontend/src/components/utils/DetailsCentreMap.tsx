@@ -27,7 +27,17 @@ const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
   const { userRole, isAuthenticated } = useAuth();
   const handleSuccessClick = () => {
     if (userRole !== UserType.Visitor && isAuthenticated) {
-      navigate(`/examen/${centre.id}`);
+      navigate(`/examen/${centre.id}`, {
+        state: {
+          centre: {
+            id: centre.id,
+            name: centre.name,
+            address: centre.address,
+            city: centre.city,
+            postalCode: centre.postalCode,
+          },
+        },
+      });
     } else {
       navigate(`/login`);
     }
