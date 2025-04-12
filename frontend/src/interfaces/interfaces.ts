@@ -13,6 +13,7 @@ export interface CentreExamen {
   eleves: any[];
   createdAt: string;
   updatedAt: string;
+  isFavorite: boolean;
 }
 
 export interface Ville {

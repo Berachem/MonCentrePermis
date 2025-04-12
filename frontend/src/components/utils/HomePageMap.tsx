@@ -5,14 +5,15 @@ import L from "leaflet";
 import "../../assets/css/home-map.css";
 import DetailsCentreMap from "./DetailsCentreMap";
 import { CentreExamen } from "../../interfaces/interfaces"; // Interface mise à jour
-import { getRequest } from "../../interfaces/utils/api";
+import { deleteRequest, getRequest, postRequest } from "../../interfaces/utils/api";
 import { Toast } from "primereact/toast";
 import Loader from "./Loader";
 import HomePageTopBar from "./HomePageTopBar";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocation } from "@fortawesome/free-solid-svg-icons";
-import { Chip } from "primereact/chip";
+import useAuth from "../../hooks/useAuth";
+
 /* Icones */
 const examCenterIconFrance = new L.Icon({
   iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
@@ -43,6 +44,67 @@ const userIcon = new L.Icon({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
   shadowSize: [41, 41],
 });
+
+// Composant pour afficher les centres favoris
+function FavoritesCentresList({ 
+  favorites, 
+  onCentreClick,
+  onRemoveFavorite
+}: { 
+  favorites: CentreExamen[],
+  onCentreClick: (centre: CentreExamen) => void,
+  onRemoveFavorite: (centreId: number) => void
+}) {
+  if (!favorites || favorites.length === 0) {
+    return null;
+  }
+
+  // Gestion de la navigation par clavier dans la liste des favoris
+  const handleKeyDown = (event: React.KeyboardEvent, centre: CentreExamen) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onCentreClick(centre);
+    }
+  };
+
+  const handleRemoveKeyDown = (event: React.KeyboardEvent, centreId: number) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onRemoveFavorite(centreId);
+    }
+  };
+
+  return (
+    <div className="favorites-panel" role="region" aria-label="Centres favoris">
+      <h3 id="favorites-heading">Mes centres favoris</h3>
+      <ul className="favorites-list" aria-labelledby="favorites-heading">
+        {favorites.map((centre) => (
+          <li key={centre.id} className="favorite-item">
+            <div 
+              className="favorite-name"
+              onClick={() => onCentreClick(centre)}
+              onKeyDown={(e) => handleKeyDown(e, centre)}
+              tabIndex={0}
+              role="button"
+              aria-label={`Voir le centre ${centre.libelle}`}
+            >
+              {centre.libelle}
+            </div>
+            <button
+              className="remove-favorite"
+              onClick={() => onRemoveFavorite(centre.id)}
+              onKeyDown={(e) => handleRemoveKeyDown(e, centre.id)}
+              title="Retirer des favoris"
+              aria-label={`Retirer ${centre.libelle} des favoris`}
+            >
+              ×
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 // Nouveau composant de contrôles de la carte
 export function MapControls({ userPos }: { userPos: [number, number] }) {
@@ -102,6 +164,11 @@ export function HomePageMap() {
   );
   const [centresData, setCentresData] = useState<CentreExamen[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Gestion favoris
+  const { isAuthenticated, userId, userRole } = useAuth();
+  const [favoriteCentres, setFavoriteCentres] = useState<CentreExamen[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
   //récupération de la localisation
   useEffect(() => {
@@ -171,6 +238,62 @@ export function HomePageMap() {
     fetchCentresData();
   }, []);
 
+  // Récupération des centres favoris si l'utilisateur est connecté
+  useEffect(() => {
+    const fetchFavoriteCentres = async () => {
+      if (!isAuthenticated || !userId) return;
+      
+      try {
+        setLoadingFavorites(true);
+        const data = await getRequest(`/eleves/${userId}/centres-examen-favoris`);
+        console.log("Centres favoris récupérés:", data);
+        
+        // Vérifier si data est un tableau - si c'est un objet avec un message, utiliser un tableau vide
+        if (Array.isArray(data)) {
+          setFavoriteCentres(data);
+        } else {
+          // Si data n'est pas un tableau, initialiser avec un tableau vide
+          setFavoriteCentres([]);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des centres favoris", error);
+        // En cas d'erreur, initialiser avec un tableau vide
+        setFavoriteCentres([]);
+      }
+      setLoadingFavorites(false);
+    };
+    
+    fetchFavoriteCentres();
+  }, [isAuthenticated, userId]);
+
+  // Mise à jour des centres avec le statut favori
+  useEffect(() => {
+    if (favoriteCentres.length > 0 && centresData.length > 0) {
+      // On ne met à jour que si les favoris ont changé, pas centresData lui-même
+      const favoriteIds = new Set(favoriteCentres.map((centre) => centre.id));
+      
+      // Vérifier si une mise à jour est nécessaire pour éviter une boucle
+      const needsUpdate = centresData.some(
+        centre => favoriteIds.has(centre.id) !== !!centre.isFavorite
+      );
+      
+      if (needsUpdate) {
+        const updatedCentres = centresData.map((centre) => ({
+          ...centre,
+          isFavorite: favoriteIds.has(centre.id),
+        }));
+        setCentresData(updatedCentres);
+      }
+    }
+  }, [favoriteCentres]); // Seulement favoriteCentres comme dépendance
+
+  // Gestion du clic sur un centre favori dans la liste
+  // Merde 1
+  const handleFavoriteCentreClick = (centre: CentreExamen) => {
+    // Sélectionner également le centre pour afficher la popup
+    handleMarkerClick(centre);
+  };
+
   /* Centre sélectionné */
   const handleMarkerClick = (centre: CentreExamen) => {
     setSelectedCentre(centre);
@@ -179,6 +302,97 @@ export function HomePageMap() {
       parseFloat(centre.latitude),
       parseFloat(centre.longitude),
     ]);
+  };
+
+  // Gestion de l'ajout/suppression des favoris
+  const handleToggleFavorite = async (centreId: number) => {
+    if (!isAuthenticated || !userId) {
+      toast.current?.show({
+        severity: "info",
+        summary: "Connexion requise",
+        detail: "Vous devez être connecté pour ajouter des favoris",
+        life: 3000,
+      });
+      return;
+    }
+  
+    const isFavorite = favoriteCentres.some((fav) => fav.id === centreId);
+    
+    try {
+      let response;
+      
+      if (isFavorite) {
+        // Suppression du favori
+        response = await deleteRequest(
+          `/eleves/${userId}/centres-examen-favoris/${centreId}`
+        );
+        
+        if (response) {
+          // Mise à jour locale des favoris uniquement si la requête a réussi
+          setFavoriteCentres((prev) => prev.filter((centre) => centre.id !== centreId));
+          
+          // Mise à jour du statut de favori pour le centre sélectionné si nécessaire
+          if (selectedCentre && selectedCentre.id === centreId) {
+            setSelectedCentre({
+              ...selectedCentre,
+              isFavorite: false,
+            });
+          }
+          
+          toast.current?.show({
+            severity: "success",
+            summary: "Succès",
+            detail: "Centre retiré des favoris",
+            life: 2000,
+          });
+        }
+      } else {
+        // Ajout aux favoris
+        response = await postRequest(
+          `/eleves/${userId}/centres-examen-favoris/${centreId}`,
+          {}
+        );
+        
+        if (response) {
+          // Mise à jour locale des favoris uniquement si la requête a réussi
+          const centreToAdd = centresData.find((centre) => centre.id === centreId);
+          if (centreToAdd) {
+            setFavoriteCentres((prev) => [...prev, centreToAdd]);
+          }
+          
+          // Mise à jour du statut de favori pour le centre sélectionné si nécessaire
+          if (selectedCentre && selectedCentre.id === centreId) {
+            setSelectedCentre({
+              ...selectedCentre,
+              isFavorite: true,
+            });
+          }
+          
+          toast.current?.show({
+            severity: "success",
+            summary: "Succès",
+            detail: "Centre ajouté aux favoris",
+            life: 2000,
+          });
+          
+          // Focus sur le nouveau centre ajouté aux favoris (à la fin de la liste)
+          setTimeout(() => {
+            const favoriteElements = document.querySelectorAll('.favorite-item .favorite-name');
+            if (favoriteElements.length > 0) {
+              (favoriteElements[favoriteElements.length - 1] as HTMLElement).focus();
+            }
+          }, 100);
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la gestion des favoris", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erreur",
+        detail: "Une erreur est survenue lors de la gestion des favoris",
+        life: 3000,
+      });
+    }
   };
 
   const RecenterMap = ({ position }: { position: [number, number] }) => {
@@ -262,6 +476,14 @@ export function HomePageMap() {
             })}
           <MapControls userPos={position} />
         </MapContainer>
+        {/* Affichage des centres favoris en bas à gauche */}
+        {isAuthenticated && !loadingFavorites && (
+          <FavoritesCentresList 
+            favorites={favoriteCentres} 
+            onCentreClick={handleFavoriteCentreClick}
+            onRemoveFavorite={handleToggleFavorite}
+          />
+        )}
         {selectedCentre && (
           <DetailsCentreMap
             visible={visible}
@@ -272,7 +494,9 @@ export function HomePageMap() {
               city: selectedCentre.ville.libelle, // Extraire le nom de la ville si nécessaire
               postalCode: selectedCentre.ville.code_postal ?? "N/A",
               id: selectedCentre.id,
+              isFavorite: selectedCentre.isFavorite,
             }}
+            onToggleFavorite={handleToggleFavorite}
           />
         )}
       </div>
