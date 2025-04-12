@@ -1,48 +1,201 @@
-// pages/ExamPage.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CSSTransition } from "react-transition-group";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  Polyline,
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import HomePageTopBar from "../../components/utils/HomePageTopBar";
-import { Chip } from "primereact/chip";
+import "leaflet-routing-machine";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
-import { useNavigate } from "react-router-dom";
-import {
-  CircuitsCollection,
-  Circuit,
-} from "../../interfaces/circuit.interface";
-import { MapControls } from "../../components/utils/HomePageMap";
+import { Toast } from "primereact/toast";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getRequest } from "../../interfaces/utils/api";
+import { Chip } from "primereact/chip";
 
-/**
- * Définition de l'icône pour les points du circuit
- */
-const pointIcon = new L.Icon({
-  iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
-  popupAnchor: [0, -10],
-});
+// Interface pour un point du circuit
+interface Point {
+  id: number;
+  latitude: number;
+  longitude: number;
+  description: string;
+  rang: number;
+  type: string;
+}
 
-/**
- * Interface pour les props du composant MapView
- */
+// Interface pour un circuit
+interface Circuit {
+  id: number;
+  nom: string;
+  description: string;
+  createur?: string;
+  points: Point[];
+}
+
+// Interface pour une ville (centre d'examen)
+interface Ville {
+  id: number;
+  libelle: string;
+  latitude: string;
+  longitude: string;
+}
+
+// Interface pour la réponse API d'un circuit
+interface CircuitApiResponse {
+  id: number;
+  libelle: string;
+  description: string;
+  createur?: string;
+  ville_centre: string;
+  points: string[];
+}
+
+// Interface pour la réponse API d'un point
+interface PointApiResponse {
+  id: number;
+  latitude: string;
+  longitude: string;
+  description: string;
+  rang: number;
+  type: string;
+}
+
+// Interface pour la réponse API de la collection de circuits
+interface CircuitsCollectionResponse {
+  "@context": string;
+  "@id": string;
+  "@type": string;
+  totalItems: number;
+  member: CircuitApiResponse[];
+}
+
+// Types de points avec icônes SVG (copié depuis CircuitEditionPage.tsx)
+const pointTypes: PointType[] = [
+  {
+    value: "depart",
+    label: "Départ",
+    color: "#4CAF50",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4CAF50" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M14 3v7h7v4h-7v7h-4v-7H3v-4h7V3h4z"/>
+    </svg>`,
+  },
+  {
+    value: "stop",
+    label: "Arrêt",
+    color: "#F44336",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#F44336" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M6 6h12v12H6z"/>
+    </svg>`,
+  },
+  {
+    value: "attention",
+    label: "Attention",
+    color: "#FF9800",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF9800" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+    </svg>`,
+  },
+  {
+    value: "tournant",
+    label: "Tournant",
+    color: "#2196F3",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2196F3" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M17.17 6.84l-4.23-4.26L10.5 5l4.2 4.2-7.27 7.28-4.93-4.93V19h7.45l-4.92-4.92 7.28-7.28 3.86 3.85V6.84z"/>
+    </svg>`,
+  },
+  {
+    value: "information",
+    label: "Information",
+    color: "#9C27B0",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9C27B0" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>`,
+  },
+  {
+    value: "arrivee",
+    label: "Arrivée",
+    color: "#E91E63",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E91E63" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+    </svg>`,
+  },
+];
+
+// Créer une icône Leaflet à partir de SVG
+const createIconFromSvg = (svgString: string): L.DivIcon => {
+  return L.divIcon({
+    html: svgString,
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+  });
+};
+
+// Composant pour gérer la création de route
+const RoutingMachineControl = ({ points }: { points: Point[] }) => {
+  const map = useMap();
+  const routingControlRef = useRef<L.Routing.Control | null>(null);
+
+  useEffect(() => {
+    if (routingControlRef.current) {
+      map.removeControl(routingControlRef.current);
+      routingControlRef.current = null;
+    }
+
+    if (points.length >= 2) {
+      const waypoints = points
+        .sort((a, b) => a.rang - b.rang)
+        .map((point) => L.latLng(point.latitude, point.longitude));
+
+      const routingControl = L.Routing.control({
+        waypoints: waypoints,
+        routeWhileDragging: false,
+        showAlternatives: false,
+        fitSelectedRoutes: false,
+        lineOptions: {
+          styles: [{ color: "var(--primary-color)", opacity: 0.8, weight: 5 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 0,
+        },
+        createMarker: () => null,
+        addWaypoints: false,
+      }).addTo(map);
+
+      routingControlRef.current = routingControl;
+
+      if (routingControl && routingControl._container) {
+        routingControl._container.style.display = "none";
+      }
+    }
+
+    return () => {
+      if (routingControlRef.current) {
+        map.removeControl(routingControlRef.current);
+        routingControlRef.current = null;
+      }
+    };
+  }, [map, points]);
+
+  return null;
+};
+
+// Composant pour centrer la vue de la carte
 interface MapViewProps {
   center: [number, number];
 }
 
-/**
- * Composant pour centrer la vue de la carte
- */
 const MapView: React.FC<MapViewProps> = ({ center }) => {
   const map = useMap();
   useEffect(() => {
@@ -54,122 +207,132 @@ const MapView: React.FC<MapViewProps> = ({ center }) => {
   return null;
 };
 
-/**
- * Composant ExamPage pour afficher les circuits d'examen
- */
+// Composant ExamPage
 const ExamPage: React.FC = () => {
-  // Détection du mode mobile
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
-
-  // Position par défaut (Paris)
   const defaultPosition: [number, number] = [48.8566, 2.3522];
-
-  // État pour les circuits développés
   const [expandedCircuits, setExpandedCircuits] = useState<string[]>([]);
-
-  // État pour la visibilité du modal
-  const [circuitModalVisible, setCircuitModalVisible] =
-    useState<boolean>(false);
-
-  // Navigation
+  const [circuitModalVisible, setCircuitModalVisible] = useState<boolean>(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const toast = useRef<Toast>(null);
 
-  // Liste des centres d'examen disponibles
-  const centresExamen = ["Noisy-Le-Grand"];
-
-  // Données des circuits par centre d'examen
-  const circuitsData: CircuitsCollection = {
-    "Noisy-Le-Grand": [
-      {
-        nom: "Circuit N° 1",
-        description: "Circuit facile autour du centre 1",
-        createur: "Jean Baptiste Bernard",
-        points: [
-          {
-            latitude: 48.8566,
-            longitude: 2.3522,
-            description: "Point de départ",
-          },
-          {
-            latitude: 48.8586,
-            longitude: 2.3542,
-            description: "Virage à droite",
-          },
-          { latitude: 48.8606, longitude: 2.3502, description: "Arrivée" },
-        ],
-      },
-      {
-        nom: "Circuit N° 2",
-        description: "Circuit moyen autour du centre 1",
-        createur: "Kamel BEN",
-        points: [
-          { latitude: 48.8566, longitude: 2.3522, description: "Départ" },
-          { latitude: 48.8576, longitude: 2.3552, description: "Intersection" },
-          { latitude: 48.8596, longitude: 2.3482, description: "Fin" },
-        ],
-      },
-    ],
-  };
-
-  // États pour le centre et le circuit sélectionnés
-  const [selectedCentre, setSelectedCentre] = useState<string>(
-    centresExamen[0]
-  );
+  // État pour les données
+  const [circuits, setCircuits] = useState<Circuit[]>([]);
   const [selectedCircuit, setSelectedCircuit] = useState<string>("");
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultPosition);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [centre, setCentre] = useState<Ville | null>(null);
 
-  // Effet pour initialiser le circuit par défaut
+  // Récupérer le centre d'examen depuis la navigation
   useEffect(() => {
-    if (selectedCentre && circuitsData[selectedCentre]?.length > 0) {
-      setSelectedCircuit(circuitsData[selectedCentre][0].nom);
+    const state = location.state as { centreId?: number; centreLibelle?: string };
+    if (state?.centreId) {
+      const fetchCentre = async () => {
+        try {
+          const centreData = await getRequest<Ville>(`/villes/${state.centreId}`);
+          setCentre(centreData);
+          setMapCenter([
+            parseFloat(centreData.latitude),
+            parseFloat(centreData.longitude),
+          ]);
+        } catch (error) {
+          console.error("Erreur lors du chargement du centre:", error);
+          toast.current?.show({
+            severity: "error",
+            summary: "Erreur",
+            detail: "Impossible de charger les données du centre",
+            life: 3000,
+          });
+        }
+      };
+      fetchCentre();
     }
-  }, [selectedCentre]);
+  }, [location.state]);
 
-  // Effet pour mettre à jour le centre de la carte quand le circuit change
+  // Charger tous les circuits
   useEffect(() => {
-    const currentCircuit = findCurrentCircuit();
+    const fetchCircuits = async () => {
+      try {
+        setIsLoading(true);
+        const circuitsResponse = await getRequest<CircuitsCollectionResponse>("/circuits");
+
+        // Récupérer les détails des points pour chaque circuit
+        const formattedCircuits = await Promise.all(
+          circuitsResponse.member.map(async (circuit) => {
+            // Récupérer les points si disponibles
+            const points = await Promise.all(
+              circuit.points.map(async (pointIri: string) => {
+                const pointId = pointIri.split("/").pop();
+                const pointData = await getRequest<PointApiResponse>(`/points/${pointId}`);
+                return {
+                  id: pointData.id,
+                  latitude: parseFloat(pointData.latitude),
+                  longitude: parseFloat(pointData.longitude),
+                  description: pointData.description || `Point ${pointData.id}`,
+                  rang: pointData.rang !== undefined ? pointData.rang : 0,
+                  type: pointData.type || "information",
+                };
+              })
+            );
+
+            return {
+              id: circuit.id,
+              nom: circuit.libelle,
+              description: circuit.description || "Aucune description",
+              createur: circuit.createur || "Anonyme",
+              points: points.sort((a, b) => a.rang - b.rang),
+            };
+          })
+        );
+
+        setCircuits(formattedCircuits);
+
+        if (formattedCircuits.length > 0) {
+          setSelectedCircuit(formattedCircuits[0].nom);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des circuits:", error);
+        toast.current?.show({
+          severity: "error",
+          summary: "Erreur",
+          detail: "Impossible de charger les circuits",
+          life: 3000,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCircuits();
+  }, []);
+
+  // Mettre à jour le centre de la carte quand le circuit change
+  useEffect(() => {
+    const currentCircuit = circuits.find(
+      (circuit) => circuit.nom === selectedCircuit
+    );
     if (currentCircuit && currentCircuit.points.length > 0) {
-      // Centrer sur le premier point du circuit
       setMapCenter([
         currentCircuit.points[0].latitude,
         currentCircuit.points[0].longitude,
       ]);
+    } else if (centre) {
+      setMapCenter([
+        parseFloat(centre.latitude),
+        parseFloat(centre.longitude),
+      ]);
     }
-  }, [selectedCircuit]);
+  }, [selectedCircuit, circuits, centre]);
 
-  // Effet pour gérer le redimensionnement de la fenêtre
+  // Gérer le redimensionnement
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /**
-   * Trouve le circuit actuellement sélectionné
-   */
-  const findCurrentCircuit = (): Circuit | null => {
-    for (const centre in circuitsData) {
-      const found = circuitsData[centre].find(
-        (circuit) => circuit.nom === selectedCircuit
-      );
-      if (found) return found;
-    }
-    return circuitsData[selectedCentre]?.[0] || null;
-  };
-
-  /**
-   * Change le centre d'examen sélectionné
-   */
-  const handleCentreChange = (centre: string) => {
-    setSelectedCentre(centre);
-    if (circuitsData[centre]?.length > 0) {
-      setSelectedCircuit(circuitsData[centre][0].nom);
-    }
-  };
-
-  /**
-   * Bascule l'état d'expansion d'un circuit
-   */
+  // Bascule l'expansion d'un circuit
   const toggleCircuitExpansion = (
     circuitNom: string,
     event: React.MouseEvent
@@ -182,22 +345,28 @@ const ExamPage: React.FC = () => {
     );
   };
 
-  /**
-   * Sélectionne un circuit et ferme le modal
-   */
+  // Sélectionner un circuit
   const handleCircuitSelection = (circuitNom: string) => {
     setSelectedCircuit(circuitNom);
     setCircuitModalVisible(false);
   };
 
-  // Récupération des données du circuit actuel
-  const currentCircuit = findCurrentCircuit();
-  const circuitPoints = currentCircuit?.points || [];
-  const polylinePositions = circuitPoints.map(
-    (point) => [point.latitude, point.longitude] as [number, number]
+  // Données du circuit actuel
+  const currentCircuit = circuits.find(
+    (circuit) => circuit.nom === selectedCircuit
+  );
+  const circuitPoints = (currentCircuit?.points || []).sort(
+    (a, b) => a.rang - b.rang
   );
 
-  // Styles pour les composants
+  // Obtenir l'icône d'un point
+  const getPointIcon = (type: string) => {
+    const pointType =
+      pointTypes.find((pt) => pt.value === type) || pointTypes[5]; // Fallback sur "information"
+    return createIconFromSvg(pointType.svgIcon);
+  };
+
+  // Styles
   const styles = {
     mapContainer: {
       position: "relative" as const,
@@ -222,30 +391,25 @@ const ExamPage: React.FC = () => {
       justifyContent: "center",
       width: "100%",
     },
-    buttonBase: {
-      position: "fixed" as const,
-      bottom: "30px",
-      zIndex: 1000,
-    },
     circuitSelectorButton: {
       position: "fixed" as const,
       bottom: "30px",
       left: "30px",
       zIndex: 1000,
     },
-    homeButton: {
-      position: "fixed" as const,
-      bottom: "30px",
-      right: "30px",
-      zIndex: 1000,
-    },
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-content-center align-items-center min-h-screen">
+        <i className="pi pi-spin pi-spinner text-4xl"></i>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.mapContainer}>
-      <HomePageTopBar />
-
-      {/* Sélection des centres avec Chip */}
+      <Toast ref={toast} />
       <div
         style={styles.chipContainer}
         className="flex gap-2 justify-content-center"
@@ -257,58 +421,39 @@ const ExamPage: React.FC = () => {
           tooltip="Retour à l'accueil"
           tooltipOptions={{ position: "top" }}
         />
-        {centresExamen.map((centre, index) => (
+        {centre && (
           <Chip
-            key={index}
-            label={centre}
-            className={`cursor-pointer border-2 border-primary transition-colors transition-duration-300 hover:bg-primary hover:text-white ${
-              selectedCentre === centre
-                ? "bg-primary text-white"
-                : "bg-surface-ground"
-            }`}
-            onClick={() => handleCentreChange(centre)}
+            label={centre.libelle}
+            className="bg-primary text-white border-2 border-primary"
           />
-        ))}
+        )}
       </div>
 
       <div style={styles.map}>
         <MapContainer
-          center={defaultPosition}
+          center={mapCenter}
           zoom={13}
           style={{ height: "100%", width: "100%" }}
           zoomControl={false}
         >
           <MapView center={mapCenter} />
-          <MapControls userPos={defaultPosition} />
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-
-          {/* Afficher les points du circuit */}
-          {circuitPoints.map((point, index) => (
+          {circuitPoints.length > 0 && <RoutingMachineControl points={circuitPoints} />}
+          {circuitPoints.map((point) => (
             <Marker
-              key={index}
+              key={point.rang}
               position={[point.latitude, point.longitude]}
-              icon={pointIcon}
+              icon={getPointIcon(point.type)}
             >
               <Popup>{point.description}</Popup>
             </Marker>
           ))}
-
-          {/* Tracer le circuit avec une Polyline */}
-          {polylinePositions.length > 1 && (
-            <Polyline
-              positions={polylinePositions}
-              color="var(--primary-color)"
-              weight={4}
-              opacity={0.7}
-            />
-          )}
         </MapContainer>
       </div>
 
-      {/* Bouton pour ouvrir le modal de sélection de circuit */}
       <div style={styles.circuitSelectorButton}>
         <Button
           icon="pi pi-flag"
@@ -320,7 +465,6 @@ const ExamPage: React.FC = () => {
         />
       </div>
 
-      {/* Modal de sélection de circuit */}
       <Dialog
         visible={circuitModalVisible}
         onHide={() => setCircuitModalVisible(false)}
@@ -343,10 +487,9 @@ const ExamPage: React.FC = () => {
             />
           </div>
 
-          {/* Liste des circuits disponibles */}
-          {circuitsData[selectedCentre]?.map((circuit, index) => (
+          {circuits.map((circuit) => (
             <div
-              key={index}
+              key={circuit.id}
               className={`p-3 border-bottom-1 border-200 cursor-pointer transition-colors transition-duration-300 hover:surface-hover ${
                 selectedCircuit === circuit.nom ? "bg-primary-50" : ""
               }`}
@@ -366,7 +509,6 @@ const ExamPage: React.FC = () => {
                     />
                     <span className="text-600">{circuit.createur}</span>
                   </div>
-
                   <div className="flex align-items-center">
                     {selectedCircuit === circuit.nom && (
                       <span className="mr-2 font-medium flex align-items-center text-green-500">
@@ -384,8 +526,6 @@ const ExamPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Liste des points avec animation */}
               <CSSTransition
                 in={expandedCircuits.includes(circuit.nom)}
                 timeout={300}
@@ -400,29 +540,40 @@ const ExamPage: React.FC = () => {
                 unmountOnExit
               >
                 <div className="mt-3 pt-2 border-top-1 border-100">
-                  {circuit.points.map((point, pointIndex) => (
-                    <div
-                      key={pointIndex}
-                      className="flex align-items-center py-2 ml-2"
-                    >
-                      <span
-                        className="flex justify-content-center align-items-center border-circle w-2rem h-2rem mr-2 text-white text-xs font-medium"
-                        style={{ backgroundColor: "var(--primary-color)" }}
-                      >
-                        {pointIndex + 1}
-                      </span>
-                      <i className="pi pi-map-marker text-primary mr-2"></i>
-                      <span className="text-900">{point.description}</span>
+                  {circuit.points.length > 0 ? (
+                    circuit.points
+                      .sort((a, b) => a.rang - b.rang)
+                      .map((point) => (
+                        <div
+                          key={point.rang}
+                          className="flex align-items-center py-2 ml-2"
+                        >
+                          <span
+                            className="flex justify-content-center align-items-center border-circle w-2rem h-2rem mr-2 text-white text-xs font-medium"
+                            style={{
+                              backgroundColor:
+                                pointTypes.find((pt) => pt.value === point.type)
+                                  ?.color || "cyan",
+                            }}
+                          >
+                            {point.rang + 1}
+                          </span>
+                          <i className="pi pi-map-marker text-primary mr-2"></i>
+                          <span className="text-900">{point.description}</span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="p-2 text-500">
+                      Aucun point défini pour ce circuit.
                     </div>
-                  ))}
+                  )}
                 </div>
               </CSSTransition>
             </div>
           ))}
-
-          {circuitsData[selectedCentre]?.length === 0 && (
+          {circuits.length === 0 && (
             <div className="p-4 text-center text-500">
-              Aucun circuit disponible pour ce centre.
+              Aucun circuit disponible.
             </div>
           )}
         </div>
