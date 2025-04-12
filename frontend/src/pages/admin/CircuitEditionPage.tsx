@@ -13,11 +13,12 @@ import {
   TileLayer,
   Marker,
   Popup,
-  Polyline,
   useMapEvents,
+  useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine";
 import HomePageTopBar from "../../components/utils/HomePageTopBar";
 import {
   getRequest,
@@ -132,6 +133,61 @@ const createIconFromSvg = (svgString: string): L.DivIcon => {
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
   });
+};
+
+// Composant pour gérer la création de route
+const RoutingMachineControl = ({ points }: { points: Point[] }) => {
+  const map = useMap();
+  const routingControlRef = useRef<L.Routing.Control | null>(null);
+
+  useEffect(() => {
+    // Nettoyer l'ancien contrôle de routage s'il existe
+    if (routingControlRef.current) {
+      map.removeControl(routingControlRef.current);
+      routingControlRef.current = null;
+    }
+
+    // S'il y a au moins 2 points, créer un nouvel itinéraire
+    if (points.length >= 2) {
+      // Créer des waypoints à partir des points du circuit
+      const waypoints = points
+        .sort((a, b) => a.position - b.position)
+        .map((point) => L.latLng(point.latitude, point.longitude));
+
+      // Créer le contrôle de routage
+      const routingControl = L.Routing.control({
+        waypoints: waypoints,
+        routeWhileDragging: false,
+        showAlternatives: false,
+        fitSelectedRoutes: false,
+        lineOptions: {
+          styles: [{ color: "var(--primary-color)", opacity: 0.8, weight: 5 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 0,
+        },
+        createMarker: () => {
+          return null;
+        }, // Ne pas créer de marqueurs automatiquement
+        addWaypoints: false, // Empêcher l'ajout de waypoints en cliquant sur la route
+      }).addTo(map);
+
+      routingControlRef.current = routingControl;
+
+      // Cacher les instructions de l'itinéraire si elles sont affichées
+      if (routingControl && routingControl._container) {
+        routingControl._container.style.display = "none";
+      }
+    }
+
+    return () => {
+      if (routingControlRef.current) {
+        map.removeControl(routingControlRef.current);
+        routingControlRef.current = null;
+      }
+    };
+  }, [map, points]);
+
+  return null;
 };
 
 // Composant pour gérer les événements de la carte
@@ -485,14 +541,9 @@ const CircuitEditionPage: React.FC = () => {
     <div className="flex flex-column min-h-screen">
       <Toast ref={toast} />
       <ConfirmDialog />
-      <HomePageTopBar />
 
       <div className="p-3">
-        <Toolbar
-          left={leftToolbarTemplate}
-          right={rightToolbarTemplate}
-          className="mb-3"
-        />
+        <Toolbar left={leftToolbarTemplate} className="mb-3" />
 
         <div className="grid">
           <div className="col-12 md:col-8">
@@ -509,6 +560,9 @@ const CircuitEditionPage: React.FC = () => {
 
                 {/* Gestionnaire d'événements de carte */}
                 <MapEventHandler onMapClick={handleMapClick} />
+
+                {/* Utiliser le contrôle de routage au lieu de Polyline */}
+                <RoutingMachineControl points={points} />
 
                 {/* Marqueurs pour les points */}
                 {points.map((point) => (
@@ -541,12 +595,12 @@ const CircuitEditionPage: React.FC = () => {
                         <div className="flex justify-content-between mt-2">
                           <Button
                             icon="pi pi-pencil"
-                            className="p-button-sm p-button-outlined"
+                            className="p-button-sm p-button-outlined bg-white"
                             onClick={() => openEditPointDialog(point)}
                           />
                           <Button
                             icon="pi pi-trash"
-                            className="p-button-sm p-button-outlined p-button-danger"
+                            className="p-button-sm p-button-outlined p-button-danger bg-white"
                             onClick={() => deletePoint(point.position)}
                           />
                         </div>
@@ -554,21 +608,12 @@ const CircuitEditionPage: React.FC = () => {
                     </Popup>
                   </Marker>
                 ))}
-
-                {/* Polyline pour relier les points */}
-                {points.length > 1 && (
-                  <Polyline
-                    positions={points.map((p) => [p.latitude, p.longitude])}
-                    color="var(--primary-color)"
-                    weight={3}
-                    opacity={0.7}
-                  />
-                )}
               </MapContainer>
             </div>
           </div>
 
           <div className="col-12 md:col-4">
+            {rightToolbarTemplate()}
             <div className="card shadow-4">
               <h3 className="border-bottom-1 border-300 pb-2">
                 {circuit?.libelle || "Circuit sans nom"}
@@ -672,7 +717,7 @@ const CircuitEditionPage: React.FC = () => {
                             />
                             <Button
                               icon="pi pi-trash"
-                              className="p-button-text p-button-sm p-button-danger"
+                              className="p-button-text p-button-sm p-button-danger bg-white"
                               onClick={() => deletePoint(point.position)}
                               tooltip="Supprimer"
                               tooltipOptions={{ position: "left" }}
