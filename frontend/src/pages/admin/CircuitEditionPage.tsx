@@ -16,7 +16,7 @@ import {
   useMapEvents,
   useMap,
 } from "react-leaflet";
-import L from "leaflet";
+import L, { Point } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import HomePageTopBar from "../../components/utils/HomePageTopBar";
@@ -24,6 +24,7 @@ import {
   getRequest,
   postRequest,
   patchRequest,
+  deleteRequest,
 } from "../../interfaces/utils/api";
 
 // Interface pour les types de points
@@ -227,6 +228,7 @@ const CircuitEditionPage: React.FC = () => {
   const [tempPoint, setTempPoint] = useState<Point | null>(null);
   const [editingPoint, setEditingPoint] = useState<Point | null>(null);
   const [isDraggingEnabled, setIsDraggingEnabled] = useState<boolean>(false);
+  const [deletedPointIds, setDeletedPointIds] = useState<number[]>([]);
 
   // Chargement des données du circuit
   useEffect(() => {
@@ -394,6 +396,7 @@ const CircuitEditionPage: React.FC = () => {
     });
   };
 
+
   // Supprimer un point du circuit
   const deletePoint = (position: number) => {
     confirmDialog({
@@ -405,6 +408,11 @@ const CircuitEditionPage: React.FC = () => {
         // Récupérer le point à supprimer
         const pointToDelete = points.find((p) => p.position === position);
 
+        // Si le point a un ID (existe en base de données), l'ajouter à la liste des points à supprimer
+        if (pointToDelete && pointToDelete.id) {
+          setDeletedPointIds([...deletedPointIds, pointToDelete.id]);
+        }
+
         // Filtrer les points et ajuster les rangs des points suivants
         const filteredPoints = points
           .filter((p) => p.position !== position)
@@ -414,9 +422,9 @@ const CircuitEditionPage: React.FC = () => {
             // Si le rang du point actuel est supérieur au rang du point supprimé, le décrémenter
             rang:
               pointToDelete &&
-              p.rang &&
-              pointToDelete.rang &&
-              p.rang > pointToDelete.rang
+                p.rang &&
+                pointToDelete.rang &&
+                p.rang > pointToDelete.rang
                 ? p.rang - 1
                 : p.rang,
             libelle: p.libelle.startsWith("Point ")
@@ -486,13 +494,19 @@ const CircuitEditionPage: React.FC = () => {
     setPoints(newPoints);
   };
 
-  // Enregistrer les modifications du circuit
   const saveCircuit = async () => {
     if (!circuit || !id) return;
 
     setIsSaving(true);
 
     try {
+      // Supprimer les points marqués pour suppression
+      const deletePromises = deletedPointIds.map(async (pointId) => {
+        return await deleteRequest(`/points/${pointId}`);
+      });
+
+      // Attendre que toutes les suppressions soient terminées
+      await Promise.all(deletePromises);
       // Traiter chaque point du circuit
       const pointPromises = points.map(async (point) => {
         const pointData = {
@@ -515,6 +529,9 @@ const CircuitEditionPage: React.FC = () => {
       });
 
       await Promise.all(pointPromises);
+
+      // Réinitialiser la liste des points supprimés
+      setDeletedPointIds([]);
 
       toast.current?.show({
         severity: "success",
@@ -540,6 +557,8 @@ const CircuitEditionPage: React.FC = () => {
     }
   };
 
+
+
   // Templates pour les actions de la barre d'outils
   const leftToolbarTemplate = () => {
     return (
@@ -555,13 +574,12 @@ const CircuitEditionPage: React.FC = () => {
             window.innerWidth < 768
               ? ""
               : isDraggingEnabled
-              ? "Désactiver le déplacement"
-              : "Activer le déplacement des points"
+                ? "Désactiver le déplacement"
+                : "Activer le déplacement des points"
           }
           icon={isDraggingEnabled ? "pi pi-lock" : "pi pi-window-minimize"}
-          className={`p-button-outlined bg-white ${
-            isDraggingEnabled ? "p-button-warning" : "p-button-help"
-          }`}
+          className={`p-button-outlined bg-white ${isDraggingEnabled ? "p-button-warning" : "p-button-help"
+            }`}
           onClick={() => setIsDraggingEnabled(!isDraggingEnabled)}
           tooltip={
             window.innerWidth < 768
@@ -646,10 +664,10 @@ const CircuitEditionPage: React.FC = () => {
                         const updatedPoints = points.map((p) =>
                           p.position === point.position
                             ? {
-                                ...p,
-                                latitude: position.lat,
-                                longitude: position.lng,
-                              }
+                              ...p,
+                              latitude: position.lat,
+                              longitude: position.lng,
+                            }
                             : p
                         );
                         setPoints(updatedPoints);
@@ -734,14 +752,14 @@ const CircuitEditionPage: React.FC = () => {
                                 point.type === "depart"
                                   ? "pi pi-flag"
                                   : point.type === "stop"
-                                  ? "pi pi-stop"
-                                  : point.type === "attention"
-                                  ? "pi pi-exclamation-triangle"
-                                  : point.type === "tournant"
-                                  ? "pi pi-arrow-right"
-                                  : point.type === "arrivee"
-                                  ? "pi pi-check-circle"
-                                  : "pi pi-info-circle"
+                                    ? "pi pi-stop"
+                                    : point.type === "attention"
+                                      ? "pi pi-exclamation-triangle"
+                                      : point.type === "tournant"
+                                        ? "pi pi-arrow-right"
+                                        : point.type === "arrivee"
+                                          ? "pi pi-check-circle"
+                                          : "pi pi-info-circle"
                               }
                             ></i>
                           </div>
@@ -750,7 +768,7 @@ const CircuitEditionPage: React.FC = () => {
                             <div className="text-xs text-500">
                               {point.description
                                 ? point.description.slice(0, 30) +
-                                  (point.description.length > 30 ? "..." : "")
+                                (point.description.length > 30 ? "..." : "")
                                 : "Pas de description"}
                             </div>
                           </div>
@@ -879,14 +897,14 @@ const CircuitEditionPage: React.FC = () => {
                         option.value === "depart"
                           ? "pi pi-flag"
                           : option.value === "stop"
-                          ? "pi pi-stop"
-                          : option.value === "attention"
-                          ? "pi pi-exclamation-triangle"
-                          : option.value === "tournant"
-                          ? "pi pi-arrow-right"
-                          : option.value === "arrivee"
-                          ? "pi pi-check-circle"
-                          : "pi pi-info-circle"
+                            ? "pi pi-stop"
+                            : option.value === "attention"
+                              ? "pi pi-exclamation-triangle"
+                              : option.value === "tournant"
+                                ? "pi pi-arrow-right"
+                                : option.value === "arrivee"
+                                  ? "pi pi-check-circle"
+                                  : "pi pi-info-circle"
                       }
                     ></i>
                   </div>
@@ -916,14 +934,14 @@ const CircuitEditionPage: React.FC = () => {
                           option.value === "depart"
                             ? "pi pi-flag"
                             : option.value === "stop"
-                            ? "pi pi-stop"
-                            : option.value === "attention"
-                            ? "pi pi-exclamation-triangle"
-                            : option.value === "tournant"
-                            ? "pi pi-arrow-right"
-                            : option.value === "arrivee"
-                            ? "pi pi-check-circle"
-                            : "pi pi-info-circle"
+                              ? "pi pi-stop"
+                              : option.value === "attention"
+                                ? "pi pi-exclamation-triangle"
+                                : option.value === "tournant"
+                                  ? "pi pi-arrow-right"
+                                  : option.value === "arrivee"
+                                    ? "pi pi-check-circle"
+                                    : "pi pi-info-circle"
                         }
                       ></i>
                     </div>
@@ -1041,14 +1059,14 @@ const CircuitEditionPage: React.FC = () => {
                         option.value === "depart"
                           ? "pi pi-flag"
                           : option.value === "stop"
-                          ? "pi pi-stop"
-                          : option.value === "attention"
-                          ? "pi pi-exclamation-triangle"
-                          : option.value === "tournant"
-                          ? "pi pi-arrow-right"
-                          : option.value === "arrivee"
-                          ? "pi pi-check-circle"
-                          : "pi pi-info-circle"
+                            ? "pi pi-stop"
+                            : option.value === "attention"
+                              ? "pi pi-exclamation-triangle"
+                              : option.value === "tournant"
+                                ? "pi pi-arrow-right"
+                                : option.value === "arrivee"
+                                  ? "pi pi-check-circle"
+                                  : "pi pi-info-circle"
                       }
                     ></i>
                   </div>
@@ -1078,14 +1096,14 @@ const CircuitEditionPage: React.FC = () => {
                           option.value === "depart"
                             ? "pi pi-flag"
                             : option.value === "stop"
-                            ? "pi pi-stop"
-                            : option.value === "attention"
-                            ? "pi pi-exclamation-triangle"
-                            : option.value === "tournant"
-                            ? "pi pi-arrow-right"
-                            : option.value === "arrivee"
-                            ? "pi pi-check-circle"
-                            : "pi pi-info-circle"
+                              ? "pi pi-stop"
+                              : option.value === "attention"
+                                ? "pi pi-exclamation-triangle"
+                                : option.value === "tournant"
+                                  ? "pi pi-arrow-right"
+                                  : option.value === "arrivee"
+                                    ? "pi pi-check-circle"
+                                    : "pi pi-info-circle"
                         }
                       ></i>
                     </div>
