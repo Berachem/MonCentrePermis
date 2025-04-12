@@ -24,7 +24,7 @@ const UserIndicator = () => {
     return null;
 
   return (
-    <div style={{ position: "absolute", top: 70, right: 50, zIndex: 1000 }}>
+    <div style={{ position: "absolute", top: 50, right: 50, zIndex: 1000 }}>
       {isAuthenticated ? (
         <span
           style={{
@@ -48,6 +48,7 @@ const UserIndicator = () => {
         <Button
           label="S'identifier"
           onClick={() => window.location.replace("/login")}
+          icon="pi pi-user"
         />
       )}
     </div>
