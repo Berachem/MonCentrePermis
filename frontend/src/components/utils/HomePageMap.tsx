@@ -85,6 +85,7 @@ export function MapControls({ userPos }: { userPos: [number, number] }) {
 export function HomePageMap() {
   const toast = useRef<Toast>(null);
   const markerRef = useRef(null);
+  const fetchedRef = useRef(false); // Utiliser useRef au lieu de useState pour ne pas déclencher de re-render
 
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
@@ -111,12 +112,6 @@ export function HomePageMap() {
         setUserLocated(true);
       },
       (err) => {
-        /*   toast.current?.show({
-          severity: "warn",
-          summary: "Erreur",
-          detail: "Erreur lors de la récupération de la géolocalisation",
-          life: 3000,
-        }); */
         console.error(
           "Erreur lors de la récupération de la géolocalisation",
           err
@@ -133,38 +128,46 @@ export function HomePageMap() {
     }
   }, [userLocated]);
 
-  //récupération des données de centre d'examen
+  //récupération des données de centre d'examen avec useRef pour empêcher le double appel
   useEffect(() => {
+    // Ignorer si on a déjà fait une requête
+    if (fetchedRef.current) {
+      return;
+    }
+
     const fetchCentresData = async () => {
       try {
         setLoading(true);
+        fetchedRef.current = true; // Marquer comme déjà fait, même si ça échoue
+
         const data = await getRequest<CentreExamen[]>("/custom/centre_examens");
-        console.log("Données des centres d'examen :");
-        console.log(data);
-        setCentresData(data);
-        toast.current?.show({
-          severity: "success",
-          summary: "Succès",
-          detail:
-            "Centres d'examen récupérés avec succès (" +
-            data.length +
-            " centres)",
-          life: 3000,
-        });
+        console.log("Données des centres d'examen :", data);
+
+        if (data) {
+          setCentresData(data);
+          toast.current?.show({
+            severity: "success",
+            summary: "Succès",
+            detail: `Centres d'examen récupérés avec succès (${data.length} centres)`,
+            life: 3000,
+          });
+        }
       } catch (error) {
+        console.error(
+          "Erreur lors de la récupération des centres d'examen",
+          error
+        );
         toast.current?.show({
           severity: "error",
           summary: "Erreur",
           detail: "Erreur lors de la récupération des centres d'examen",
           life: 3000,
         });
-        console.error(
-          "Erreur lors de la récupération des centres d'examen",
-          error
-        );
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     fetchCentresData();
   }, []);
 
