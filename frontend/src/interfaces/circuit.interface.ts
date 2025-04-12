@@ -1,7 +1,7 @@
 /**
  * Interface représentant un point dans un circuit
  */
-export interface CircuitPoint {
+export interface Point {
   latitude: number;
   longitude: number;
   description: string;
@@ -14,12 +14,12 @@ export interface Circuit {
   nom: string;
   description: string;
   createur: string;
-  points: CircuitPoint[];
+  points: Point[];
 }
 
 /**
  * Interface représentant la collection de tous les circuits par centre d'examen
  */
 export interface CircuitsCollection {
-  [centreName: string]: Circuit[];
+  [centre: string]: Circuit[];
 }

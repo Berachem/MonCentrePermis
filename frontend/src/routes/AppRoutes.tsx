@@ -11,6 +11,8 @@ import ExamPage from "../pages/student/ExamPage";
 import useAuth from "../hooks/useAuth"; // Utiliser le hook pour accéder au contexte d'auth
 import { UserType } from "../enum/user";
 import UserIndicator from "../components/UserIndicator";
+import CircuitCreationPage from "../pages/admin/CircuitCreationPage";
+import CircuitEditionPage from "../pages/admin/CircuitEditionPage";
 
 function AppRoutes() {
   // Utiliser le hook useAuth pour obtenir le rôle de l'utilisateur
@@ -59,6 +61,12 @@ function AppRoutes() {
             <Route path="*" element={<NotFound />} />
           </>
         )}
+
+        <Route path="/admin/circuit/create" element={<CircuitCreationPage />} />
+        <Route
+          path="/admin/circuit/edit/:id"
+          element={<CircuitEditionPage />}
+        />
       </Routes>
     </>
   );

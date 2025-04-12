@@ -39,6 +39,9 @@ class Point
     #[ORM\ManyToOne(inversedBy: 'points')]
     private ?Circuit $circuit = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $type = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -112,6 +115,18 @@ class Point
     public function setCircuit(?Circuit $circuit): static
     {
         $this->circuit = $circuit;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }
