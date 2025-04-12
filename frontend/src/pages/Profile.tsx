@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import MoniteurInformations from "../components/Profils/MoniteurInformations";
+import StudentInformations from "../components/Profils/StudentInformations";
 
 
 const Profile: React.FC = () => {
@@ -99,7 +100,8 @@ const Profile: React.FC = () => {
         </div>
       </Card>
 
-      <MoniteurInformations/>
+    
+      <StudentInformations/>
     </div>
       
   );
