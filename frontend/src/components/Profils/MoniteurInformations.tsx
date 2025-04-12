@@ -6,6 +6,10 @@ import { faChartBar,faQuestionCircle,faUser } from '@fortawesome/free-solid-svg-
 import { Tooltip } from 'primereact/tooltip';
 import { Button } from 'primereact/button';
 import { useNavigate } from "react-router-dom";
+import { InputText } from 'primereact/inputtext';    
+import { Calendar } from 'primereact/calendar';
+import useAuth from "../../hooks/useAuth";
+           
 
 interface moniteurInformations {
     
@@ -13,11 +17,11 @@ interface moniteurInformations {
     nom: string;
     prenom: string;
     genre: string;
-    dateNaissance: string;
+    dateNaissance: Date;
     email: string;
     telephone: string;
-    dateDebutCarriere: string;
-    dateFinCarriere: string;
+    dateDebutCarriere: Date;
+    dateFinCarriere: Date;
     status: string;
 
     //stats
@@ -28,8 +32,11 @@ interface moniteurInformations {
 }
 
 const MoniteurInformations: React.FC = () => {
+    const { logout } = useAuth();
     const [moniteurInfo, setMoniteurInfo] = useState<moniteurInformations | null>(null);
     const navigate = useNavigate()
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedInfo, setEditedInfo] = useState<moniteurInformations | null>(null);
 
     const fetchMoniteurInfo = async () => {
         // TODO connecter le back
@@ -37,13 +44,13 @@ const MoniteurInformations: React.FC = () => {
             nom: 'Dupont',
             prenom: 'Jean',
             genre: 'Masculin',
-            dateNaissance: '15/05/1985',
+            dateNaissance: new Date('1985-05-15'), 
             email: 'jean.dupont@example.com',
             telephone: '+33 6 12 34 56 78',
-            dateDebutCarriere: '01/01/2010',
-            dateFinCarriere: '31/12/2030',
+            dateDebutCarriere: new Date('2010-01-01'), 
+            dateFinCarriere: new Date('2030-12-31'),
             status: 'Actif',
-
+    
             coursesCount: '145',
             studentCount: '10',
             viewCount: '20',
@@ -51,14 +58,41 @@ const MoniteurInformations: React.FC = () => {
         };
     };
 
+    const saveMoniteurInfo = async (updatedInfo: moniteurInformations) => {
+        // TODO connecter le back
+        console.log("API appelée pour sauvegarder les informations:", updatedInfo);
+        return;
+    };
+
     useEffect(() => {
         // Appel simulé à l'API
         const getMoniteurInfo = async () => {
             const data = await fetchMoniteurInfo();
             setMoniteurInfo(data);
+            setEditedInfo(data);
         };
         getMoniteurInfo();
     }, []);
+
+    const handleEditClick = () => {
+        setIsEditing(true);
+    };
+
+    const handleSaveClick = async () => {
+        if (editedInfo) {
+            await saveMoniteurInfo(editedInfo);
+            setMoniteurInfo(editedInfo); // Met à jour les informations affichées
+            setIsEditing(false);
+        }
+    };
+
+    const handleInputChange = (field: keyof moniteurInformations, value: string|Date) => {
+        if (editedInfo) {
+            setEditedInfo({ ...editedInfo, [field]: value });
+        }
+    };
+
+
 
     if (!moniteurInfo) {
         return (
@@ -79,26 +113,71 @@ const MoniteurInformations: React.FC = () => {
         <div className="p-4">
             {/* Informations personnelles */}
             <h3 className="text-indigo-600 text-lg font-semibold mb-2">Informations personnelles</h3>
-            <div className="flex flex-wrap justify-between gap-y-2">
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Nom :</strong> {moniteurInfo.nom}
-                    </p>
+            <div>
+                <div className='mx-auto'>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Nom :</strong><br/>
+                            <InputText type="text" 
+                                className="p-inputtext-sm" 
+                                placeholder={moniteurInfo.nom} 
+                                onChange={(e) => handleInputChange('nom', e.target.value)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Nom :</strong> {moniteurInfo.nom}
+                        </p>
+                    )}
                 </div>
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Prénom :</strong> {moniteurInfo.prenom}
-                    </p>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Prénom :</strong><br/>
+                            <InputText type="text" 
+                                className="p-inputtext-sm" 
+                                placeholder={moniteurInfo.prenom}
+                                onChange={(e) => handleInputChange('prenom', e.target.value)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Prénom :</strong> {moniteurInfo.prenom}
+                        </p>
+                    )}
                 </div>
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Genre :</strong> {moniteurInfo.genre}
-                    </p>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Genre :</strong><br/>
+                            <InputText type="text" 
+                                className="p-inputtext-sm" 
+                                placeholder={moniteurInfo.genre}
+                                onChange={(e) => handleInputChange('genre', e.target.value)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Genre :</strong> {moniteurInfo.genre}
+                        </p>
+                    )}
                 </div>
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Date de naissance :</strong> {moniteurInfo.dateNaissance}
-                    </p>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Naissance :</strong><br/>
+                            <Calendar 
+                                className="p-inputtext-sm"
+                                dateFormat="dd/mm/yy"
+                                value={moniteurInfo.dateNaissance} 
+                                onChange={(e) => handleInputChange('dateNaissance', e.target.value as Date)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Naissance :</strong> {moniteurInfo.dateNaissance.toLocaleDateString('fr-FR')}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -106,16 +185,38 @@ const MoniteurInformations: React.FC = () => {
 
             {/* Contact */}
             <h3 className="text-indigo-600 text-lg font-semibold mb-2">Contact</h3>
-            <div className="flex flex-wrap justify-between gap-y-2">
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Email :</strong> {moniteurInfo.email}
-                    </p>
+            <div>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Email :</strong><br/>
+                            <InputText type="text" 
+                                className="p-inputtext-sm" 
+                                placeholder={moniteurInfo.email}
+                                onChange={(e) => handleInputChange('email', e.target.value)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Email :</strong> {moniteurInfo.email}
+                        </p>
+                    )}
                 </div>
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Numéro de téléphone :</strong> {moniteurInfo.telephone}
-                    </p>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Téléphone :</strong><br/>
+                            <InputText type="text" 
+                                className="p-inputtext-sm" 
+                                placeholder={moniteurInfo.telephone}
+                                onChange={(e) => handleInputChange('telephone', e.target.value)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Téléphone :</strong> {moniteurInfo.telephone}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -123,29 +224,84 @@ const MoniteurInformations: React.FC = () => {
 
             {/* Carrière */}
             <h3 className="text-indigo-600 text-lg font-semibold mb-2">Carrière</h3>
-            <div className="flex flex-wrap justify-between gap-y-2">
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Date de début de carrière :</strong> {moniteurInfo.dateDebutCarriere}
-                    </p>
+            <div>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Début de carrière :</strong><br/>
+                            <Calendar 
+                                className="p-inputtext-sm"
+                                dateFormat="dd/mm/yy"
+                                value={moniteurInfo.dateDebutCarriere} 
+                                onChange={(e) => handleInputChange('dateDebutCarriere', e.target.value as Date)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Début de carrière :</strong> {moniteurInfo.dateDebutCarriere.toLocaleDateString('fr-FR')}
+                        </p>
+                    )}  
                 </div>
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Date de fin de carrière :</strong> {moniteurInfo.dateFinCarriere}
-                    </p>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Fin de carrière :</strong><br/>
+                            <Calendar 
+                                className="p-inputtext-sm"
+                                dateFormat="dd/mm/yy"
+                                value={moniteurInfo.dateFinCarriere} 
+                                onChange={(e) => handleInputChange('dateFinCarriere', e.target.value as Date)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Fin de carrière :</strong> {moniteurInfo.dateFinCarriere.toLocaleDateString('fr-FR')}
+                        </p>
+                    )}  
+                    
                 </div>
-                <div style={{ flex: '0 0 48%' }}>
-                    <p className="m-0" style={{ fontSize: '1.1rem' }}>
-                        <strong>Status :</strong> {moniteurInfo.status}
-                    </p>
+                <div>
+                    {isEditing ? (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Status :</strong><br/>
+                            <InputText type="text" 
+                                className="p-inputtext-sm" 
+                                placeholder={moniteurInfo.status}
+                                onChange={(e) => handleInputChange('status', e.target.value)} 
+                            />
+                        </p>
+                    ) : (
+                        <p className="m-2" style={{ fontSize: '1.1rem' }}>
+                            <strong>Status :</strong> {moniteurInfo.status}
+                        </p>
+                    )}
                 </div>
             </div>
+        </div>
+
+
+        <div className="flex w-full mt-2">
+            {isEditing ? (
+            <Button
+                label="Sauvegarder"
+                icon="pi pi-check"
+                onClick={handleSaveClick}
+                className="button-text text-sm ml-auto"
+            />
+            ) : (
+                <Button
+                    label="Modifier"
+                    icon="pi pi-pencil"
+                    onClick={handleEditClick}
+                    className="button-text text-sm ml-auto"
+                />
+            )}
         </div>
     </Card>
 
     <h2 className="text-2xl font-semibold mt-4 mb-2 md:mx-8 flex items-center">
         <FontAwesomeIcon icon={faChartBar} className="mr-2 text-indigo-600" />
-        Statistiques
+        Mes statistiques
     </h2>
 
     <div className="flex flex-column md:flex-row gap-3 mt-4 md:mx-8">
@@ -219,6 +375,16 @@ const MoniteurInformations: React.FC = () => {
             </div>
         </div>
     </div>
+    
+    <div className="flex w-full m-2">  
+        <Button
+            label="Se déconnecter"
+            icon="pi pi-sign-out"
+            onClick={() => {logout();}}
+            className="p-button-danger text-sm m-auto"
+        />
+    </div>
+
     </>
     );
 };
