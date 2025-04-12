@@ -1,20 +1,21 @@
 // src/utils/api.ts
-import axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import axios, { AxiosRequestConfig, AxiosError } from "axios";
 
 // Création d'une instance Axios avec une URL de base
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api', // process.env.REACT_APP_API_BASE_URL || 
+  baseURL: "http://localhost:8000/api", // process.env.REACT_APP_API_BASE_URL ||
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/ld+json", // Modifier pour utiliser application/ld+json au lieu de application/json
+    Accept: "application/ld+json",
   },
 });
 
 // Ajouter un intercepteur pour ajouter automatiquement le Bearer token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwtToken'); // Récupère le JWT depuis le localStorage
+    const token = localStorage.getItem("jwtToken"); // Récupère le JWT depuis le localStorage
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -22,7 +23,10 @@ apiClient.interceptors.request.use(
 );
 
 // Fonction pour gérer les requêtes GET
-export const getRequest = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+export const getRequest = async <T>(
+  url: string,
+  config?: AxiosRequestConfig
+): Promise<T> => {
   try {
     const response = await apiClient.get<T>(url, config);
     return response.data;
@@ -33,7 +37,11 @@ export const getRequest = async <T>(url: string, config?: AxiosRequestConfig): P
 };
 
 // Fonction pour gérer les requêtes POST
-export const postRequest = async <T, R>(url: string, data: R, config?: AxiosRequestConfig): Promise<T> => {
+export const postRequest = async <T, R>(
+  url: string,
+  data: R,
+  config?: AxiosRequestConfig
+): Promise<T> => {
   try {
     const response = await apiClient.post<T>(url, data, config);
     return response.data;
@@ -44,7 +52,11 @@ export const postRequest = async <T, R>(url: string, data: R, config?: AxiosRequ
 };
 
 // Fonction pour gérer les requêtes PATCH
-export const patchRequest = async <T, R>(url: string, data: R, config?: AxiosRequestConfig): Promise<T> => {
+export const patchRequest = async <T, R>(
+  url: string,
+  data: R,
+  config?: AxiosRequestConfig
+): Promise<T> => {
   try {
     const response = await apiClient.patch<T>(url, data, config);
     return response.data;
@@ -55,7 +67,10 @@ export const patchRequest = async <T, R>(url: string, data: R, config?: AxiosReq
 };
 
 // Fonction pour gérer les requêtes DELETE
-export const deleteRequest = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+export const deleteRequest = async <T>(
+  url: string,
+  config?: AxiosRequestConfig
+): Promise<T> => {
   try {
     const response = await apiClient.delete<T>(url, config);
     return response.data;
@@ -69,8 +84,18 @@ export const deleteRequest = async <T>(url: string, config?: AxiosRequestConfig)
 const handleApiError = (error: unknown) => {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError;
-    console.error('API Error:', axiosError.response?.data || axiosError.message);
+    console.error(
+      "API Error:",
+      axiosError.response?.data || axiosError.message
+    );
+
+    // Afficher plus de détails sur l'erreur
+    if (axiosError.response) {
+      console.error("Status:", axiosError.response.status);
+      console.error("Headers:", axiosError.response.headers);
+      console.error("Data:", axiosError.response.data);
+    }
   } else {
-    console.error('Unexpected Error:', error);
+    console.error("Unexpected Error:", error);
   }
 };
