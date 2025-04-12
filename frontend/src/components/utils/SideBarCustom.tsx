@@ -104,6 +104,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
                     onClick={() => {
                       logout();
                       toggleSidebar();
+                      navigate(`/login`);
                     }}
                   >
                     Déconnexion

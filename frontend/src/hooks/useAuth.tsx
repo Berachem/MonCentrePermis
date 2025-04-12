@@ -6,6 +6,8 @@ import React, {
   useCallback,
 } from "react";
 import { jwtDecode } from "jwt-decode";
+import { Router } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Importer useNavigate
 
 // Définir le type pour le token décodé
 type DecodedToken = {

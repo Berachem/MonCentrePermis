@@ -3,6 +3,8 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom"; // Importer useNavigate
 import "../../assets/css/DetailsCentreMap.css";
+import useAuth from "../../hooks/useAuth";
+import { UserType } from "../../enum/user";
 
 interface CentreDetailsProps {
   visible: boolean;
@@ -18,9 +20,13 @@ interface CentreDetailsProps {
 
 const DetailsCentreMap: React.FC<CentreDetailsProps> = ({ visible, onHide, centre }) => {
   const navigate = useNavigate(); // Hook pour la navigation
-
+  const { userRole, isAuthenticated } = useAuth();
   const handleSuccessClick = () => {
-    navigate(`/examen/${centre.id}`); // Redirection vers /examen/{id}
+    if (userRole !== UserType.Visitor && isAuthenticated) {
+      navigate(`/examen/${centre.id}`);
+    } else {
+      navigate(`/login`);
+    }
   };
 
   return (

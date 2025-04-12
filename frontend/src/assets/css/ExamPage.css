@@ -1,63 +1,275 @@
 /* assets/css/exam-page.css */
 .map-wrapper {
-    position: relative;
-    height: 100vh;
-    width: 100%;
-  }
-  
-  .map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-  }
-  
-  /* Style pour les centres favoris */
-  .centres-chips .p-chip {
-    transition: background-color 0.3s ease;
-    background-color: var(--surface-ground); /* Couleur de fond de la puce */
-    border: var(--primary-color) 2px solid;
-    position: relative;
-    z-index: 1000;
-    margin-right: 0.5rem;
-    top: 100px;
-    left: 7.5%;
-    cursor: pointer;
-  }
-  
-  .centres-chips .p-chip:hover {
-    background-color: var(--primary-color); /* Effet de survol */
-    color: var(--surface-ground); /* Couleur de texte */
-  }
-  
-  /* État sélectionné pour les centres favoris */
-  .centres-chips .p-chip.p-chip-selected {
-    background-color: var(--primary-color); /* Bleu quand sélectionné */
-    color: var(--surface-ground); /* Texte blanc */
-  }
-  
-  /* Style pour les circuits */
-  .circuits-chips .p-chip {
-    transition: background-color 0.3s ease;
-    background-color: var(--surface-ground);
-    border: var(--primary-color) 2px solid;
-    position: relative;
-    z-index: 1000;
-    margin-right: 0.5rem;
-    top: 150px; /* Juste en dessous des centres favoris */
-    left: 7.5%;
-    cursor: pointer;
-  }
-  
-  .circuits-chips .p-chip:hover {
-    background-color: var(--primary-color);
-    color: var(--surface-ground);
-  }
-  
-  /* État sélectionné pour les circuits */
-  .circuits-chips .p-chip.p-chip-selected {
-    background-color: var(--primary-color);
-    color: var(--surface-ground);
-  }
+  position: relative;
+  height: 100vh;
+  width: 100%;
+}
+
+.map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Style pour les centres favoris */
+.centres-chips .p-chip {
+  transition: background-color 0.3s ease;
+  background-color: var(--surface-ground); /* Couleur de fond de la puce */
+  border: var(--primary-color) 2px solid;
+  position: relative;
+  z-index: 1000;
+  margin-right: 0.5rem;
+  top: 100px;
+  left: 7.5%;
+  cursor: pointer;
+}
+
+.centres-chips .p-chip:hover {
+  background-color: var(--primary-color); /* Effet de survol */
+  color: var(--surface-ground); /* Couleur de texte */
+}
+
+/* État sélectionné pour les centres favoris */
+.centres-chips .p-chip.p-chip-selected {
+  background-color: var(--primary-color); /* Bleu quand sélectionné */
+  color: var(--surface-ground); /* Texte blanc */
+}
+
+/* Style pour le bouton de sélection de circuit */
+.circuit-selector-button {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 1000;
+}
+
+.circuit-selector-button .p-button {
+  width: 56px;
+  height: 56px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.circuit-selector-button .p-button:hover {
+  background-color: var(--primary-color-darker, #156eb9);
+  border-color: var(--primary-color-darker, #156eb9);
+}
+
+/* Style pour le modal de circuits - version maquette */
+.circuit-modal {
+  width: 100%;
+  max-width: 650px; /* Réduit la largeur du modal */
+  margin: 0 auto;
+  border-radius: 20px 20px 0 0;
+}
+
+.circuit-modal .p-dialog-content {
+  padding: 0;
+  border-radius: 20px 20px 0 0;
+  background-color: white;
+}
+
+.circuit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+/* Bouton de fermeture amélioré sans background */
+.circuit-modal-header .p-button {
+  width: 32px;
+  height: 32px;
+  background-color: transparent !important;
+  border: none;
+  color: #666;
+  padding: 0;
+  margin: 0;
+}
+
+.circuit-modal-header .p-button:hover {
+  background-color: transparent !important;
+  color: #333;
+}
+
+.circuit-modal-header .p-button:focus {
+  box-shadow: none;
+}
+
+.circuit-list {
+  max-height: 60vh; /* Réduit la hauteur maximale */
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.circuit-item {
+  padding: 15px;
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+}
+
+.circuit-item-content {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-right: 30px; /* Espace pour le chevron */
+}
+
+.circuit-item-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.circuit-item-info {
+  display: flex;
+  align-items: center;
+}
+
+.circuit-creator {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #555;
+  flex-grow: 1;
+}
+
+/* Positionnement du texte "appliqué" */
+.circuit-applied {
+  color: #4CAF50;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  right: 30px; /* Aligné à gauche du chevron */
+  top: 10px; /* Positionné au-dessus */
+}
+
+.circuit-applied i {
+  margin-left: 5px;
+  color: #4CAF50;
+}
+
+/* Style pour le chevron */
+.circuit-expand-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.3s ease; /* Transition fluide pour la rotation */
+}
+
+/* Animation pour le modal */
+.p-dialog-enter {
+  transform: translateY(100%);
+}
+
+.p-dialog-enter-active {
+  transform: translateY(0);
+  transition: transform 0.3s ease-out;
+}
+
+.p-dialog-exit {
+  transform: translateY(0);
+}
+
+.p-dialog-exit-active {
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in;
+}
+
+/* Style pour l'avatar */
+.p-avatar {
+  background-color: #f0f5ff;
+  color: #2196f3;
+  width: 28px;
+  height: 28px;
+}
+
+/* ====== NOUVEAUX STYLES POUR L'EXPANSION DES CIRCUITS ====== */
+
+/* Rotation du chevron quand ouvert */
+.pi-chevron-up.circuit-expand-icon {
+  transform: translateY(-50%) rotate(0deg); /* État final après rotation */
+}
+
+/* Liste des points du circuit avec animation */
+.circuit-points-list {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Styles pour l'animation de la liste des points */
+.circuit-points-enter {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.circuit-points-enter-active {
+  max-height: 500px; /* Ajustez selon la hauteur maximale souhaitée */
+  opacity: 1;
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Style pour chaque point du circuit */
+.circuit-point-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  margin-left: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.circuit-points-exit {
+  max-height: 500px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.circuit-points-exit-active {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease-in, opacity 0.3s ease-in;
+}
+
+/* Style pour le numéro du point */
+.point-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e6f0ff;
+  color: #2196f3;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* Style pour l'icône du point */
+.point-icon {
+  color: #2196f3;
+  margin-right: 10px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Style pour la description du point */
+.point-description {
+  flex-grow: 1;
+}
