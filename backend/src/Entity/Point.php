@@ -42,6 +42,9 @@ class Point
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $type = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $rang = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -127,6 +130,18 @@ class Point
     public function setType(?string $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getRang(): ?int
+    {
+        return $this->rang;
+    }
+
+    public function setRang(int $rang): static
+    {
+        $this->rang = $rang;
 
         return $this;
     }

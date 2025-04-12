@@ -42,7 +42,8 @@ interface Point {
   latitude: number;
   longitude: number;
   type: string;
-  position: number;
+  position: number; // Utilisé côté client pour l'UI
+  rang?: number; // Colonne en base de données
 }
 
 // Interface pour le circuit
@@ -119,7 +120,7 @@ const pointTypes: PointType[] = [
     color: "#E91E63",
     svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E91E63" width="32" height="32">
       <path d="M0 0h24v24H0z" fill="none"/>
-      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
     </svg>`,
   },
 ];
@@ -135,7 +136,7 @@ const createIconFromSvg = (svgString: string): L.DivIcon => {
   });
 };
 
-// Composant pour gérer la création de route
+// Composant pour gérer la création de route avec les points triés par rang
 const RoutingMachineControl = ({ points }: { points: Point[] }) => {
   const map = useMap();
   const routingControlRef = useRef<L.Routing.Control | null>(null);
@@ -149,10 +150,15 @@ const RoutingMachineControl = ({ points }: { points: Point[] }) => {
 
     // S'il y a au moins 2 points, créer un nouvel itinéraire
     if (points.length >= 2) {
+      // Trier les points par rang avant de créer les waypoints
+      const sortedPoints = [...points].sort(
+        (a, b) => (a.rang || 0) - (b.rang || 0)
+      );
+
       // Créer des waypoints à partir des points du circuit
-      const waypoints = points
-        .sort((a, b) => a.position - b.position)
-        .map((point) => L.latLng(point.latitude, point.longitude));
+      const waypoints = sortedPoints.map((point) =>
+        L.latLng(point.latitude, point.longitude)
+      );
 
       // Créer le contrôle de routage
       const routingControl = L.Routing.control({
@@ -249,17 +255,26 @@ const CircuitEditionPage: React.FC = () => {
             })
           );
 
-          const formattedPoints = pointsData
+          // Trier les points par rang s'il est défini, sinon par ID
+          const sortedPoints = pointsData
             .filter((point) => point !== null)
-            .map((point, index) => ({
-              id: point.id,
-              libelle: point.libelle || `Point ${index + 1}`,
-              description: point.description || "",
-              latitude: parseFloat(point.latitude),
-              longitude: parseFloat(point.longitude),
-              type: point.type || "information",
-              position: index,
-            }));
+            .sort((a, b) => {
+              if (a.rang !== null && b.rang !== null) {
+                return a.rang - b.rang;
+              }
+              return a.id - b.id;
+            });
+
+          const formattedPoints = sortedPoints.map((point, index) => ({
+            id: point.id,
+            libelle: point.libelle || `Point ${index + 1}`,
+            description: point.description || "",
+            latitude: parseFloat(point.latitude),
+            longitude: parseFloat(point.longitude),
+            type: point.type || "information",
+            position: index, // Pour l'UI
+            rang: point.rang !== null ? point.rang : index, // Utiliser rang s'il existe
+          }));
 
           setPoints(formattedPoints);
 
@@ -330,7 +345,17 @@ const CircuitEditionPage: React.FC = () => {
   const addPoint = () => {
     if (!tempPoint) return;
 
-    const newPoint = { ...tempPoint };
+    // Trouver le rang maximum existant + 1
+    const maxRang = points.reduce(
+      (max, point) => Math.max(max, point.rang || 0),
+      0
+    );
+
+    const newPoint = {
+      ...tempPoint,
+      rang: maxRang + 1, // Assigner le prochain rang disponible
+    };
+
     setPoints([...points, newPoint]);
     setAddPointDialogVisible(false);
     setTempPoint(null);
@@ -377,17 +402,29 @@ const CircuitEditionPage: React.FC = () => {
       icon: "pi pi-exclamation-triangle",
       acceptClassName: "p-button-danger",
       accept: () => {
-        // Supprimer le point et réorganiser les positions
-        const filteredPoints = points.filter((p) => p.position !== position);
-        const reorderedPoints = filteredPoints.map((p, idx) => ({
-          ...p,
-          position: idx,
-          libelle: p.libelle.startsWith("Point ")
-            ? `Point ${idx + 1}`
-            : p.libelle,
-        }));
+        // Récupérer le point à supprimer
+        const pointToDelete = points.find((p) => p.position === position);
 
-        setPoints(reorderedPoints);
+        // Filtrer les points et ajuster les rangs des points suivants
+        const filteredPoints = points
+          .filter((p) => p.position !== position)
+          .map((p, idx) => ({
+            ...p,
+            position: idx,
+            // Si le rang du point actuel est supérieur au rang du point supprimé, le décrémenter
+            rang:
+              pointToDelete &&
+              p.rang &&
+              pointToDelete.rang &&
+              p.rang > pointToDelete.rang
+                ? p.rang - 1
+                : p.rang,
+            libelle: p.libelle.startsWith("Point ")
+              ? `Point ${idx + 1}`
+              : p.libelle,
+          }));
+
+        setPoints(filteredPoints);
 
         toast.current?.show({
           severity: "success",
@@ -404,12 +441,22 @@ const CircuitEditionPage: React.FC = () => {
     if (position <= 0) return;
 
     const newPoints = [...points];
+
+    // Échanger les positions pour l'UI
     const temp = newPoints[position - 1];
     newPoints[position - 1] = {
       ...newPoints[position],
       position: position - 1,
     };
-    newPoints[position] = { ...temp, position: position };
+    newPoints[position] = {
+      ...temp,
+      position: position,
+    };
+
+    // Échanger les rangs en base de données
+    const tempRang = newPoints[position - 1].rang;
+    newPoints[position - 1].rang = newPoints[position].rang;
+    newPoints[position].rang = tempRang;
 
     setPoints(newPoints);
   };
@@ -419,12 +466,22 @@ const CircuitEditionPage: React.FC = () => {
     if (position >= points.length - 1) return;
 
     const newPoints = [...points];
+
+    // Échanger les positions pour l'UI
     const temp = newPoints[position + 1];
     newPoints[position + 1] = {
       ...newPoints[position],
       position: position + 1,
     };
-    newPoints[position] = { ...temp, position: position };
+    newPoints[position] = {
+      ...temp,
+      position: position,
+    };
+
+    // Échanger les rangs en base de données
+    const tempRang = newPoints[position + 1].rang;
+    newPoints[position + 1].rang = newPoints[position].rang;
+    newPoints[position].rang = tempRang;
 
     setPoints(newPoints);
   };
@@ -445,6 +502,7 @@ const CircuitEditionPage: React.FC = () => {
           longitude: point.longitude.toString(),
           type: point.type,
           circuit: `/api/circuits/${id}`,
+          rang: point.rang, // Ajouter le rang dans les données envoyées à l'API
         };
 
         if (point.id) {
@@ -487,22 +545,32 @@ const CircuitEditionPage: React.FC = () => {
     return (
       <div className="flex flex-wrap gap-2">
         <Button
-          label="Retour"
+          label={"Retour"}
           icon="pi pi-arrow-left"
           className="p-button-outlined"
           onClick={() => navigate(-1)}
         />
         <Button
           label={
-            isDraggingEnabled
+            window.innerWidth < 768
+              ? ""
+              : isDraggingEnabled
               ? "Désactiver le déplacement"
-              : "Activer le déplacement"
+              : "Activer le déplacement des points"
           }
-          icon={isDraggingEnabled ? "pi pi-lock" : "pi pi-pencil"}
-          className={`p-button-outlined ${
+          icon={isDraggingEnabled ? "pi pi-lock" : "pi pi-window-minimize"}
+          className={`p-button-outlined bg-white ${
             isDraggingEnabled ? "p-button-warning" : "p-button-help"
           }`}
           onClick={() => setIsDraggingEnabled(!isDraggingEnabled)}
+          tooltip={
+            window.innerWidth < 768
+              ? isDraggingEnabled
+                ? "Désactiver le déplacement"
+                : "Activer le déplacement"
+              : ""
+          }
+          tooltipOptions={{ position: "bottom" }}
         />
       </div>
     );
@@ -510,7 +578,7 @@ const CircuitEditionPage: React.FC = () => {
 
   const rightToolbarTemplate = () => {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-content-center gap-2 w-full mb-1">
         <Button
           label="Enregistrer"
           icon="pi pi-save"
@@ -614,17 +682,12 @@ const CircuitEditionPage: React.FC = () => {
 
           <div className="col-12 md:col-4">
             {rightToolbarTemplate()}
-            <div className="card shadow-4">
-              <h3 className="border-bottom-1 border-300 pb-2">
+            <div className="card shadow-4 flex flex-column p-2">
+              <h3 className="border-bottom-1 border-300 pb-1">
                 {circuit?.libelle || "Circuit sans nom"}
-                <div className="text-sm text-500 mt-1">
-                  {circuit?.ville_centre?.libelle}
-                  {circuit?.ville_centre?.code_postal &&
-                    ` (${circuit.ville_centre.code_postal})`}
-                </div>
               </h3>
 
-              <div className="mt-3">
+              <div className="">
                 <h4>Points du circuit</h4>
                 <p className="text-sm text-500">
                   {points.length} {points.length <= 1 ? "point" : "points"} -
