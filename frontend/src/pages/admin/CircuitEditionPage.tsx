@@ -29,7 +29,8 @@ import {
 interface PointType {
   value: string;
   label: string;
-  icon: string;
+  svgIcon: string;
+  color: string;
 }
 
 // Interface pour un point du circuit
@@ -45,15 +46,14 @@ interface Point {
 
 // Interface pour le circuit
 interface Circuit {
-  id: number;
+  id?: number;
   libelle: string;
   description?: string;
-  ville_centre: {
+  ville_centre?: {
     id: number;
     libelle: string;
     code_postal?: string;
   };
-  points: string[]; // URIs des points
 }
 
 // Interface pour la réponse d'une ville
@@ -65,55 +65,69 @@ interface VilleResponse {
   longitude: string;
 }
 
-// Interface pour la réponse d'un point
-interface PointResponse {
-  id: number;
-  libelle: string;
-  description?: string;
-  latitude: string;
-  longitude: string;
-  type?: string;
-  circuit: string; // URI du circuit
-}
-
-// Types de points disponibles
+// Types de points disponibles avec des icônes SVG
 const pointTypes: PointType[] = [
   {
     value: "depart",
     label: "Départ",
-    icon: "https://i.postimg.cc/RVdx9WBK/start-flag.png",
+    color: "#4CAF50",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4CAF50" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M14 3v7h7v4h-7v7h-4v-7H3v-4h7V3h4z"/>
+    </svg>`,
   },
   {
     value: "stop",
     label: "Arrêt",
-    icon: "https://i.postimg.cc/DZtsXcGx/stop-sign.png",
+    color: "#F44336",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#F44336" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M6 6h12v12H6z"/>
+    </svg>`,
   },
   {
     value: "attention",
     label: "Attention",
-    icon: "https://i.postimg.cc/BbHHpYLf/warning.png",
+    color: "#FF9800",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF9800" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+    </svg>`,
   },
   {
     value: "tournant",
     label: "Tournant",
-    icon: "https://i.postimg.cc/wjc3HDCY/turn.png",
+    color: "#2196F3",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2196F3" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M17.17 6.84l-4.23-4.26L10.5 5l4.2 4.2-7.27 7.28-4.93-4.93V19h7.45l-4.92-4.92 7.28-7.28 3.86 3.85V6.84z"/>
+    </svg>`,
   },
   {
     value: "information",
     label: "Information",
-    icon: "https://i.postimg.cc/QNDtGhmr/info.png",
+    color: "#9C27B0",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9C27B0" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>`,
   },
   {
     value: "arrivee",
     label: "Arrivée",
-    icon: "https://i.postimg.cc/yNsd7fXj/finish-flag.png",
+    color: "#E91E63",
+    svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E91E63" width="32" height="32">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+    </svg>`,
   },
 ];
 
-// Fonction pour créer une icône Leaflet
-const createIcon = (iconUrl: string) => {
-  return new L.Icon({
-    iconUrl,
+// Fonction pour créer une icône Leaflet à partir de SVG
+const createIconFromSvg = (svgString: string): L.DivIcon => {
+  return L.divIcon({
+    html: svgString,
+    className: "",
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
@@ -136,7 +150,6 @@ const CircuitEditionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useRef<Toast>(null);
-  const mapRef = useRef<L.Map | null>(null);
 
   const [circuit, setCircuit] = useState<Circuit | null>(null);
   const [points, setPoints] = useState<Point[]>([]);
@@ -155,88 +168,57 @@ const CircuitEditionPage: React.FC = () => {
 
   // Chargement des données du circuit
   useEffect(() => {
-    const fetchCircuit = async () => {
-      if (!id) return;
+    if (!id) return;
 
+    const fetchCircuitData = async () => {
       try {
-        // Récupérer les données du circuit
-        const circuitData = await getRequest<Circuit>(`/circuits/${id}`);
+        setIsLoading(true);
 
-        // Traiter les données du circuit
+        // Récupérer les données du circuit
+        const circuitData = await getRequest<any>(`/circuits/${id}`);
+
         setCircuit({
           id: circuitData.id,
           libelle: circuitData.libelle,
           description: circuitData.description,
           ville_centre: circuitData.ville_centre,
-          points: circuitData.points || [],
         });
 
-        // Récupérer les points associés
+        // Récupérer les points associés si disponibles
         if (circuitData.points && circuitData.points.length > 0) {
           const pointsData = await Promise.all(
-            circuitData.points.map((pointUrl: string) => {
-              // Extraire l'ID du point depuis l'URL
-              const pointId = pointUrl.split("/").pop();
-              return getRequest<PointResponse>(`/points/${pointId}`);
+            circuitData.points.map(async (pointIri: string) => {
+              const pointId = pointIri.split("/").pop();
+              return await getRequest<any>(`/points/${pointId}`);
             })
           );
 
-          const formattedPoints = pointsData.map(
-            (point: PointResponse, idx: number) => ({
+          const formattedPoints = pointsData
+            .filter((point) => point !== null)
+            .map((point, index) => ({
               id: point.id,
-              libelle: point.libelle,
-              description: point.description,
+              libelle: point.libelle || `Point ${index + 1}`,
+              description: point.description || "",
               latitude: parseFloat(point.latitude),
               longitude: parseFloat(point.longitude),
               type: point.type || "information",
-              position: idx,
-            })
-          );
+              position: index,
+            }));
 
           setPoints(formattedPoints);
 
-          // Centrer la carte sur le premier point
+          // Centrer la carte sur le premier point s'il y en a
           if (formattedPoints.length > 0) {
             setMapCenter([
               formattedPoints[0].latitude,
               formattedPoints[0].longitude,
             ]);
           } else if (circuitData.ville_centre) {
-            // Récupérer les coordonnées de la ville
-            const villeCentreId =
-              typeof circuitData.ville_centre === "object"
-                ? circuitData.ville_centre.id
-                : "0";
-
-            if (villeCentreId) {
-              const villeData = await getRequest<VilleResponse>(
-                `/villes/${villeCentreId}`
-              );
-              setMapCenter([
-                parseFloat(villeData.latitude),
-                parseFloat(villeData.longitude),
-              ]);
-            }
+            await centerMapOnVille(circuitData.ville_centre);
           }
         } else if (circuitData.ville_centre) {
-          // Récupérer les coordonnées de la ville
-          const villeCentreId =
-            typeof circuitData.ville_centre === "object"
-              ? circuitData.ville_centre.id
-              : "0";
-
-          if (villeCentreId) {
-            const villeData = await getRequest<VilleResponse>(
-              `/villes/${villeCentreId}`
-            );
-            setMapCenter([
-              parseFloat(villeData.latitude),
-              parseFloat(villeData.longitude),
-            ]);
-          }
+          await centerMapOnVille(circuitData.ville_centre);
         }
-
-        setIsLoading(false);
       } catch (error) {
         console.error("Erreur lors du chargement du circuit:", error);
         toast.current?.show({
@@ -245,12 +227,34 @@ const CircuitEditionPage: React.FC = () => {
           detail: "Impossible de charger les données du circuit",
           life: 3000,
         });
+      } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCircuit();
+    fetchCircuitData();
   }, [id]);
+
+  // Fonction pour centrer la carte sur une ville
+  const centerMapOnVille = async (ville: any) => {
+    try {
+      const villeId =
+        typeof ville === "object" ? ville.id : ville.split("/").pop();
+      const villeData = await getRequest<VilleResponse>(`/villes/${villeId}`);
+
+      if (villeData && villeData.latitude && villeData.longitude) {
+        setMapCenter([
+          parseFloat(villeData.latitude),
+          parseFloat(villeData.longitude),
+        ]);
+      }
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération des coordonnées de la ville:",
+        error
+      );
+    }
+  };
 
   // Gestion du clic sur la carte pour ajouter un point
   const handleMapClick = (latlng: L.LatLng) => {
@@ -376,8 +380,8 @@ const CircuitEditionPage: React.FC = () => {
     setIsSaving(true);
 
     try {
-      // Mettre à jour les points existants et créer les nouveaux
-      for (const point of points) {
+      // Traiter chaque point du circuit
+      const pointPromises = points.map(async (point) => {
         const pointData = {
           libelle: point.libelle,
           description: point.description || "",
@@ -389,18 +393,14 @@ const CircuitEditionPage: React.FC = () => {
 
         if (point.id) {
           // Point existant à mettre à jour
-          await patchRequest<PointResponse, typeof pointData>(
-            `/points/${point.id}`,
-            pointData
-          );
+          return await patchRequest(`/points/${point.id}`, pointData);
         } else {
           // Nouveau point à créer
-          await postRequest<PointResponse, typeof pointData>(
-            "/points",
-            pointData
-          );
+          return await postRequest("/points", pointData);
         }
-      }
+      });
+
+      await Promise.all(pointPromises);
 
       toast.current?.show({
         severity: "success",
@@ -409,9 +409,10 @@ const CircuitEditionPage: React.FC = () => {
         life: 3000,
       });
 
-      setIsSaving(false);
-      // Actualiser la page pour voir les changements
-      window.location.reload();
+      // Recharger les données du circuit
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       console.error("Erreur lors de la sauvegarde du circuit:", error);
       toast.current?.show({
@@ -420,6 +421,7 @@ const CircuitEditionPage: React.FC = () => {
         detail: "Impossible d'enregistrer les modifications",
         life: 3000,
       });
+    } finally {
       setIsSaving(false);
     }
   };
@@ -465,8 +467,9 @@ const CircuitEditionPage: React.FC = () => {
 
   // Trouver l'icône correspondant au type de point
   const getPointIcon = (type: string) => {
-    const pointType = pointTypes.find((pt) => pt.value === type);
-    return createIcon(pointType?.icon || pointTypes[4].icon); // Fallback sur l'icône d'information
+    const pointType =
+      pointTypes.find((pt) => pt.value === type) || pointTypes[4]; // Fallback sur "information"
+    return createIconFromSvg(pointType.svgIcon);
   };
 
   if (isLoading) {
@@ -568,19 +571,19 @@ const CircuitEditionPage: React.FC = () => {
           <div className="col-12 md:col-4">
             <div className="card shadow-4">
               <h3 className="border-bottom-1 border-300 pb-2">
-                {circuit?.libelle}
+                {circuit?.libelle || "Circuit sans nom"}
                 <div className="text-sm text-500 mt-1">
-                  {circuit?.ville_centre?.libelle}{" "}
+                  {circuit?.ville_centre?.libelle}
                   {circuit?.ville_centre?.code_postal &&
-                    `(${circuit.ville_centre.code_postal})`}
+                    ` (${circuit.ville_centre.code_postal})`}
                 </div>
               </h3>
 
               <div className="mt-3">
                 <h4>Points du circuit</h4>
                 <p className="text-sm text-500">
-                  {points.length} points - cliquez sur la carte pour ajouter un
-                  nouveau point
+                  {points.length} {points.length <= 1 ? "point" : "points"} -
+                  cliquez sur la carte pour ajouter un nouveau point
                 </p>
 
                 {points.length === 0 ? (
@@ -590,69 +593,94 @@ const CircuitEditionPage: React.FC = () => {
                   </div>
                 ) : (
                   <ul className="list-none p-0 m-0">
-                    {points.map((point, index) => (
-                      <li
-                        key={index}
-                        className="flex align-items-center border-bottom-1 border-300 py-2"
-                      >
-                        <div
-                          className="mr-2 flex align-items-center justify-content-center"
-                          style={{ width: "24px" }}
+                    {points.map((point, index) => {
+                      const pointType =
+                        pointTypes.find((pt) => pt.value === point.type) ||
+                        pointTypes[4];
+                      return (
+                        <li
+                          key={index}
+                          className="flex align-items-center border-bottom-1 border-300 py-2"
                         >
-                          {index + 1}
-                        </div>
-                        <img
-                          src={
-                            pointTypes.find((pt) => pt.value === point.type)
-                              ?.icon
-                          }
-                          alt={point.type}
-                          className="mr-2"
-                          style={{ width: "24px", height: "24px" }}
-                        />
-                        <div className="flex-grow-1">
-                          <div className="font-medium">{point.libelle}</div>
-                          <div className="text-xs text-500">
-                            {point.description
-                              ? point.description.slice(0, 30) +
-                                (point.description.length > 30 ? "..." : "")
-                              : "Pas de description"}
+                          <div
+                            className="mr-2 flex align-items-center justify-content-center"
+                            style={{ width: "24px" }}
+                          >
+                            {index + 1}
                           </div>
-                        </div>
-                        <div className="flex">
-                          <Button
-                            icon="pi pi-arrow-up"
-                            className="p-button-text p-button-sm mr-1"
-                            disabled={index === 0}
-                            onClick={() => movePointUp(point.position)}
-                            tooltip="Monter"
-                            tooltipOptions={{ position: "left" }}
-                          />
-                          <Button
-                            icon="pi pi-arrow-down"
-                            className="p-button-text p-button-sm mr-1"
-                            disabled={index === points.length - 1}
-                            onClick={() => movePointDown(point.position)}
-                            tooltip="Descendre"
-                            tooltipOptions={{ position: "left" }}
-                          />
-                          <Button
-                            icon="pi pi-pencil"
-                            className="p-button-text p-button-sm mr-1"
-                            onClick={() => openEditPointDialog(point)}
-                            tooltip="Modifier"
-                            tooltipOptions={{ position: "left" }}
-                          />
-                          <Button
-                            icon="pi pi-trash"
-                            className="p-button-text p-button-sm p-button-danger"
-                            onClick={() => deletePoint(point.position)}
-                            tooltip="Supprimer"
-                            tooltipOptions={{ position: "left" }}
-                          />
-                        </div>
-                      </li>
-                    ))}
+                          <div
+                            className="mr-2"
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              backgroundColor: pointType.color,
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "white",
+                            }}
+                          >
+                            <i
+                              className={
+                                point.type === "depart"
+                                  ? "pi pi-flag"
+                                  : point.type === "stop"
+                                  ? "pi pi-stop"
+                                  : point.type === "attention"
+                                  ? "pi pi-exclamation-triangle"
+                                  : point.type === "tournant"
+                                  ? "pi pi-arrow-right"
+                                  : point.type === "arrivee"
+                                  ? "pi pi-check-circle"
+                                  : "pi pi-info-circle"
+                              }
+                            ></i>
+                          </div>
+                          <div className="flex-grow-1">
+                            <div className="font-medium">{point.libelle}</div>
+                            <div className="text-xs text-500">
+                              {point.description
+                                ? point.description.slice(0, 30) +
+                                  (point.description.length > 30 ? "..." : "")
+                                : "Pas de description"}
+                            </div>
+                          </div>
+                          <div className="flex">
+                            <Button
+                              icon="pi pi-arrow-up"
+                              className="p-button-text p-button-sm mr-1 text-white"
+                              disabled={index === 0}
+                              onClick={() => movePointUp(point.position)}
+                              tooltip="Monter"
+                              tooltipOptions={{ position: "left" }}
+                            />
+                            <Button
+                              icon="pi pi-arrow-down"
+                              className="p-button-text p-button-sm mr-1 text-white"
+                              disabled={index === points.length - 1}
+                              onClick={() => movePointDown(point.position)}
+                              tooltip="Descendre"
+                              tooltipOptions={{ position: "left" }}
+                            />
+                            <Button
+                              icon="pi pi-pencil"
+                              className="p-button-text p-button-sm mr-1 text-white"
+                              onClick={() => openEditPointDialog(point)}
+                              tooltip="Modifier"
+                              tooltipOptions={{ position: "left" }}
+                            />
+                            <Button
+                              icon="pi pi-trash"
+                              className="p-button-text p-button-sm p-button-danger"
+                              onClick={() => deletePoint(point.position)}
+                              tooltip="Supprimer"
+                              tooltipOptions={{ position: "left" }}
+                            />
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -715,7 +743,7 @@ const CircuitEditionPage: React.FC = () => {
             </label>
             <Dropdown
               id="type"
-              value={tempPoint?.type}
+              value={tempPoint?.type || "information"}
               options={pointTypes}
               onChange={(e) =>
                 setTempPoint((prev) =>
@@ -725,32 +753,76 @@ const CircuitEditionPage: React.FC = () => {
               optionLabel="label"
               itemTemplate={(option) => (
                 <div className="flex align-items-center">
-                  <img
-                    src={option.icon}
-                    alt={option.label}
-                    className="mr-2"
-                    style={{ width: "24px", height: "24px" }}
-                  />
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      backgroundColor: option.color,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      marginRight: "8px",
+                    }}
+                  >
+                    <i
+                      className={
+                        option.value === "depart"
+                          ? "pi pi-flag"
+                          : option.value === "stop"
+                          ? "pi pi-stop"
+                          : option.value === "attention"
+                          ? "pi pi-exclamation-triangle"
+                          : option.value === "tournant"
+                          ? "pi pi-arrow-right"
+                          : option.value === "arrivee"
+                          ? "pi pi-check-circle"
+                          : "pi pi-info-circle"
+                      }
+                    ></i>
+                  </div>
                   <span>{option.label}</span>
                 </div>
               )}
-              valueTemplate={(option) => (
-                <div className="flex align-items-center">
-                  {option && (
-                    <>
-                      <img
-                        src={pointTypes.find((pt) => pt.value === option)?.icon}
-                        alt={option}
-                        className="mr-2"
-                        style={{ width: "24px", height: "24px" }}
-                      />
-                      <span>
-                        {pointTypes.find((pt) => pt.value === option)?.label}
-                      </span>
-                    </>
-                  )}
-                </div>
-              )}
+              valueTemplate={(value) => {
+                const option =
+                  pointTypes.find((pt) => pt.value === value) || pointTypes[4];
+                return (
+                  <div className="flex align-items-center">
+                    <div
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        backgroundColor: option.color,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        marginRight: "8px",
+                      }}
+                    >
+                      <i
+                        className={
+                          option.value === "depart"
+                            ? "pi pi-flag"
+                            : option.value === "stop"
+                            ? "pi pi-stop"
+                            : option.value === "attention"
+                            ? "pi pi-exclamation-triangle"
+                            : option.value === "tournant"
+                            ? "pi pi-arrow-right"
+                            : option.value === "arrivee"
+                            ? "pi pi-check-circle"
+                            : "pi pi-info-circle"
+                        }
+                      ></i>
+                    </div>
+                    <span>{option.label}</span>
+                  </div>
+                );
+              }}
             />
           </div>
           <div className="field mb-4">
@@ -758,14 +830,14 @@ const CircuitEditionPage: React.FC = () => {
             <div className="flex gap-2">
               <div className="flex-1">
                 <InputText
-                  value={tempPoint?.latitude.toFixed(6) || ""}
+                  value={tempPoint?.latitude?.toFixed(6) || ""}
                   disabled
                   placeholder="Latitude"
                 />
               </div>
               <div className="flex-1">
                 <InputText
-                  value={tempPoint?.longitude.toFixed(6) || ""}
+                  value={tempPoint?.longitude?.toFixed(6) || ""}
                   disabled
                   placeholder="Longitude"
                 />
@@ -833,7 +905,7 @@ const CircuitEditionPage: React.FC = () => {
             </label>
             <Dropdown
               id="edit-type"
-              value={editingPoint?.type}
+              value={editingPoint?.type || "information"}
               options={pointTypes}
               onChange={(e) =>
                 setEditingPoint((prev) =>
@@ -843,32 +915,76 @@ const CircuitEditionPage: React.FC = () => {
               optionLabel="label"
               itemTemplate={(option) => (
                 <div className="flex align-items-center">
-                  <img
-                    src={option.icon}
-                    alt={option.label}
-                    className="mr-2"
-                    style={{ width: "24px", height: "24px" }}
-                  />
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      backgroundColor: option.color,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      marginRight: "8px",
+                    }}
+                  >
+                    <i
+                      className={
+                        option.value === "depart"
+                          ? "pi pi-flag"
+                          : option.value === "stop"
+                          ? "pi pi-stop"
+                          : option.value === "attention"
+                          ? "pi pi-exclamation-triangle"
+                          : option.value === "tournant"
+                          ? "pi pi-arrow-right"
+                          : option.value === "arrivee"
+                          ? "pi pi-check-circle"
+                          : "pi pi-info-circle"
+                      }
+                    ></i>
+                  </div>
                   <span>{option.label}</span>
                 </div>
               )}
-              valueTemplate={(option) => (
-                <div className="flex align-items-center">
-                  {option && (
-                    <>
-                      <img
-                        src={pointTypes.find((pt) => pt.value === option)?.icon}
-                        alt={option}
-                        className="mr-2"
-                        style={{ width: "24px", height: "24px" }}
-                      />
-                      <span>
-                        {pointTypes.find((pt) => pt.value === option)?.label}
-                      </span>
-                    </>
-                  )}
-                </div>
-              )}
+              valueTemplate={(value) => {
+                const option =
+                  pointTypes.find((pt) => pt.value === value) || pointTypes[4];
+                return (
+                  <div className="flex align-items-center">
+                    <div
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        backgroundColor: option.color,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        marginRight: "8px",
+                      }}
+                    >
+                      <i
+                        className={
+                          option.value === "depart"
+                            ? "pi pi-flag"
+                            : option.value === "stop"
+                            ? "pi pi-stop"
+                            : option.value === "attention"
+                            ? "pi pi-exclamation-triangle"
+                            : option.value === "tournant"
+                            ? "pi pi-arrow-right"
+                            : option.value === "arrivee"
+                            ? "pi pi-check-circle"
+                            : "pi pi-info-circle"
+                        }
+                      ></i>
+                    </div>
+                    <span>{option.label}</span>
+                  </div>
+                );
+              }}
             />
           </div>
           <div className="field mb-4">
@@ -876,14 +992,14 @@ const CircuitEditionPage: React.FC = () => {
             <div className="flex gap-2">
               <div className="flex-1">
                 <InputText
-                  value={editingPoint?.latitude.toFixed(6) || ""}
+                  value={editingPoint?.latitude?.toFixed(6) || ""}
                   disabled
                   placeholder="Latitude"
                 />
               </div>
               <div className="flex-1">
                 <InputText
-                  value={editingPoint?.longitude.toFixed(6) || ""}
+                  value={editingPoint?.longitude?.toFixed(6) || ""}
                   disabled
                   placeholder="Longitude"
                 />
