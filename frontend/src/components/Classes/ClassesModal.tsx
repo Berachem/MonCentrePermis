@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import useAuth from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { Card } from 'primereact/card';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChalkboardTeacher, faList } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState } from "react";
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Paginator } from 'primereact/paginator';
-import { InputText } from 'primereact/inputtext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
+
+interface ClassesModalProps {
+  visible: boolean;
+  onHide: () => void;
+  userId?: string; // ID de l'utilisateur dont on veut voir les cours
+  readOnly?: boolean; // Si true, l'utilisateur ne peut pas modifier les cours
+}
 
 interface Course {
   id: string;
@@ -21,15 +26,14 @@ interface CourseGroup {
   courses: Course[];
 }
 
-const Classes: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, readOnly = false }) => {
   const [courseGroups, setCourseGroups] = useState<CourseGroup[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchCourseGroups = async () => {
+    // Même mockup de données que dans la page Classes
     const data = [
       {
         groupName: "Connaissance du Code de la route",
@@ -101,18 +105,16 @@ const Classes: React.FC = () => {
           { id: '20', title: 'Amendes et infractions', description: 'Comprenez les différentes infractions et amendes au code de la route.' },
         ],
       },
-    ];    
+    ];
     setCourseGroups(data);
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/');
+    if (visible) {
+      fetchCourseGroups();
     }
-    fetchCourseGroups();
-  }, [isAuthenticated, navigate]);
+  }, [visible, userId]);
 
-  //recherche
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -122,102 +124,116 @@ const Classes: React.FC = () => {
     group.courses.some(course => course.title.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  //pagination
   const paginate = (items: CourseGroup[], currentPage: number) => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return items.slice(start, end);
   };
+  
   const currentCourseGroups = paginate(filteredCourseGroups, currentPage);
 
   const onPageChange = (e: any) => {
-    setCurrentPage(e.page + 1)
+    setCurrentPage(e.page + 1);
     setItemsPerPage(e.rows);
   };
 
-  //scroll top
+  // Fonction pour faire défiler jusqu'en haut de la modale
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const modalContent = document.querySelector('.p-dialog-content');
+    if (modalContent) {
+      modalContent.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
-    <div className="justify-center items-center min-h-screen bg-gray-100 p-4 md:px-8">
-      <Card className="md:mx-8 mb-4">
-          <h1 className="font-semibold text-center">
-            <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-2 text-indigo-600" />
-            Mes cours
-          </h1>
+    <Dialog
+      visible={visible}
+      onHide={onHide}
+      dismissableMask={true}
+      showHeader={false}
+      closeOnEscape
+      position="bottom"
+      className="rounded-t-xl overflow-hidden p-0"
+      style={{ width: '100%', maxWidth: '900px' }}
+      breakpoints={{ '960px': '95vw' }}
+      contentStyle={{ padding: 0 }}
+    >
+        <div className="flex justify-between items-center p-2">
+            <Button 
+                icon="pi pi-times" 
+                onClick={onHide} 
+                className="text-white p-button-text p-button-rounded p-button-plain ml-auto p-2" 
+                aria-label="Close"
+            />
+        </div>
 
-          <div className="p-inputgroup flex-1">
-              <span className="p-inputgroup-addon">
-                  <i className="pi pi-search"></i>
-              </span>
-              <InputText 
-                placeholder="Rechercher un cour ou un groupe de cours" 
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-          </div>
+      <div className="p-4 pt-12">
+        <h2 className="text-center mb-4">
+          <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-2 text-indigo-600" />
+          {readOnly ? "Cours" : "Mes cours"}
+        </h2>
 
-          <Button 
-            icon="pi pi-plus"
-            label="Ajouter un cour"
-            className="p-button-rounded mt-2 text-sm w-full" 
-            onClick={() => console.log('Ajouter un cours')} 
+        <div className="p-inputgroup flex-1 mb-3">
+          <span className="p-inputgroup-addon">
+            <i className="pi pi-search"></i>
+          </span>
+          <InputText
+            placeholder="Rechercher un cours ou un groupe de cours"
+            value={searchQuery}
+            onChange={handleSearchChange}
           />
+        </div>
 
-      </Card>
+        {!readOnly && (
+          <Button
+            icon="pi pi-plus"
+            label="Ajouter un cours"
+            className="p-button-rounded mb-3 text-sm w-full"
+            onClick={() => console.log('Ajouter un cours')}
+          />
+        )}
 
-      <Paginator
-        first={(currentPage - 1) * itemsPerPage}
-        rows={itemsPerPage}
-        totalRecords={searchQuery.trim() === '' ? courseGroups.length : filteredCourseGroups.length}
-        onPageChange={onPageChange}
-        rowsPerPageOptions={[5, 10, 20]}
-        className="md:mx-8 mx-auto mb-2"
-      />
+        <Divider/>
 
-      <Accordion multiple className="md:mx-8" activeIndex={currentCourseGroups.map((_, index) => index)}>
-        {currentCourseGroups.map((group, groupIndex) => (
-          <AccordionTab key={groupIndex} header={group.groupName}>
-            {group.courses.map((course) => (
-              <div key={course.id}>
-                <Divider className="m-0" />
-                <div className="flex flex-column mb-3">
-                  <h3 className="text-indigo-600">{course.title}</h3>
-                  <p>{course.description}</p>
-                  <Button label="Voir le cours" icon="pi pi-arrow-right" className="button-text text-sm ml-auto" />
+        <Paginator
+          first={(currentPage - 1) * itemsPerPage}
+          rows={itemsPerPage}
+          totalRecords={filteredCourseGroups.length}
+          onPageChange={onPageChange}
+          rowsPerPageOptions={[5, 10, 20]}
+          className="mb-3"
+        />
+
+        <Accordion multiple activeIndex={currentCourseGroups.map((_, index) => index)}>
+          {currentCourseGroups.map((group, groupIndex) => (
+            <AccordionTab key={groupIndex} header={group.groupName}>
+              {group.courses.map((course) => (
+                <div key={course.id}>
+                  <Divider className="m-0" />
+                  <div className="flex flex-column mb-3">
+                    <h3 className="text-indigo-600">{course.title}</h3>
+                    <p>{course.description}</p>
+                    <Button label="Voir le cours" icon="pi pi-arrow-right" className="button-text text-sm ml-auto" />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </AccordionTab>
-        ))}
-      </Accordion>
+              ))}
+            </AccordionTab>
+          ))}
+        </Accordion>
 
-      <Paginator
-        first={(currentPage - 1) * itemsPerPage}
-        rows={itemsPerPage}
-        totalRecords={searchQuery.trim() === '' ? courseGroups.length : filteredCourseGroups.length}
-        onPageChange={onPageChange}
-        rowsPerPageOptions={[5, 10, 20]}
-        className="p-mt-3 md:mx-8 mx-auto"
-      />
+        <Paginator
+          first={(currentPage - 1) * itemsPerPage}
+          rows={itemsPerPage}
+          totalRecords={filteredCourseGroups.length}
+          onPageChange={onPageChange}
+          rowsPerPageOptions={[5, 10, 20]}
+          className="mt-3"
+        />
+      </div>
 
-
-      <Button 
-        icon="pi pi-plus"
-        className="p-button-rounded fixed bottom-0 right-0 mr-2 mb-8" 
-        onClick={() => console.log('Ajouter un cours')} 
-      />
       
-      <Button 
-        icon="pi pi-arrow-up" 
-        className="p-button-rounded fixed bottom-0 right-0 mr-2 mb-4" 
-        onClick={scrollToTop} 
-      />
-      
-    </div>
+    </Dialog>
   );
 };
 
-export default Classes;
+export default ClassesModal;

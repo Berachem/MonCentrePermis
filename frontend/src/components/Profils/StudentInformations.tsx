@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
@@ -20,8 +19,15 @@ interface studentInformations {
     autoEcole: string;
 }
 
-const StudentInformations: React.FC = () => {
+interface StudentInformationsProps {
+    userId?: string; // ID de l'utilisateur à afficher, si undefined = utilisateur connecté
+    readOnly?: boolean; // Mode lecture seule
+}
+
+const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readOnly = false }) => {
     const { logout } = useAuth();
+    // Simulation d'un ID utilisateur car nous n'avons pas encore implémenté cela dans useAuth
+    const currentUserId = "current-user-id";
     const [studentInfo, setStudentInfo] = useState<studentInformations | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedInfo, setEditedInfo] = useState<studentInformations | null>(null);
@@ -34,8 +40,23 @@ const StudentInformations: React.FC = () => {
     const [dateExamenError, setDateExamenError] = useState('');
     const toastRef = React.useRef<Toast>(null);
 
-    const fetchStudentInfo = async () => {
-        // TODO connecter le back
+    const fetchStudentInfo = async (id?: string) => {
+        // TODO connecter le back pour récupérer les infos d'un autre utilisateur si id est fourni
+        // Simulons que nous récupérons des données différentes si un ID est fourni
+        if (id && id !== currentUserId) {
+            return {
+                nom: 'Dupont',
+                prenom: 'Marie',
+                genre: 'Féminin',
+                dateNaissance: new Date('2000-03-10'),
+                email: 'marie.dupont@example.com',
+                telephone: '+33 6 98 76 54 32',
+                dateExamen: new Date('2023-12-20'),
+                autoEcole: 'Auto-École Permis Express',
+            };
+        }
+        
+        // Données par défaut (utilisateur courant)
         return {
             nom: 'Martin',
             prenom: 'Sophie',
@@ -57,12 +78,12 @@ const StudentInformations: React.FC = () => {
     useEffect(() => {
         // Appel simulé à l'API
         const getStudentInfo = async () => {
-            const data = await fetchStudentInfo();
+            const data = await fetchStudentInfo(userId);
             setStudentInfo(data);
             setEditedInfo(data);
         };
         getStudentInfo();
-    }, []);
+    }, [userId, currentUserId]);
 
     const handleEditClick = () => {
         // Réinitialiser les erreurs lors de l'entrée en mode édition
@@ -191,21 +212,23 @@ const StudentInformations: React.FC = () => {
 
     if (!studentInfo) {
         return (
-            <Card className="md:mx-8">
+            <div className="md:mx-8">
                 <div className="text-center text-gray-500">Chargement des informations...</div>
-            </Card>
+            </div>
         );
     }
+
+    const isOwnProfile = !userId || userId === currentUserId;
 
     return (
         <>
             <Toast ref={toastRef} />
-            <h2 className="text-2xl font-semibold mt-4 mb-2 md:mx-8 flex items-center">
+            <h2 className="text-2xl font-semibold mt-2 mb-2 md:mx-2 flex items-center">
                 <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-600" />
                 Informations
             </h2>
 
-            <Card className="md:mx-8">
+            <div className="md:mx-2 p-3 bg-white shadow-sm rounded-md">
                 <div className="p-2">
                     {/* Informations personnelles */}
                     <h3 className="text-indigo-600 text-xl font-semibold">Informations personnelles</h3>
@@ -281,7 +304,7 @@ const StudentInformations: React.FC = () => {
                         </div>
                     </div>
 
-                    <Divider className="my-2"/>
+                    <Divider className="my-3" />
 
                     {/* Contact */}
                     <h3 className="text-indigo-600 text-xl font-semibold">Contact</h3>
@@ -324,7 +347,7 @@ const StudentInformations: React.FC = () => {
                         </div>
                     </div>
 
-                    <Divider className="my-2"/>
+                    <Divider className="my-3" />
 
                     {/* Informations auto-école */}
                     <h3 className="text-indigo-600 text-xl font-semibold">Formation permis</h3>
@@ -375,24 +398,28 @@ const StudentInformations: React.FC = () => {
                         className="button-text text-sm ml-auto"
                     />
                     ) : (
-                        <Button
-                            label="Modifier"
-                            icon="pi pi-pencil"
-                            onClick={handleEditClick}
-                            className="button-text text-sm ml-auto"
-                        />
+                        !readOnly && isOwnProfile && (
+                            <Button
+                                label="Modifier"
+                                icon="pi pi-pencil"
+                                onClick={handleEditClick}
+                                className="button-text text-sm ml-auto"
+                            />
+                        )
                     )}
                 </div>
-            </Card>
-            
-            <div className="flex w-full m-2">  
-                <Button
-                    label="Se déconnecter"
-                    icon="pi pi-sign-out"
-                    onClick={() => {logout();}}
-                    className="p-button-danger text-sm m-auto"
-                />
             </div>
+            
+            {!readOnly && isOwnProfile && (
+                <div className="flex w-full m-2">  
+                    <Button
+                        label="Se déconnecter"
+                        icon="pi pi-sign-out"
+                        onClick={() => {logout();}}
+                        className="p-button-danger text-sm m-auto"
+                    />
+                </div>
+            )}
         </>
     );
 };

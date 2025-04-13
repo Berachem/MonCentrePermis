@@ -4,7 +4,6 @@ import About from "../pages/About";
 import NotFound from "../pages/NotFound";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import Profile from "../pages/Profile";
 import SchoolsPage from "../pages/visitor/SchoolsPage";
 import Settings from "../pages/Settings";
 import Classes from "../pages/Classes";
@@ -41,7 +40,6 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </>
         )}
@@ -54,8 +52,6 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/classes" element={<Classes />} />
             <Route path="*" element={<NotFound />} />
           </>
         )}

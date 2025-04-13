@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { Button } from "primereact/button";
-import { Avatar } from "primereact/avatar";
 import { Ripple } from "primereact/ripple";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,9 +13,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import LogoApp from "../../assets/images/branding/logo_moncentrepermis.png";
 import useAuth from "../../hooks/useAuth";
+import ProfileModal from "../Profils/ProfileModal";
 
 function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, prenom, logout } = useAuth();
 
@@ -38,6 +39,12 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   // Fonction pour basculer l'affichage du sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Fonction pour afficher la modale du profil
+  const openProfileModal = () => {
+    setIsProfileModalOpen(true);
+    setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
   };
 
   return (
@@ -92,7 +99,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
             {isAuthenticated ? (
               <>
                 <a className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
-                  onClick={() => {navigate("/profile")}}
+                  onClick={openProfileModal}
                 >
                   <FontAwesomeIcon
                     icon={faUser}
@@ -122,6 +129,12 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
           </div>
         </div>
       </Sidebar>
+
+      {/* Modale du profil */}
+      <ProfileModal 
+        visible={isProfileModalOpen}
+        onHide={() => setIsProfileModalOpen(false)}
+      />
     </div>
   );
 }
