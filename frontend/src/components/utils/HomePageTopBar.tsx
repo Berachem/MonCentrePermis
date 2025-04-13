@@ -19,10 +19,6 @@ function HomePageTopBar() {
                     />
                 </IconField>
             </div>
-            <div className="chip-container">
-                <Chip label="Circuits" icon="fa fa-road" className="mr-2 shadow-3" key={1} />
-                <Chip label="Moniteurs" icon="fa-solid fa-chalkboard-user" className="mr-2 shadow-3" key={2} />
-            </div>
         </div>
     );
 };

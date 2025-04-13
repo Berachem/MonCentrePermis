@@ -44,7 +44,7 @@ class AutoEcole
     #[ORM\OneToMany(targetEntity: Eleve::class, mappedBy: 'auto_ecole')]
     private Collection $eleves;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $libelle = null;
 
     public function __construct()

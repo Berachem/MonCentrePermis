@@ -21,6 +21,7 @@ class JWTCreatedListener
         $payload = $event->getData();
         $payload['nom'] = $user->getNom(); // Assurez-vous que la méthode getNom() existe
         $payload['prenom'] = $user->getPrenom(); // Assurez-vous que la méthode getPrenom() existe
+        $payload['userId'] = $user->getId(); // Assurez-vous que la méthode getId() existe
 
         $event->setData($payload);
     }

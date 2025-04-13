@@ -6,10 +6,12 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import SchoolsPage from "../pages/visitor/SchoolsPage";
 import Settings from "../pages/Settings";
-import Classes from "../pages/Classes";
+import ExamPage from "../pages/student/ExamPage";
 import useAuth from "../hooks/useAuth"; // Utiliser le hook pour accéder au contexte d'auth
 import { UserType } from "../enum/user";
 import UserIndicator from "../components/UserIndicator";
+import CircuitCreationPage from "../pages/admin/CircuitCreationPage";
+import CircuitEditionPage from "../pages/admin/CircuitEditionPage";
 
 function AppRoutes() {
   // Utiliser le hook useAuth pour obtenir le rôle de l'utilisateur
@@ -40,6 +42,7 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/examen/:id" element={<ExamPage />} />
             <Route path="*" element={<NotFound />} />
           </>
         )}
@@ -55,6 +58,12 @@ function AppRoutes() {
             <Route path="*" element={<NotFound />} />
           </>
         )}
+
+        <Route path="/admin/circuit/create" element={<CircuitCreationPage />} />
+        <Route
+          path="/admin/circuit/edit/:id"
+          element={<CircuitEditionPage />}
+        />
       </Routes>
     </>
   );

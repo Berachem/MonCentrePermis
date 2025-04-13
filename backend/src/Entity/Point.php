@@ -29,15 +29,21 @@ class Point
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
     private ?string $latitude = null;
-    
+
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
-    private ?string $longitude = null;    
+    private ?string $longitude = null;
 
     #[ORM\ManyToOne(inversedBy: 'points')]
     private ?Media $media = null;
 
     #[ORM\ManyToOne(inversedBy: 'points')]
     private ?Circuit $circuit = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $type = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $rang = null;
 
     public function getId(): ?int
     {
@@ -112,6 +118,30 @@ class Point
     public function setCircuit(?Circuit $circuit): static
     {
         $this->circuit = $circuit;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getRang(): ?int
+    {
+        return $this->rang;
+    }
+
+    public function setRang(int $rang): static
+    {
+        $this->rang = $rang;
 
         return $this;
     }

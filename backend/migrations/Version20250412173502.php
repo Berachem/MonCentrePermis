@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250402193935 extends AbstractMigration
+final class Version20250412173502 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,13 +20,13 @@ final class Version20250402193935 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE auto_ecole ADD libelle VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE point ADD rang INT DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE SCHEMA public');
-        $this->addSql('ALTER TABLE auto_ecole DROP libelle');
+        $this->addSql('ALTER TABLE point DROP rang');
     }
 }

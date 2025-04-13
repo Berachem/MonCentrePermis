@@ -14,10 +14,12 @@ type DecodedToken = {
   prenom: string;
   exp: number;
   roles: string[];
+  userId: string;
 };
 
 type AuthContextType = {
   userRole: string;
+  userId: string;
   isAuthenticated: boolean;
   username: string;
   nom: string;
@@ -38,6 +40,7 @@ const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userRole, setUserRole] = useState<string>("visitor");
+  const [userId, setUserId] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [nom, setNom] = useState<string>("");
@@ -61,6 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           ? decoded.roles[0].split("_")[0].toLowerCase()
           : "visitor";
       setUserRole(userRole);
+      setUserId(decoded.userId);
       setUsername(decoded.username);
       setNom(decoded.nom);
       setPrenom(decoded.prenom);
@@ -71,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(() => {
     localStorage.removeItem("jwtToken");
     setUserRole("visitor");
+    setUserId("");
     setUsername("");
     setNom("");
     setPrenom("");
@@ -80,13 +85,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
     if (token) {
-      const decoded = decodeToken(token);
+      const decoded = decodeToken(token); 
       if (decoded && decoded.exp * 1000 > Date.now()) {
         const userRole =
           decoded.roles && decoded.roles.length > 0
             ? decoded.roles[0].split("_")[1].toLowerCase()
             : "visitor";
         setUserRole(userRole);
+        setUserId(decoded.userId);
         setUsername(decoded.username);
         setNom(decoded.nom);
         setPrenom(decoded.prenom);
@@ -96,6 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } else {
       setUserRole("visitor");
+      setUserId("");
       setUsername("");
       setNom("");
       setPrenom("");
@@ -107,6 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         userRole,
+        userId,
         isAuthenticated,
         username,
         nom,

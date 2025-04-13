@@ -10,7 +10,13 @@ use Doctrine\ORM\Mapping as ORM;
 
 use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
 use App\Entity\utils\Timestampable; // AJOUTEZ CA
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+
 #[ApiResource] // AJOUTEZ CA
+#[ApiFilter(SearchFilter::class, properties: [
+    'libelle' => 'partial'
+])]
 
 #[ORM\Entity(repositoryClass: VilleRepository::class)]
 class Ville
@@ -36,9 +42,9 @@ class Ville
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
     private ?string $latitude = null;
-    
+
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8)]
-    private ?string $longitude = null;    
+    private ?string $longitude = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $code_postal = null;
