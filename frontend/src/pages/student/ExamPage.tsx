@@ -578,7 +578,7 @@ const ExamPage: React.FC = () => {
       <div style={styles.legendButton}>
         <Button
           icon={legendVisible ? "pi pi-eye-slash" : "pi pi-info-circle"}
-          className="p-button-rounded p-button-info shadow-4"
+          className="p-button-rounded p-button-info shadow-4 border-primary"
           onClick={() => setLegendVisible(!legendVisible)}
           tooltip="Afficher/Masquer la légende"
           tooltipOptions={{ position: "right" }}
@@ -593,7 +593,7 @@ const ExamPage: React.FC = () => {
               <span className="text-lg font-medium">Légende</span>
               <Button 
                 icon="pi pi-times" 
-                className="p-button-text p-button-rounded p-button-sm" 
+                className="p-button-text p-button-rounded p-button-sm bg-white" 
                 onClick={() => setLegendVisible(false)}
               />
             </div>
