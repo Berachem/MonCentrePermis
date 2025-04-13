@@ -244,9 +244,13 @@ const ExamPage: React.FC = () => {
   const defaultPosition: [number, number] = [48.8566, 2.3522];
   const [expandedCircuits, setExpandedCircuits] = useState<string[]>([]);
   const [circuitModalVisible, setCircuitModalVisible] = useState<boolean>(false);
+  const [legendVisible, setLegendVisible] = useState<boolean>(true);
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useRef<Toast>(null);
+  
+  // Distance maximale pour filtrer les circuits (en km)
+  const MAX_DISTANCE = 6;
 
   // État pour les données
   const [circuits, setCircuits] = useState<Circuit[]>([]);
@@ -338,8 +342,8 @@ const ExamPage: React.FC = () => {
               circuitLon
             );
 
-            // Filtrer les circuits à moins de 10 km
-            if (distance <= 10) {
+            // Filtrer les circuits à moins de MAX_DISTANCE km
+            if (distance <= MAX_DISTANCE) {
               return {
                 id: circuit.id,
                 nom: circuit.libelle,
@@ -371,7 +375,7 @@ const ExamPage: React.FC = () => {
           toast.current?.show({
             severity: "info",
             summary: "Information",
-            detail: "Aucun circuit trouvé à proximité du centre",
+            detail: `Aucun circuit trouvé à moins de ${MAX_DISTANCE} km du centre`,
             life: 3000,
           });
         }
@@ -478,6 +482,67 @@ const ExamPage: React.FC = () => {
       left: "30px",
       zIndex: 1000,
     },
+    legendButton: {
+      position: "fixed",
+      left: "30px",
+      top: "100px", // Position au-dessus du bouton de sélection des circuits
+      zIndex: 1000,
+    },
+    
+    // Nouveau conteneur de légende sur la gauche
+    legendContainer: {
+      position: "fixed",
+      top: "160px",
+      left: "30px",
+      zIndex: 1000,
+      maxWidth: "280px",
+      transition: "all 0.3s ease",
+    },
+    
+    legendCard: {
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
+      padding: "1rem",
+      borderRadius: "0.75rem",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      border: "1px solid var(--surface-200)",
+    },
+    
+    legendTitle: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "0.75rem",
+      borderBottom: "1px solid var(--surface-200)",
+      paddingBottom: "0.5rem",
+    },
+    
+    legendItems: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.75rem",
+    },
+    
+    legendItem: {
+      display: "flex",
+      alignItems: "center",
+      fontSize: "0.875rem", 
+      padding: "0.25rem 0",
+    },
+    
+    legendIcon: {
+      width: "24px",
+      height: "24px",
+      marginRight: "0.75rem",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    colorBox: {
+      width: "1rem",
+      height: "1rem",
+      marginRight: "0.25rem",
+      borderRadius: "50%",
+    },
   };
 
   if (isLoading) {
@@ -509,6 +574,40 @@ const ExamPage: React.FC = () => {
           />
         )}
       </div>
+      
+      <div style={styles.legendButton}>
+        <Button
+          icon={legendVisible ? "pi pi-eye-slash" : "pi pi-info-circle"}
+          className="p-button-rounded p-button-info shadow-4"
+          onClick={() => setLegendVisible(!legendVisible)}
+          tooltip="Afficher/Masquer la légende"
+          tooltipOptions={{ position: "right" }}
+        />
+      </div>
+
+      {/* Légende des icônes */}
+      {legendVisible && (
+        <div style={styles.legendContainer} className="animate__animated animate__fadeInLeft">
+          <div style={styles.legendCard}>
+            <div style={styles.legendTitle}>
+              <span className="text-lg font-medium">Légende</span>
+              <Button 
+                icon="pi pi-times" 
+                className="p-button-text p-button-rounded p-button-sm" 
+                onClick={() => setLegendVisible(false)}
+              />
+            </div>
+            <div style={styles.legendItems}>
+              {pointTypes.map((type) => (
+                <div key={type.value} style={styles.legendItem}>
+                  <div style={styles.legendIcon} dangerouslySetInnerHTML={{ __html: type.svgIcon }}></div>
+                  <span className="text-700">{type.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={styles.map}>
         <MapContainer
@@ -568,6 +667,11 @@ const ExamPage: React.FC = () => {
               className="p-button-text p-button-rounded text-white"
               onClick={() => setCircuitModalVisible(false)}
             />
+          </div>
+          
+          <div className="p-2 bg-info-50 text-info-900 text-center border-bottom-1 border-200">
+            <i className="pi pi-info-circle mr-2"></i>
+            Circuits disponibles à moins de {MAX_DISTANCE} km du centre d'examen
           </div>
 
           {circuits.map((circuit) => (
@@ -656,7 +760,7 @@ const ExamPage: React.FC = () => {
           ))}
           {circuits.length === 0 && (
             <div className="p-4 text-center text-500">
-              Aucun circuit disponible à proximité du centre.
+              Aucun circuit disponible à moins de {MAX_DISTANCE} km du centre.
             </div>
           )}
         </div>
