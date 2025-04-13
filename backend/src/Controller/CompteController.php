@@ -25,7 +25,7 @@ use Symfony\Component\Validator\Constraints\Regex;
 
 
 
-#[Route('/api/custom/create-compte')]
+#[Route('/api/compte')]
 class CompteController extends AbstractController
 {
     private $autoEcoleRepository;
@@ -43,7 +43,106 @@ class CompteController extends AbstractController
         $this->jwtManager = $jwtManager;
     }
 
-    #[Route('', name: 'create_compte', methods: ['POST'])]
+
+    #[Route('/{id}/description', name: 'compte_description', methods: ['GET'])]
+    public function getDescription(int $id): JsonResponse
+    {
+        $compte = $this->entityManager->getRepository(Compte::class)->find($id);
+    
+        if (!$compte) {
+            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+    
+        $description = $compte->getBiographie();
+    
+        if (!$description) {
+            return new JsonResponse(['message' => 'Aucune description disponible pour ce compte.'], JsonResponse::HTTP_OK);
+        }
+    
+        return new JsonResponse(['description' => $description], JsonResponse::HTTP_OK);
+    }
+    
+    #[Route('/{id}/info', name: 'compte_info', methods: ['GET'])]
+    public function getUserInfo(int $id): JsonResponse
+    {
+        $compte = $this->entityManager->getRepository(Compte::class)->find($id);
+    
+        if (!$compte) {
+            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+    
+        // Construction des infos publiques
+        $userInfo = [
+            'id' => $compte->getId(),
+            'nom' => $compte->getNom(),
+            'prenom' => $compte->getPrenom(),
+            'email' => $compte->getEmail(),
+            'telephone' => $compte->getTelephone(),
+            'biographie' => $compte->getBiographie(),
+            'photo_profil' => $compte->getPhotoProfil(),
+            'note_moyenne' => $compte->getNoteMoyenne(),
+            'date_naissance' => $compte->getDateNaissance()?->format('Y-m-d'),
+            'genre' => $compte->getGenre(),
+            'langues' => array_map(fn($langue) => $langue->getNom(), $compte->getLangues()->toArray()),
+            'permis' => array_map(fn($permis) => $permis->getNom(), $compte->getPermis()->toArray()),
+            'auto_ecole' => $compte->getAutoEcole()?->getNom(),
+            'centres_examen_favoris' => $compte->getEleve()
+                ? array_map(fn($centre) => $centre->getNom(), $compte->getEleve()->getCentresExemenFavoris()->toArray())
+                : [],
+            'cours_favoris' => $compte->getEleve()
+                ? array_map(fn($cours) => $cours->getNom(), $compte->getEleve()->getCoursFavoris()->toArray())
+                : [],
+            'circuits_favoris' => $compte->getEleve()
+                ? array_map(fn($circuit) => $circuit->getNom(), $compte->getEleve()->getCircuitsFavoris()->toArray())
+                : [],
+        ];
+    
+        return new JsonResponse($userInfo, JsonResponse::HTTP_OK);
+    }
+    
+    
+
+    #[Route('/updateDescription', name: 'update_user_description', methods: ['POST'])]
+    public function updateUserDescription(Request $request): JsonResponse
+    {
+        $authHeader = $request->headers->get('Authorization');
+    
+        if (!$authHeader || !preg_match('/^Bearer (.+)$/', $authHeader, $matches)) {
+            return new JsonResponse(['error' => 'Token JWT manquant ou invalide'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+    
+        $jwt = $matches[1];
+        $parts = explode('.', $jwt);
+        if (count($parts) !== 3) {
+            return new JsonResponse(['error' => 'Token JWT mal formé'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+    
+        $payload = json_decode(base64_decode($parts[1]), true);
+        if (!isset($payload['userId'])) {
+            return new JsonResponse(['error' => 'ID utilisateur introuvable dans le token'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+    
+        $compte = $this->entityManager->getRepository(Compte::class)->find($payload['userId']);
+    
+        if (!$compte) {
+            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+    
+        $data = json_decode($request->getContent(), true);
+        $newDescription = $data['biographie'] ?? null;
+    
+        if (empty($newDescription)) {
+            return new JsonResponse(['error' => 'La description ne peut pas être vide'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+    
+        $compte->setBiographie($newDescription);
+        $this->entityManager->flush();
+    
+        return new JsonResponse(['message' => 'Description mise à jour avec succès'], JsonResponse::HTTP_OK);
+    }
+    
+
+    #[Route('/create-compte', name: 'create_compte', methods: ['POST'])]
     public function createCompte(
         Request $request,
         EntityManagerInterface $em,

@@ -10,28 +10,53 @@ import useAuth from "../../hooks/useAuth";
 import StudentInformations from "./StudentInformations";
 import MoniteurInformations from "./MoniteurInformations";
 import { UserType } from "../../enum/user";
+import { getRequest, postRequest, } from "../../interfaces/utils/api";
+import { UserInfo } from "os";
 
 interface ProfileModalProps {
   visible: boolean;
   onHide: () => void;
-  userId?: string; // ID de l'utilisateur à afficher, si undefined = utilisateur connecté
+  UserId?: string; // ID de l'utilisateur à afficher, si undefined = utilisateur connecté
   userType?: UserType; // Type d'utilisateur à afficher (teacher ou student)
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, userId: propUserId, userType: propUserType }) => {
-  const { isAuthenticated, prenom: currentPrenom, nom: currentNom, userRole: currentUserRole } = useAuth();
+
+interface UserDescriptionResponse {
+  description: string;
+}
+
+interface UserInfoResponse {
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  biographie: string;
+  photo_profil: string;
+  note_moyenne: string;
+  date_naissance: string;
+  langues: string[];
+  permis: string[];
+  auto_ecole: string | null;
+  centres_examen_favoris: string[];
+  cours_favoris: string[];
+  circuits_favoris: string[];
+}
+
+const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, UserId: propUserId, userType: propUserType }) => {
+  const { isAuthenticated, prenom: currentPrenom, nom: currentNom, userRole: currentUserRole} = useAuth();
   const [description, setDescription] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [userInfo, setUserInfo] = useState({ nom: '', prenom: '' });
-  
+  const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
+
+
   // État pour simuler l'ID et le type d'utilisateur
   const [viewingOtherProfile, setViewingOtherProfile] = useState(false);
-  const [userId, setUserId] = useState<string | undefined>(propUserId);
+  const [UserId, setUserId] = useState<string | undefined>(propUserId);
   const [userType, setUserType] = useState<UserType | undefined>(propUserType);
   
   // ID fictif pour le mode "autre profil"
-  const otherUserId = "other-user-123";
+  const otherUserId = "34";
   
   // Gérer le changement de mode profil
   useEffect(() => {
@@ -45,49 +70,126 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, userId: pr
     }
   }, [viewingOtherProfile, currentUserRole]);
   
-  const isOwnProfile = !userId || userId === "current-user-id"; // Simulation car l'ID n'est pas encore implémenté
+  const isOwnProfile = !UserId || UserId === "current-user-id"; // Simulation car l'ID n'est pas encore implémenté
   const displayRole = userType || currentUserRole;
 
-  const updateUserDescription = async (newDesc: string) => {
-    console.log("API appelée pour modifier la description:", newDesc);
-    // TODO : Connecter le back
-  };
+// Fonction pour mettre à jour la description de l'utilisateur
+const updateUserDescription = async (newDesc: string) => {
+  console.log("API appelée pour modifier la description:", newDesc);
 
-  const fetchUserDescription = async (id?: string) => {
-    // TODO : connecter le back pour récupérer la description d'un autre utilisateur
-    if (id && id === otherUserId) {
-      return "Moniteur professionnel spécialisé dans les permis moto et poids lourds. Plus de 15 ans d'expérience.";
-    }
-    
-    // Description utilisateur courant
-    return "Développeur passionné par les technologies web et mobiles. Toujours curieux d'apprendre de nouvelles choses !";
-  };
+  try {
+    // Appel à l'API pour mettre à jour la description de l'utilisateur
+    const response = await postRequest(
+      `/compte/updateDescription`, // L'URL de votre API
+      { biographie: newDesc }, // Les données envoyées : ici, la nouvelle description
+      {
+        headers: {
+          "Content-Type": "application/json",
+          // Ajouter un token d'authentification si nécessaire
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+        },
+      }
+    );
 
-  const fetchUserInfo = async (id?: string) => {
-    // TODO : connecter le back pour récupérer les informations basiques de l'utilisateur
-    if (id && id === otherUserId) {
-      return { 
-        nom: displayRole === UserType.Teacher ? "Moreau" : "Dupont",
-        prenom: displayRole === UserType.Teacher ? "Julien" : "Marie"
-      };
+    // Gérer la réponse
+    console.log("Description mise à jour avec succès:", response);
+    // Optionnel : Mettez à jour l'état local avec la nouvelle description
+    // setDescription(newDesc);
+  } catch (error) {
+    console.error("Erreur lors de l'appel API pour mettre à jour la description:", error);
+  }
+};
+
+
+  
+  
+  const fetchUserDescription = async (id?: number): Promise<string> => {
+    try {
+      // Faire la requête à l'API pour obtenir la description de l'élève
+      const response = await getRequest<UserDescriptionResponse>(`/compte/${id}/description`);
+      
+      // Si la réponse contient une description, on la retourne
+      if (response.description) {
+        return response.description;
+      } else {
+        // Si aucune description n'est disponible, on retourne un message d'absence de description
+        return "Aucune description disponible pour cet élève.";
+      }
+    } catch (error: unknown) {
+      // Ici, on utilise une vérification de type pour s'assurer que l'erreur est une instance de Error
+      if (error instanceof Error) {
+        console.error("Erreur lors de la récupération de la description:", error.message);
+      } else {
+        console.error("Erreur inconnue:", error);
+      }
+      return "Erreur de chargement de la description";
     }
-    
-    return { nom: currentNom, prenom: currentPrenom };
   };
+  
+  
+  const fetchUserInfo = async (id?: number): Promise<UserInfoResponse | null> => {
+    // Vérifier si l'ID est défini et si c'est un autre utilisateur
+    if (id) {
+      try {
+        // Appeler l'API pour récupérer les informations publiques de l'élève
+        const data = await getRequest<UserInfoResponse>(`/compte/${id}/info`);
+  
+        // Retourner les informations obtenues
+        return {
+          nom: data.nom,
+          prenom: data.prenom,
+          email: data.email,
+          telephone: data.telephone,
+          biographie: data.biographie,
+          photo_profil: data.photo_profil,
+          note_moyenne: data.note_moyenne,
+          date_naissance: data.date_naissance,
+          langues: data.langues,
+          permis: data.permis,
+          auto_ecole: data.auto_ecole,
+          centres_examen_favoris: data.centres_examen_favoris,
+          cours_favoris: data.cours_favoris,
+          circuits_favoris: data.circuits_favoris
+        };
+      } catch (error) {
+        console.error('Erreur lors de la récupération des informations utilisateur:', error);
+        return null;  // Retourner null en cas d'erreur
+      }
+    }
+  
+    // Si c'est l'utilisateur courant, on retourne les informations locales par défaut
+    return {
+      nom: currentNom,
+      prenom: currentPrenom,
+      email: '',
+      telephone: '',
+      biographie: '',
+      photo_profil: '',
+      note_moyenne: '',
+      date_naissance: '',
+      langues: [],
+      permis: [],
+      auto_ecole: null,
+      centres_examen_favoris: [],
+      cours_favoris: [],
+      circuits_favoris: []
+    };
+  };
+  
 
   useEffect(() => {
     if (visible) {
       const loadUserData = async () => {
-        const desc = await fetchUserDescription(userId);
-        const info = await fetchUserInfo(userId);
+        const desc = await fetchUserDescription(35);
+        const info : UserInfoResponse | null = await fetchUserInfo(35);
         setDescription(desc);
         setNewDescription(desc);
-        setUserInfo(info);
+        if(info) setUserInfo(info);
       };
       
       loadUserData();
     }
-  }, [visible, userId, userType]);
+  }, [visible, UserId, userType]);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -143,11 +245,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, userId: pr
       <div className="justify-center items-center min-h-full p-2">
         <div className="p-2 mb-2">
           <div className="m-auto w-fit">
-            <Avatar label={userInfo.prenom.charAt(0)} size="xlarge" shape="circle" />
+            {userInfo ? (
+              <>
+                <Avatar label={userInfo.prenom.charAt(0)} size="xlarge" shape="circle" />
+                <p className="text-center text-lg">
+                  <b>{userInfo.nom + " " + userInfo.prenom}</b>
+                </p>
+              </>
+            ) : (
+              <p>Utilisateur non trouvé</p> // Message d'erreur ou autre contenu à afficher si `userInfo` est null
+            )}
           </div>
-          <p className="text-center text-lg">
-            <b>{userInfo.nom + " " + userInfo.prenom}</b>
-          </p>
           <div className="flex justify-between items-center">
             {isEditing ? (
               <input
@@ -185,9 +293,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, userId: pr
         <Divider className="my-2" />
 
         {displayRole === UserType.Teacher ? (
-          <MoniteurInformations userId={userId} readOnly={viewingOtherProfile} />
+          <MoniteurInformations userId={UserId} readOnly={viewingOtherProfile} />
         ) : (
-          <StudentInformations userId={userId} readOnly={viewingOtherProfile} />
+          <StudentInformations userId={UserId} readOnly={viewingOtherProfile} />
         )}
       </div>
     </Dialog>

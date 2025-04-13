@@ -82,7 +82,7 @@ const StudentForm = forwardRef((props, ref) => {
 
         try {
             // console.log("Données envoyées à l'API:", formData);
-            const response: ApiResponse = await postRequest('custom/create-compte', formData);
+            const response: ApiResponse = await postRequest('/compte/create-compte', formData);
             // console.log("Réponse de l'API:", response);
             if (response.token) {
                 localStorage.setItem('jwtToken', response.token);

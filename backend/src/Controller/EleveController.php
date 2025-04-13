@@ -109,6 +109,81 @@ class EleveController extends AbstractController
         return new JsonResponse(['message' => 'Centres d\'examen favoris mis à jour'], JsonResponse::HTTP_OK);
     }
 
+    #[Route('/{id}/info', name: 'eleve_info', methods: ['GET'])]
+    public function getStudentInfo(int $id): JsonResponse
+    {
+        $eleve = $this->entityManager->getRepository(Eleve::class)->findOneBy(['compte' => $id]);
+
+        if (!$eleve) {
+            return new JsonResponse(['error' => 'Élève non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $compte = $eleve->getCompte();
+
+        $eleveInfo = [
+            'nom' => $compte->getNom(),
+            'prenom' => $compte->getPrenom(),
+            'genre' => $compte->getGenre(),
+            'dateNaissance' => $compte->getDateNaissance()?->format('Y-m-d'),
+            'email' => $compte->getEmail(),
+            'telephone' => $compte->getTelephone(),
+            'dateExamen' => $eleve->getDateExamenPratique()?->format('Y-m-d'),
+            'autoEcole' => $eleve->getAutoEcole()?->getNom(),
+        ];
+
+        return new JsonResponse($eleveInfo, JsonResponse::HTTP_OK);
+    }
+
+
+#[Route('/UpdateInfo', name: 'eleve_update_info', methods: ['POST'])]
+public function updateStudentInfo(Request $request): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
+
+    if (!$data || !isset($data['email'])) {
+        return new JsonResponse(['error' => 'Email requis pour identifier le compte'], JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    // Récupérer le compte via l'email
+    $compte = $this->entityManager->getRepository(Compte::class)->findOneBy(['email' => $data['email']]);
+
+    if (!$compte) {
+        return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    $eleve = $compte->getEleve();
+
+    if (!$eleve) {
+        return new JsonResponse(['error' => 'Élève non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+    }
+
+    // Mise à jour des infos Compte
+    $compte->setNom($data['nom'] ?? $compte->getNom());
+    $compte->setPrenom($data['prenom'] ?? $compte->getPrenom());
+    $compte->setGenre($data['genre'] ?? $compte->getGenre());
+    $compte->setTelephone($data['telephone'] ?? $compte->getTelephone());
+
+    if (!empty($data['dateNaissance'])) {
+        $compte->setDateNaissance(new \DateTime($data['dateNaissance']));
+    }
+
+    // Mise à jour des infos Élève
+    if (!empty($data['dateExamen'])) {
+        $eleve->setDateExamen(new \DateTime($data['dateExamen']));
+    }
+
+    if (!empty($data['autoEcole'])) {
+        $autoEcole = $this->entityManager->getRepository(\App\Entity\AutoEcole::class)->findOneBy(['nom' => $data['autoEcole']]);
+        if ($autoEcole) {
+            $eleve->setAutoEcole($autoEcole);
+        }
+    }
+
+    $this->entityManager->flush();
+
+    return new JsonResponse(['success' => true, 'message' => 'Informations de l\'élève mises à jour avec succès'], JsonResponse::HTTP_OK);
+}
+
     #[Route('/{id}/centres-examen-favoris/{centreId}', name: 'remove_centre_examen_favori', methods: ['DELETE'])]
     public function removeCentreExamenFavori(int $id, int $centreId): JsonResponse
     {

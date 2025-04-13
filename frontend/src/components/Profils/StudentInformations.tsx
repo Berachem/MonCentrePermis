@@ -7,6 +7,7 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
 import useAuth from "../../hooks/useAuth";
+import { getRequest, postRequest } from '../../interfaces/utils/api';
 
 interface studentInformations {
     nom: string;
@@ -40,45 +41,38 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
     const [dateExamenError, setDateExamenError] = useState('');
     const toastRef = React.useRef<Toast>(null);
 
-    const fetchStudentInfo = async (id?: string) => {
-        // TODO connecter le back pour récupérer les infos d'un autre utilisateur si id est fourni
-        // Simulons que nous récupérons des données différentes si un ID est fourni
-        if (id && id !== currentUserId) {
-            return {
-                nom: 'Dupont',
-                prenom: 'Marie',
-                genre: 'Féminin',
-                dateNaissance: new Date('2000-03-10'),
-                email: 'marie.dupont@example.com',
-                telephone: '+33 6 98 76 54 32',
-                dateExamen: new Date('2023-12-20'),
-                autoEcole: 'Auto-École Permis Express',
-            };
+    const fetchStudentInfo = async (id?: number) => {
+
+        const response = await getRequest<studentInformations>(`/eleves/${id}/info`)
+        if (response) {
+            return response;
         }
-        
-        // Données par défaut (utilisateur courant)
-        return {
-            nom: 'Martin',
-            prenom: 'Sophie',
-            genre: 'Féminin',
-            dateNaissance: new Date('1998-08-22'),
-            email: 'sophie.martin@example.com',
-            telephone: '+33 6 12 34 56 78',
-            dateExamen: new Date('2023-11-15'), // Date au lieu de string
-            autoEcole: 'Auto-École Excellence',
-        };
+
+        return null
+
     };
 
     const saveStudentInfo = async (updatedInfo: studentInformations) => {
-        // TODO connecter le back
-        console.log("API appelée pour sauvegarder les informations:", updatedInfo);
-        return;
+        try {
+            console.log("API appelée pour sauvegarder les informations:", updatedInfo);
+    
+            const response = await postRequest<studentInformations, studentInformations>(
+                `/eleves/UpdateInfo`,
+                updatedInfo
+            );
+    
+            console.log("Réponse de l'API:", response);
+            // Traiter la réponse si nécessaire
+        } catch (error) {
+            console.error("Erreur lors de la sauvegarde des informations:", error);
+            // Gérer l'erreur si nécessaire
+        }
     };
 
     useEffect(() => {
         // Appel simulé à l'API
         const getStudentInfo = async () => {
-            const data = await fetchStudentInfo(userId);
+            const data = await fetchStudentInfo(34);
             setStudentInfo(data);
             setEditedInfo(data);
         };
@@ -298,7 +292,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
                                 </div>
                             ) : (
                                 <div className="mb-1">
-                                    <strong>Naissance :</strong> {studentInfo.dateNaissance.toLocaleDateString('fr-FR')}
+                                    <strong>Naissance :</strong> {new Date(studentInfo.dateNaissance).toLocaleDateString()}
                                 </div>
                             )}
                         </div>
@@ -366,7 +360,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
                                 </div>
                             ) : (
                                 <div className="mb-1">
-                                    <strong>Date d'examen :</strong> {studentInfo.dateExamen.toLocaleDateString('fr-FR')}
+                                    <strong>Date d'examen :</strong> {new Date(studentInfo.dateExamen).toLocaleDateString()}
                                 </div>
                             )}  
                         </div>

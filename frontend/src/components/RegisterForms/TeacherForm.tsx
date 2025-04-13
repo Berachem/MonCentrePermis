@@ -90,7 +90,7 @@ const TeacherForm = forwardRef((props, ref) =>{
         try {
 
             // Envoi de la requête POST à l'API
-            const response: ApiResponse = await postRequest('custom/create-compte', formData);
+            const response: ApiResponse = await postRequest('/compte/create-compte', formData);
 
             // console.log("Réponse de l'API:", response);
             if (response.token) {
