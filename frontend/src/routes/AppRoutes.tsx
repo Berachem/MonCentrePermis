@@ -35,30 +35,27 @@ function AppRoutes() {
         )}
 
         {/* Routes pour les élèves */}
-        {isAuthenticated && userRole === UserType.Student && (
+        {/*     {isAuthenticated && userRole === UserType.Student && (
           <>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/examen/:id" element={<ExamPage />} />
-            <Route path="*" element={<NotFound />} />
+
           </>
         )}
 
-        {/* Routes pour les enseignants */}
+    
         {isAuthenticated && userRole === UserType.Teacher && (
           <>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
+   
           </>
         )}
+ */}
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/settings" element={<Settings />} />
 
+        <Route path="*" element={<NotFound />} />
+        <Route path="/examen/:id" element={<ExamPage />} />
         <Route path="/admin/circuit/create" element={<CircuitCreationPage />} />
         <Route
           path="/admin/circuit/edit/:id"

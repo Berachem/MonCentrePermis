@@ -9,7 +9,7 @@ import {
   faUser,
   faCog,
   faInfoCircle,
-  faUserGroup
+  faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import LogoApp from "../../assets/images/branding/logo_moncentrepermis.png";
@@ -21,7 +21,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const navigate = useNavigate();
-  const { isAuthenticated, prenom, logout, userId } = useAuth();
+  const { isAuthenticated, prenom, logout, userId, userRole } = useAuth();
 
   // Liste des éléments de menu
   const inviteRoutes = [
@@ -51,7 +51,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   };
 
   // Fonction pour afficher la modale du profil d'un autre utilisateur (ID 9)
-  const openOtherProfileModal = (id:string) => {
+  const openOtherProfileModal = (id: string) => {
     setSelectedProfileId(id); // ID fixe pour l'exemple
     setIsProfileModalOpen(true);
     setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
@@ -100,15 +100,18 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
                   </a>
                 </li>
               ))}
-              
-              <li onClick={()=>{openOtherProfileModal("9")}}>
+
+              <li
+                onClick={() => {
+                  openOtherProfileModal("9");
+                }}
+              >
                 <a className="p-ripple flex align-items-center cursor-pointer p-3 text-700 hover:surface-100 transition-duration-150 transition-colors w-full">
                   <FontAwesomeIcon icon={faUserGroup} className="mr-2" />
                   <span className="font-medium">Voir profil test (ID 9)</span>
                   <Ripple />
                 </a>
               </li>
-              
             </ul>
           </div>
 
@@ -117,13 +120,26 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
             <hr className="mb-3 mx-3 border-top-1 surface-border" />
             {isAuthenticated ? (
               <>
-                <a className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
+                <a
+                  className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
                   onClick={openOwnProfileModal}
                 >
-                  <FontAwesomeIcon
-                    icon={faUser}
-                    className="text-lg text-primary border-round-3xl p-1 bg-primary-100"
-                  />
+                  {userRole === "eleve" ? (
+                    <img
+                      src="https://amelesarcades.bleep.fr/wp-content/uploads/2017/06/permisb.png"
+                      alt="eleve"
+                      style={{
+                        width: "25px",
+                        height: "25px",
+                        borderRadius: "50%",
+
+                        verticalAlign: "middle",
+                        display: "inline-block",
+                      }}
+                    />
+                  ) : (
+                    "🕵️"
+                  )}
                   <span className="font-bold">{prenom}</span>
                 </a>
                 <div className="text-center mt-2">
@@ -151,7 +167,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
       </Sidebar>
 
       {/* Modale du profil unique avec ID dynamique */}
-      <ProfileModal 
+      <ProfileModal
         visible={isProfileModalOpen}
         onHide={() => setIsProfileModalOpen(false)}
         idRequested={selectedProfileId}
