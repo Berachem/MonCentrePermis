@@ -287,11 +287,13 @@ export function HomePageMap() {
     }
   }, [favoriteCentres]); // Seulement favoriteCentres comme dépendance
 
-  // Gestion du clic sur un centre favori dans la liste
-  // Merde 1
+  // Centre selectionné
   const handleFavoriteCentreClick = (centre: CentreExamen) => {
-    // Sélectionner également le centre pour afficher la popup
-    handleMarkerClick(centre);
+    // Rechercher le centre complet dans centresData pour avoir toutes les propriétés
+    const completeCentre = centresData.find(c => c.id === centre.id);
+    
+    // Utiliser le centre complet s'il existe, sinon utiliser le centre original
+    handleMarkerClick(completeCentre || centre);
   };
 
   /* Centre sélectionné */
@@ -485,20 +487,20 @@ export function HomePageMap() {
           />
         )}
         {selectedCentre && (
-          <DetailsCentreMap
-            visible={visible}
-            onHide={() => setVisible(false)}
-            centre={{
-              name: selectedCentre.libelle,
-              address: selectedCentre.adresse,
-              city: selectedCentre.ville.libelle, // Extraire le nom de la ville si nécessaire
-              postalCode: selectedCentre.ville.code_postal ?? "N/A",
-              id: selectedCentre.id,
-              isFavorite: selectedCentre.isFavorite,
-            }}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        )}
+        <DetailsCentreMap
+          visible={visible}
+          onHide={() => setVisible(false)}
+          centre={{
+            name: selectedCentre.libelle || "Centre sans nom",
+            address: selectedCentre.adresse || "Adresse inconnue",
+            city: selectedCentre.ville?.libelle || "Ville inconnue", // Utilisez l'opérateur ?. pour éviter l'erreur si ville est undefined
+            postalCode: selectedCentre.ville?.code_postal || "N/A",
+            id: selectedCentre.id,
+            isFavorite: selectedCentre.isFavorite,
+          }}
+          onToggleFavorite={handleToggleFavorite}
+        />
+      )}
       </div>
     </>
   );
