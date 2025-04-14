@@ -911,16 +911,20 @@ const CircuitEditionPage: React.FC = () => {
                   <span>{option.label}</span>
                 </div>
               )}
-              valueTemplate={(value) => {
-                const option =
-                  pointTypes.find((pt) => pt.value === value) || pointTypes[4];
+              valueTemplate={(option) => {
+                const selectedOption = typeof option === 'string' 
+                  ? pointTypes.find(pt => pt.value === option) 
+                  : option;
+                
+                if (!selectedOption) return <span>Sélectionnez un type</span>;
+                
                 return (
                   <div className="flex align-items-center">
                     <div
                       style={{
                         width: "24px",
                         height: "24px",
-                        backgroundColor: option.color,
+                        backgroundColor: selectedOption.color,
                         borderRadius: "50%",
                         display: "flex",
                         alignItems: "center",
@@ -931,21 +935,21 @@ const CircuitEditionPage: React.FC = () => {
                     >
                       <i
                         className={
-                          option.value === "depart"
+                          selectedOption.value === "depart"
                             ? "pi pi-flag"
-                            : option.value === "stop"
+                            : selectedOption.value === "stop"
                               ? "pi pi-stop"
-                              : option.value === "attention"
+                              : selectedOption.value === "attention"
                                 ? "pi pi-exclamation-triangle"
-                                : option.value === "tournant"
+                                : selectedOption.value === "tournant"
                                   ? "pi pi-arrow-right"
-                                  : option.value === "arrivee"
+                                  : selectedOption.value === "arrivee"
                                     ? "pi pi-check-circle"
                                     : "pi pi-info-circle"
                         }
                       ></i>
                     </div>
-                    <span>{option.label}</span>
+                    <span>{selectedOption.label}</span>
                   </div>
                 );
               }}
