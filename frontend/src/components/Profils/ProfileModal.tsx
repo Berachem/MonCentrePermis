@@ -180,8 +180,8 @@ const updateUserDescription = async (newDesc: string) => {
   useEffect(() => {
     if (visible) {
       const loadUserData = async () => {
-        const desc = await fetchUserDescription(35);
-        const info : UserInfoResponse | null = await fetchUserInfo(35);
+        const desc = await fetchUserDescription(34);
+        const info : UserInfoResponse | null = await fetchUserInfo(34);
         setDescription(desc);
         setNewDescription(desc);
         if(info) setUserInfo(info);

@@ -105,27 +105,10 @@ class CompteController extends AbstractController
     #[Route('/updateDescription', name: 'update_user_description', methods: ['POST'])]
     public function updateUserDescription(Request $request): JsonResponse
     {
-        $authHeader = $request->headers->get('Authorization');
-    
-        if (!$authHeader || !preg_match('/^Bearer (.+)$/', $authHeader, $matches)) {
-            return new JsonResponse(['error' => 'Token JWT manquant ou invalide'], JsonResponse::HTTP_UNAUTHORIZED);
-        }
-    
-        $jwt = $matches[1];
-        $parts = explode('.', $jwt);
-        if (count($parts) !== 3) {
-            return new JsonResponse(['error' => 'Token JWT mal formé'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-    
-        $payload = json_decode(base64_decode($parts[1]), true);
-        if (!isset($payload['userId'])) {
-            return new JsonResponse(['error' => 'ID utilisateur introuvable dans le token'], JsonResponse::HTTP_UNAUTHORIZED);
-        }
-    
-        $compte = $this->entityManager->getRepository(Compte::class)->find($payload['userId']);
+        $compte = $this->getUser();
     
         if (!$compte) {
-            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
         }
     
         $data = json_decode($request->getContent(), true);

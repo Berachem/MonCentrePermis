@@ -55,19 +55,13 @@ class MoniteurController extends AbstractController
 
 
     #[Route('/UpdateInfo', name: 'moniteur_update_info', methods: ['POST'])]
-public function updateMoniteurInfo(Request $request): JsonResponse
+    public function updateMoniteurInfo(Request $request): JsonResponse
 {
-    $data = json_decode($request->getContent(), true);
-
-    if (!$data || !isset($data['email'])) {
-        return new JsonResponse(['error' => 'Email requis pour identifier le compte'], JsonResponse::HTTP_BAD_REQUEST);
-    }
-
-    // Récupérer le compte via l'email (ou autre stratégie d'identification sécurisée)
-    $compte = $this->entityManager->getRepository(Compte::class)->findOneBy(['email' => $data['email']]);
+    /** @var Compte|null $compte */
+    $compte = $this->getUser();
 
     if (!$compte) {
-        return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
     }
 
     $moniteur = $compte->getMoniteur();
@@ -76,12 +70,14 @@ public function updateMoniteurInfo(Request $request): JsonResponse
         return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
     }
 
+    $data = json_decode($request->getContent(), true);
+
     // Mise à jour des infos Compte
     $compte->setNom($data['nom'] ?? $compte->getNom());
     $compte->setPrenom($data['prenom'] ?? $compte->getPrenom());
     $compte->setGenre($data['genre'] ?? $compte->getGenre());
     $compte->setTelephone($data['telephone'] ?? $compte->getTelephone());
-    
+
     if (!empty($data['dateNaissance'])) {
         $compte->setDateNaissance(new \DateTime($data['dateNaissance']));
     }
