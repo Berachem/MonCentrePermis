@@ -12,6 +12,7 @@ import { UserType } from "../enum/user";
 type DecodedToken = {
   username: string;
   nom: string;
+  typeUserid: string;
   prenom: string;
   exp: number;
   roles: string[];
@@ -20,6 +21,7 @@ type DecodedToken = {
 
 type AuthContextType = {
   userRole: string;
+  typeUserid : string;
   userId: string;
   isAuthenticated: boolean;
   username: string;
@@ -42,6 +44,7 @@ const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userRole, setUserRole] = useState<UserType>(UserType.Visitor);
   const [userId, setUserId] = useState<string>("");
+  const [typeUserid, settypeUserid] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [nom, setNom] = useState<string>("");
@@ -67,6 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserRole(userRole as UserType);
       setUserId(decoded.userId);
       setUsername(decoded.username);
+      settypeUserid(decoded.typeUserid);
       setNom(decoded.nom);
       setPrenom(decoded.prenom);
       setIsAuthenticated(true);
@@ -77,6 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("jwtToken");
     setUserRole(UserType.Visitor);
     setUserId("");
+    settypeUserid("");
     setUsername("");
     setNom("");
     setPrenom("");
@@ -96,6 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserId(decoded.userId);
         setUsername(decoded.username);
         setNom(decoded.nom);
+        settypeUserid(decoded.typeUserid);
         setPrenom(decoded.prenom);
         setIsAuthenticated(true);
       } else {
@@ -116,6 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         userRole,
         userId,
+        typeUserid,
         isAuthenticated,
         username,
         nom,

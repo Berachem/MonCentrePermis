@@ -267,120 +267,37 @@ const ExamPage: React.FC = () => {
     }
   }, [location.state]);
 
-  // Charger les circuits proches du centre
   useEffect(() => {
     const fetchCircuits = async () => {
       if (!centre) return;
-
+  
       try {
         setIsLoading(true);
-
-        // Récupérer les coordonnées du centre
-        let centreLat: number, centreLon: number;
-        try {
-          const centreData = await getRequest<{ latitude: string; longitude: string }>(
-            `/custom/centre_examens/${centre.id}`
-          );
-          if (centreData.latitude && centreData.longitude) {
-            centreLat = parseFloat(centreData.latitude);
-            centreLon = parseFloat(centreData.longitude);
-            setMapCenter([centreLat, centreLon]);
-          } else {
-            throw new Error("Coordonnées du centre non disponibles");
-          }
-        } catch (error) {
-          console.error("Erreur lors du chargement des coordonnées du centre:", error);
-          toast.current?.show({
-            severity: "warn",
-            summary: "Avertissement",
-            detail: "Impossible de charger les coordonnées du centre, filtrage approximatif",
-            life: 3000,
-          });
-          centreLat = defaultPosition[0];
-          centreLon = defaultPosition[1];
-        }
-
-        // Charger tous les circuits
-        const circuitsResponse = await getRequest<CircuitsCollectionResponse>("/circuits");
-
-        // Filtrer les circuits proches
-        const formattedCircuits = await Promise.all(
-          circuitsResponse.member.map(async (circuit) => {
-            // Récupérer les points si disponibles
-            const points = await Promise.all(
-              circuit.points.map(async (pointIri: string) => {
-                const pointId = pointIri.split("/").pop();
-                const pointData = await getRequest<PointApiResponse>(`/points/${pointId}`);
-                return {
-                  id: pointData.id,
-                  latitude: parseFloat(pointData.latitude),
-                  longitude: parseFloat(pointData.longitude),
-                  description: pointData.description || `Point ${pointData.id}`,
-                  rang: pointData.rang !== undefined ? pointData.rang : 0,
-                  type: pointData.type || "information",
-                };
-              })
-            );
-
-            // Déterminer les coordonnées du circuit
-            let circuitLat: number, circuitLon: number;
-            if (points.length > 0) {
-              circuitLat = points[0].latitude;
-              circuitLon = points[0].longitude;
-            } else {
-              const villeId = circuit.ville_centre.split("/").pop();
-              const villeData = await getRequest<Ville>(`/villes/${villeId}`);
-              circuitLat = parseFloat(villeData.latitude);
-              circuitLon = parseFloat(villeData.longitude);
-            }
-
-            // Calculer la distance
-            const distance = haversineDistance(
-              centreLat,
-              centreLon,
-              circuitLat,
-              circuitLon
-            );
-
-            // Filtrer les circuits à moins de MAX_DISTANCE km
-            if (distance <= MAX_DISTANCE) {
-              return {
-                id: circuit.id,
-                nom: circuit.libelle,
-                description: circuit.description || "Aucune description",
-                createur: circuit.createur || "Anonyme",
-                points: points.sort((a, b) => a.rang - b.rang),
-              };
-            }
-            return null;
-          })
+  
+        const circuitsProches = await getRequest<Circuit[]>(
+          `/custom/centre_examens/${centre.id}/circuits-proches`
         );
-
-        // Supprimer les circuits non valides
-        const validCircuits = formattedCircuits.filter(
-          (circuit): circuit is Circuit => circuit !== null
-        );
-
-        setCircuits(validCircuits);
-
-        if (validCircuits.length > 0) {
-          setSelectedCircuit(validCircuits[0].nom);
-          if (validCircuits[0].points.length > 0) {
+  
+        setCircuits(circuitsProches);
+  
+        if (circuitsProches.length > 0) {
+          setSelectedCircuit(circuitsProches[0].nom);
+          if (circuitsProches[0].points.length > 0) {
             setMapCenter([
-              validCircuits[0].points[0].latitude,
-              validCircuits[0].points[0].longitude,
+              circuitsProches[0].points[0].latitude,
+              circuitsProches[0].points[0].longitude,
             ]);
           }
         } else {
           toast.current?.show({
             severity: "info",
             summary: "Information",
-            detail: `Aucun circuit trouvé à moins de ${MAX_DISTANCE} km du centre`,
+            detail: "Aucun circuit trouvé à proximité du centre",
             life: 3000,
           });
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des circuits:", error);
+        console.error("Erreur lors du chargement des circuits proches :", error);
         toast.current?.show({
           severity: "error",
           summary: "Erreur",
@@ -391,11 +308,12 @@ const ExamPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+  
     if (centre) {
       fetchCircuits();
     }
   }, [centre]);
+  
 
   // Mettre à jour le centre de la carte quand le circuit change
   useEffect(() => {

@@ -56,6 +56,14 @@ class Circuit
     #[ORM\ManyToMany(targetEntity: Eleve::class, mappedBy: 'circuits_favoris')]
     private Collection $eleves;
 
+    // Ajoute la relation ManyToOne avec l'entité Moniteur
+    #[ORM\ManyToOne(targetEntity: Moniteur::class, inversedBy: 'circuits')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[ApiProperty]  // Pas besoin de spécifier l'IRI ici, API Platform gère ça automatiquement
+    private ?Moniteur $id_moniteur = null;
+
+    
+
     public function __construct()
     {
         $this->medias = new ArrayCollection();
@@ -206,6 +214,18 @@ class Circuit
         if ($this->eleves->removeElement($elefe)) {
             $elefe->removeCircuitsFavori($this);
         }
+
+        return $this;
+    }
+
+    public function getIdMoniteur(): ?Moniteur
+    {
+        return $this->id_moniteur;
+    }
+
+    public function setIdMoniteur(?Moniteur $id_moniteur): static
+    {
+        $this->id_moniteur = $id_moniteur;
 
         return $this;
     }

@@ -50,10 +50,17 @@ class Moniteur
     #[ORM\OneToMany(targetEntity: Cours::class, mappedBy: 'moniteur')]
     private Collection $cours;
 
+    /**
+     * @var Collection<int, Circuit>
+     */
+    #[ORM\OneToMany(targetEntity: Circuit::class, mappedBy: 'id_moniteur')]
+    private Collection $circuits;
+
     public function __construct()
     {
         $this->autoEcoles = new ArrayCollection();
         $this->cours = new ArrayCollection();
+        $this->circuits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -171,6 +178,36 @@ class Moniteur
             // set the owning side to null (unless already changed)
             if ($cour->getMoniteur() === $this) {
                 $cour->setMoniteur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Circuit>
+     */
+    public function getCircuits(): Collection
+    {
+        return $this->circuits;
+    }
+
+    public function addCircuit(Circuit $circuit): static
+    {
+        if (!$this->circuits->contains($circuit)) {
+            $this->circuits->add($circuit);
+            $circuit->setIdMoniteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCircuit(Circuit $circuit): static
+    {
+        if ($this->circuits->removeElement($circuit)) {
+            // set the owning side to null (unless already changed)
+            if ($circuit->getIdMoniteur() === $this) {
+                $circuit->setIdMoniteur(null);
             }
         }
 

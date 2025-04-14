@@ -22,6 +22,16 @@ class JWTCreatedListener
         $payload['nom'] = $user->getNom(); // Assurez-vous que la méthode getNom() existe
         $payload['prenom'] = $user->getPrenom(); // Assurez-vous que la méthode getPrenom() existe
         $payload['userId'] = $user->getId(); // Assurez-vous que la méthode getId() existe
+        if ($user->getEleve()) {
+            $payload['typeUserid'] = $user->getEleve()->getId();
+        } elseif ($user->getMoniteur()) {
+            $payload['typeUserid'] =  $user->getMoniteur()->getId();
+        } else {
+            throw new \Exception("Type d'utilisateur non reconnu (ni élève, ni moniteur)");
+        }
+        
+
+        
 
         $event->setData($payload);
     }

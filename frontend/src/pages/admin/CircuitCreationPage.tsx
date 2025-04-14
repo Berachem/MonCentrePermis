@@ -9,6 +9,7 @@ import { Toast } from "primereact/toast";
 import { useRef } from "react";
 import HomePageTopBar from "../../components/utils/HomePageTopBar";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
+import useAuth from "../../hooks/useAuth";
 
 interface Ville {
   id: number;
@@ -35,6 +36,9 @@ interface CircuitResponse {
 }
 
 const CircuitCreationPage: React.FC = () => {
+
+
+  const { typeUserid } = useAuth();
   const [libelle, setLibelle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [selectedVille, setSelectedVille] = useState<Ville | null>(null);
@@ -123,12 +127,20 @@ const CircuitCreationPage: React.FC = () => {
 
     setIsLoading(true);
 
+    console.log("Création du circuit avec les données suivantes:", {
+      libelle,
+      description,
+      selectedVille,
+      typeUserid,
+    });
+    
     try {
       // Créer le circuit via l'API
       const circuitData = {
         libelle,
         description,
         ville_centre: `/api/villes/${selectedVille.id}`,
+        id_moniteur: `/api/moniteurs/${typeUserid}`,
       };
 
       const response = await postRequest<CircuitResponse, typeof circuitData>(
