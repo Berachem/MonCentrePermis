@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import { jwtDecode } from "jwt-decode";
+import { UserType } from "../enum/user";
 
 // Définir le type pour le token décodé
 type DecodedToken = {
@@ -39,7 +40,7 @@ const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [userRole, setUserRole] = useState<string>("visitor");
+  const [userRole, setUserRole] = useState<UserType>(UserType.Visitor);
   const [userId, setUserId] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
@@ -63,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         decoded.roles && decoded.roles.length > 0
           ? decoded.roles[0].split("_")[0].toLowerCase()
           : "visitor";
-      setUserRole(userRole);
+      setUserRole(userRole as UserType);
       setUserId(decoded.userId);
       setUsername(decoded.username);
       setNom(decoded.nom);
@@ -74,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem("jwtToken");
-    setUserRole("visitor");
+    setUserRole(UserType.Visitor);
     setUserId("");
     setUsername("");
     setNom("");
@@ -91,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           decoded.roles && decoded.roles.length > 0
             ? decoded.roles[0].split("_")[1].toLowerCase()
             : "visitor";
-        setUserRole(userRole);
+        setUserRole(userRole as UserType);
         setUserId(decoded.userId);
         setUsername(decoded.username);
         setNom(decoded.nom);
@@ -101,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logout();
       }
     } else {
-      setUserRole("visitor");
+      setUserRole(UserType.Visitor);
       setUserId("");
       setUsername("");
       setNom("");

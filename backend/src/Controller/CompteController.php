@@ -63,42 +63,53 @@ class CompteController extends AbstractController
     }
     
     #[Route('/{id}/info', name: 'compte_info', methods: ['GET'])]
-    public function getUserInfo(int $id): JsonResponse
-    {
-        $compte = $this->entityManager->getRepository(Compte::class)->find($id);
-    
-        if (!$compte) {
-            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
-        }
-    
-        // Construction des infos publiques
-        $userInfo = [
-            'id' => $compte->getId(),
-            'nom' => $compte->getNom(),
-            'prenom' => $compte->getPrenom(),
-            'email' => $compte->getEmail(),
-            'telephone' => $compte->getTelephone(),
-            'biographie' => $compte->getBiographie(),
-            'photo_profil' => $compte->getPhotoProfil(),
-            'note_moyenne' => $compte->getNoteMoyenne(),
-            'date_naissance' => $compte->getDateNaissance()?->format('Y-m-d'),
-            'genre' => $compte->getGenre(),
-            'langues' => array_map(fn($langue) => $langue->getNom(), $compte->getLangues()->toArray()),
-            'permis' => array_map(fn($permis) => $permis->getNom(), $compte->getPermis()->toArray()),
-            'auto_ecole' => $compte->getAutoEcole()?->getNom(),
-            'centres_examen_favoris' => $compte->getEleve()
-                ? array_map(fn($centre) => $centre->getNom(), $compte->getEleve()->getCentresExemenFavoris()->toArray())
-                : [],
-            'cours_favoris' => $compte->getEleve()
-                ? array_map(fn($cours) => $cours->getNom(), $compte->getEleve()->getCoursFavoris()->toArray())
-                : [],
-            'circuits_favoris' => $compte->getEleve()
-                ? array_map(fn($circuit) => $circuit->getNom(), $compte->getEleve()->getCircuitsFavoris()->toArray())
-                : [],
-        ];
-    
-        return new JsonResponse($userInfo, JsonResponse::HTTP_OK);
+public function getUserInfo(int $id): JsonResponse
+{
+    $compte = $this->entityManager->getRepository(Compte::class)->find($id);
+
+    if (!$compte) {
+        return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
     }
+
+    // Déterminer le type de compte
+    $typeCompte = null;
+    if ($compte->getMoniteur()) {
+        $typeCompte = 'moniteur';
+    } elseif ($compte->getEleve()) {
+        $typeCompte = 'eleve';
+    } else {
+        $typeCompte = 'visitor';
+    }
+
+    // Construction des infos publiques
+    $userInfo = [
+        'id' => $compte->getId(),
+        'nom' => $compte->getNom(),
+        'prenom' => $compte->getPrenom(),
+        'email' => $compte->getEmail(),
+        'telephone' => $compte->getTelephone(),
+        'biographie' => $compte->getBiographie(),
+        'photo_profil' => $compte->getPhotoProfil(),
+        'note_moyenne' => $compte->getNoteMoyenne(),
+        'date_naissance' => $compte->getDateNaissance()?->format('Y-m-d'),
+        'genre' => $compte->getGenre(),
+        'langues' => array_map(fn($langue) => $langue->getNom(), $compte->getLangues()->toArray()),
+        'permis' => array_map(fn($permis) => $permis->getNom(), $compte->getPermis()->toArray()),
+        'auto_ecole' => $compte->getAutoEcole()?->getNom(),
+        'centres_examen_favoris' => $compte->getEleve()
+            ? array_map(fn($centre) => $centre->getNom(), $compte->getEleve()->getCentresExemenFavoris()->toArray())
+            : [],
+        'cours_favoris' => $compte->getEleve()
+            ? array_map(fn($cours) => $cours->getNom(), $compte->getEleve()->getCoursFavoris()->toArray())
+            : [],
+        'circuits_favoris' => $compte->getEleve()
+            ? array_map(fn($circuit) => $circuit->getNom(), $compte->getEleve()->getCircuitsFavoris()->toArray())
+            : [],
+        'type_compte' => $typeCompte,
+    ];
+
+    return new JsonResponse($userInfo, JsonResponse::HTTP_OK);
+}
     
     
 

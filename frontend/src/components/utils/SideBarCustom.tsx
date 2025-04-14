@@ -9,6 +9,7 @@ import {
   faUser,
   faCog,
   faInfoCircle,
+  faUserGroup
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import LogoApp from "../../assets/images/branding/logo_moncentrepermis.png";
@@ -18,8 +19,9 @@ import ProfileModal from "../Profils/ProfileModal";
 function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const navigate = useNavigate();
-  const { isAuthenticated, prenom, logout } = useAuth();
+  const { isAuthenticated, prenom, logout, userId } = useAuth();
 
   // Liste des éléments de menu
   const inviteRoutes = [
@@ -41,8 +43,16 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Fonction pour afficher la modale du profil
-  const openProfileModal = () => {
+  // Fonction pour afficher la modale du profil avec l'ID de l'utilisateur connecté
+  const openOwnProfileModal = () => {
+    setSelectedProfileId(userId);
+    setIsProfileModalOpen(true);
+    setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
+  };
+
+  // Fonction pour afficher la modale du profil d'un autre utilisateur (ID 9)
+  const openOtherProfileModal = (id:string) => {
+    setSelectedProfileId(id); // ID fixe pour l'exemple
     setIsProfileModalOpen(true);
     setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
   };
@@ -90,6 +100,15 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
                   </a>
                 </li>
               ))}
+              
+              <li onClick={()=>{openOtherProfileModal("9")}}>
+                <a className="p-ripple flex align-items-center cursor-pointer p-3 text-700 hover:surface-100 transition-duration-150 transition-colors w-full">
+                  <FontAwesomeIcon icon={faUserGroup} className="mr-2" />
+                  <span className="font-medium">Voir profil test (ID 9)</span>
+                  <Ripple />
+                </a>
+              </li>
+              
             </ul>
           </div>
 
@@ -99,7 +118,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
             {isAuthenticated ? (
               <>
                 <a className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
-                  onClick={openProfileModal}
+                  onClick={openOwnProfileModal}
                 >
                   <FontAwesomeIcon
                     icon={faUser}
@@ -131,10 +150,11 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
         </div>
       </Sidebar>
 
-      {/* Modale du profil */}
+      {/* Modale du profil unique avec ID dynamique */}
       <ProfileModal 
         visible={isProfileModalOpen}
         onHide={() => setIsProfileModalOpen(false)}
+        idRequested={selectedProfileId}
       />
     </div>
   );

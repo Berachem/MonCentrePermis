@@ -26,9 +26,7 @@ interface StudentInformationsProps {
 }
 
 const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readOnly = false }) => {
-    const { logout } = useAuth();
-    // Simulation d'un ID utilisateur car nous n'avons pas encore implémenté cela dans useAuth
-    const currentUserId = "current-user-id";
+    const { logout, userId: currentUserId } = useAuth();
     const [studentInfo, setStudentInfo] = useState<studentInformations | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedInfo, setEditedInfo] = useState<studentInformations | null>(null);
@@ -41,40 +39,46 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
     const [dateExamenError, setDateExamenError] = useState('');
     const toastRef = React.useRef<Toast>(null);
 
-    const fetchStudentInfo = async (id?: number) => {
+    // Détermine si on affiche son propre profil ou celui d'un autre utilisateur
+    const isOwnProfile = !userId || userId === currentUserId;
 
-        const response = await getRequest<studentInformations>(`/eleves/${id}/info`)
-        if (response) {
+    const fetchStudentInfo = async (id?: string) => {
+        try {
+            const response = await getRequest<studentInformations>(`/eleves/${id}/info`);
             return response;
+          
+        } catch (error) {
+            console.error("Erreur lors de la récupération des informations:", error);
+            return null;
         }
-
-        return null
-
     };
 
     const saveStudentInfo = async (updatedInfo: studentInformations) => {
         try {
-            console.log("API appelée pour sauvegarder les informations:", updatedInfo);
-    
             const response = await postRequest<studentInformations, studentInformations>(
                 `/eleves/UpdateInfo`,
                 updatedInfo
             );
-    
+            
             console.log("Réponse de l'API:", response);
-            // Traiter la réponse si nécessaire
+            return response;
         } catch (error) {
             console.error("Erreur lors de la sauvegarde des informations:", error);
-            // Gérer l'erreur si nécessaire
+            throw error;
         }
     };
 
     useEffect(() => {
-        // Appel simulé à l'API
         const getStudentInfo = async () => {
-            const data = await fetchStudentInfo(34);
-            setStudentInfo(data);
-            setEditedInfo(data);
+            try {
+                const data = await fetchStudentInfo(userId);
+                if (data) {
+                    setStudentInfo(data);
+                    setEditedInfo(data);
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement des informations:", error);
+            }
         };
         getStudentInfo();
     }, [userId, currentUserId]);
@@ -91,7 +95,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
 
     const handleSaveClick = async () => {
         if (editedInfo) {
-            // Vérifier les champs obligatoires
+            // Vérification des champs obligatoires et validation
             let hasError = false;
 
             if (!editedInfo.nom || editedInfo.nom.trim() === '') {
@@ -142,11 +146,9 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
             }
 
             if (!hasError) {
-                // Créer une copie pour éviter les références d'objet
                 const infoToSave = {...editedInfo};
                 
-                // Pour les champs non-obligatoires, s'assurer de ne pas envoyer de chaînes vides
-                // mais plutôt conserver les valeurs existantes
+                // Pour les champs non-obligatoires, conserver les valeurs existantes
                 if (studentInfo) {
                     if (!infoToSave.genre || infoToSave.genre.trim() === '') 
                         infoToSave.genre = studentInfo.genre;
@@ -163,7 +165,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
                 
                 try {
                     await saveStudentInfo(infoToSave);
-                    setStudentInfo(infoToSave); // Met à jour les informations affichées
+                    setStudentInfo(infoToSave);
                     setIsEditing(false);
                     toastRef.current?.show({ 
                         severity: 'success', 
@@ -212,197 +214,194 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({ userId, readO
         );
     }
 
-    const isOwnProfile = !userId || userId === currentUserId;
-
     return (
         <>
             <Toast ref={toastRef} />
-            <h2 className="text-2xl font-semibold mt-2 mb-2 md:mx-2 flex items-center">
+            <h2 className="text-center">
                 <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-600" />
                 Informations
             </h2>
 
-            <div className="md:mx-2 p-3 bg-white shadow-sm rounded-md">
-                <div className="p-2">
-                    {/* Informations personnelles */}
-                    <h3 className="text-indigo-600 text-xl font-semibold">Informations personnelles</h3>
-                    <div className="grid p-fluid">
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Nom :</strong><br/>
-                                    <InputText type="text" 
-                                        className="p-inputtext-sm" 
-                                        value={editedInfo?.nom || ''}
-                                        onChange={(e) => handleInputChange('nom', e.target.value)} 
-                                        invalid={nomError !== ''}
-                                    />
-                                    {nomError && <small className="p-error block">{nomError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Nom :</strong> {studentInfo.nom}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Prénom :</strong><br/>
-                                    <InputText type="text" 
-                                        className="p-inputtext-sm" 
-                                        value={editedInfo?.prenom || ''}
-                                        onChange={(e) => handleInputChange('prenom', e.target.value)} 
-                                        invalid={prenomError !== ''}
-                                    />
-                                    {prenomError && <small className="p-error block">{prenomError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Prénom :</strong> {studentInfo.prenom}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Genre :</strong><br/>
-                                    <InputText type="text" 
-                                        className="p-inputtext-sm" 
-                                        value={editedInfo?.genre || ''}
-                                        onChange={(e) => handleInputChange('genre', e.target.value)} 
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Genre :</strong> {studentInfo.genre}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1" >
-                                    <strong>Naissance :</strong><br/>
-                                    <Calendar 
-                                        className="p-inputtext-sm"
-                                        dateFormat="dd/mm/yy"
-                                        value={editedInfo?.dateNaissance || null} 
-                                        onChange={(e) => handleInputChange('dateNaissance', e.target.value as Date)} 
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Naissance :</strong> {new Date(studentInfo.dateNaissance).toLocaleDateString()}
-                                </div>
-                            )}
-                        </div>
+            <div className="p-2">
+                {/* Informations personnelles */}
+                <h3 className="text-indigo-600 text-xl font-semibold">Informations personnelles</h3>
+                <div className="grid p-fluid">
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Nom :</strong><br/>
+                                <InputText type="text" 
+                                    className="p-inputtext-sm" 
+                                    value={editedInfo?.nom || ''}
+                                    onChange={(e) => handleInputChange('nom', e.target.value)} 
+                                    invalid={nomError !== ''}
+                                />
+                                {nomError && <small className="p-error block">{nomError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Nom :</strong> {studentInfo.nom}
+                            </div>
+                        )}
                     </div>
-
-                    <Divider className="my-3" />
-
-                    {/* Contact */}
-                    <h3 className="text-indigo-600 text-xl font-semibold">Contact</h3>
-                    <div className="grid p-fluid">
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Email :</strong><br/>
-                                    <InputText type="text" 
-                                        className="p-inputtext-sm" 
-                                        value={editedInfo?.email || ''}
-                                        onChange={(e) => handleInputChange('email', e.target.value)} 
-                                        invalid={emailError !== ''}
-                                    />
-                                    {emailError && <small className="p-error block">{emailError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Email :</strong> {studentInfo.email}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Téléphone :</strong><br/>
-                                    <InputText type="text" 
-                                        className="p-inputtext-sm" 
-                                        value={editedInfo?.telephone || ''}
-                                        onChange={(e) => handleInputChange('telephone', e.target.value)} 
-                                        invalid={telephoneError !== ''}
-                                    />
-                                    {telephoneError && <small className="p-error block">{telephoneError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Téléphone :</strong> {studentInfo.telephone}
-                                </div>
-                            )}
-                        </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Prénom :</strong><br/>
+                                <InputText type="text" 
+                                    className="p-inputtext-sm" 
+                                    value={editedInfo?.prenom || ''}
+                                    onChange={(e) => handleInputChange('prenom', e.target.value)} 
+                                    invalid={prenomError !== ''}
+                                />
+                                {prenomError && <small className="p-error block">{prenomError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Prénom :</strong> {studentInfo.prenom}
+                            </div>
+                        )}
                     </div>
-
-                    <Divider className="my-3" />
-
-                    {/* Informations auto-école */}
-                    <h3 className="text-indigo-600 text-xl font-semibold">Formation permis</h3>
-                    <div className="grid p-fluid">
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Date d'examen :</strong><br/>
-                                    <Calendar 
-                                        className="p-inputtext-sm"
-                                        dateFormat="dd/mm/yy"
-                                        value={editedInfo?.dateExamen || null} 
-                                        onChange={(e) => handleInputChange('dateExamen', e.target.value as Date)} 
-                                    />
-                                    {dateExamenError && <small className="p-error block">{dateExamenError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Date d'examen :</strong> {new Date(studentInfo.dateExamen).toLocaleDateString()}
-                                </div>
-                            )}  
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Auto-école :</strong><br/>
-                                    <InputText type="text" 
-                                        className="p-inputtext-sm" 
-                                        value={editedInfo?.autoEcole || ''}
-                                        onChange={(e) => handleInputChange('autoEcole', e.target.value)} 
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Auto-école :</strong> {studentInfo.autoEcole}
-                                </div>
-                            )}
-                        </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Genre :</strong><br/>
+                                <InputText type="text" 
+                                    className="p-inputtext-sm" 
+                                    value={editedInfo?.genre || ''}
+                                    onChange={(e) => handleInputChange('genre', e.target.value)} 
+                                />
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Genre :</strong> {studentInfo.genre}
+                            </div>
+                        )}
+                    </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1" >
+                                <strong>Naissance :</strong><br/>
+                                <Calendar 
+                                    className="p-inputtext-sm"
+                                    dateFormat="dd/mm/yy"
+                                    value={editedInfo?.dateNaissance || null} 
+                                    onChange={(e) => handleInputChange('dateNaissance', e.target.value as Date)} 
+                                />
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Naissance :</strong> {new Date(studentInfo.dateNaissance).toLocaleDateString()}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="flex w-full mt-2">
-                    {isEditing ? (
-                    <Button
-                        label="Sauvegarder"
-                        icon="pi pi-check"
-                        onClick={handleSaveClick}
-                        className="button-text text-sm ml-auto"
-                    />
-                    ) : (
-                        !readOnly && isOwnProfile && (
-                            <Button
-                                label="Modifier"
-                                icon="pi pi-pencil"
-                                onClick={handleEditClick}
-                                className="button-text text-sm ml-auto"
-                            />
-                        )
-                    )}
+                <Divider className="my-3" />
+
+                {/* Contact */}
+                <h3 className="text-indigo-600 text-xl font-semibold">Contact</h3>
+                <div className="grid p-fluid">
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Email :</strong><br/>
+                                <InputText type="text" 
+                                    className="p-inputtext-sm" 
+                                    value={editedInfo?.email || ''}
+                                    onChange={(e) => handleInputChange('email', e.target.value)} 
+                                    invalid={emailError !== ''}
+                                />
+                                {emailError && <small className="p-error block">{emailError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Email :</strong> {studentInfo.email}
+                            </div>
+                        )}
+                    </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Téléphone :</strong><br/>
+                                <InputText type="text" 
+                                    className="p-inputtext-sm" 
+                                    value={editedInfo?.telephone || ''}
+                                    onChange={(e) => handleInputChange('telephone', e.target.value)} 
+                                    invalid={telephoneError !== ''}
+                                />
+                                {telephoneError && <small className="p-error block">{telephoneError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Téléphone :</strong> {studentInfo.telephone}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <Divider className="my-3" />
+
+                {/* Informations auto-école */}
+                <h3 className="text-indigo-600 text-xl font-semibold">Formation permis</h3>
+                <div className="grid p-fluid">
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Date d'examen :</strong><br/>
+                                <Calendar 
+                                    className="p-inputtext-sm"
+                                    dateFormat="dd/mm/yy"
+                                    value={editedInfo?.dateExamen || null} 
+                                    onChange={(e) => handleInputChange('dateExamen', e.target.value as Date)} 
+                                />
+                                {dateExamenError && <small className="p-error block">{dateExamenError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Date d'examen :</strong> {new Date(studentInfo.dateExamen).toLocaleDateString()}
+                            </div>
+                        )}  
+                    </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Auto-école :</strong><br/>
+                                <InputText type="text" 
+                                    className="p-inputtext-sm" 
+                                    value={editedInfo?.autoEcole || ''}
+                                    onChange={(e) => handleInputChange('autoEcole', e.target.value)} 
+                                />
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Auto-école :</strong> {studentInfo.autoEcole}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            <div className="flex w-full mt-2">
+                {isEditing ? (
+                <Button
+                    label="Sauvegarder"
+                    icon="pi pi-check"
+                    onClick={handleSaveClick}
+                    className="button-text text-sm ml-auto"
+                />
+                ) : (
+                    !readOnly && isOwnProfile && (
+                        <Button
+                            label="Modifier"
+                            icon="pi pi-pencil"
+                            onClick={handleEditClick}
+                            className="button-text text-sm ml-auto"
+                        />
+                    )
+                )}
+            </div>
+           
             
             {!readOnly && isOwnProfile && (
                 <div className="flex w-full m-2">  

@@ -38,11 +38,8 @@ interface MoniteurInformationsProps {
 }
 
 const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({ userId, readOnly = false }) => {
-    const { logout } = useAuth();
-    // Simulation d'un ID utilisateur car nous n'avons pas encore implémenté cela dans useAuth
-    const currentUserId = "current-user-id";
+    const { logout, userId: currentUserId } = useAuth();
     const [moniteurInfo, setMoniteurInfo] = useState<moniteurInformations | null>(null);
-    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [editedInfo, setEditedInfo] = useState<moniteurInformations | null>(null);
     // Nouvel état pour contrôler la visibilité de la modale des cours
@@ -56,41 +53,46 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({ userId, rea
     const [dateDebutCarriereError, setDateDebutCarriereError] = useState('');
     const toastRef = React.useRef<Toast>(null);
 
-    const fetchMoniteurInfo = async (id?: number) => {
-        console.log("moniteurId:", id);
-        const response = await getRequest<moniteurInformations>(`/moniteurs/${id}/info`)
-        if (response) {
+    // Détermine si on affiche son propre profil ou celui d'un autre utilisateur
+    const isOwnProfile = !userId || userId === currentUserId;
+
+    const fetchMoniteurInfo = async (id?: string) => {
+        try {
+            const response = await getRequest<moniteurInformations>(`/moniteurs/${id}/info`);
             return response;
+            
+        } catch (error) {
+            console.error("Erreur lors de la récupération des informations:", error);
+            return null;
         }
-
-        return null
-
     };
 
     const saveMoniteurInfo = async (updatedInfo: moniteurInformations) => {
         try {
-            console.log("API appelée pour sauvegarder les informations:", updatedInfo);
-    
             const response = await postRequest<moniteurInformations, moniteurInformations>(
                 `/moniteurs/UpdateInfo`,
                 updatedInfo
             );
-    
+            
             console.log("Réponse de l'API:", response);
-            // Traiter la réponse si nécessaire
+            return response;
         } catch (error) {
             console.error("Erreur lors de la sauvegarde des informations:", error);
-            // Gérer l'erreur si nécessaire
+            throw error;
         }
     };
-    
 
     useEffect(() => {
-        // Appel simulé à l'API
         const getMoniteurInfo = async () => {
-            const data = await fetchMoniteurInfo(35);
-            setMoniteurInfo(data);
-            setEditedInfo(data);
+            try {
+                const data = await fetchMoniteurInfo(userId);
+                if (data) {
+                    setMoniteurInfo(data);
+                    setEditedInfo(data);
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement des informations:", error);
+            }
         };
         getMoniteurInfo();
     }, [userId, currentUserId]);
@@ -232,208 +234,205 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({ userId, rea
         );
     }
 
-    const isOwnProfile = !userId || userId === currentUserId;
-
     return (
         <>
             <Toast ref={toastRef} />
-            <h2 className="text-2xl font-semibold mt-2 mb-2 md:mx-2 flex items-center">
+            <h2 className="text-center">
                 <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-600" />
                 Informations
             </h2>
-
-            <div className="md:mx-2 p-3 bg-white shadow-sm rounded-md">
-                <div className="p-2">
-                    {/* Informations personnelles */}
-                    <h3 className="text-indigo-600 text-xl font-semibold">Informations personnelles</h3>
-                    <div className="grid p-fluid">
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Nom :</strong><br />
-                                    <InputText type="text"
-                                        className="p-inputtext-sm"
-                                        value={editedInfo?.nom || ''}
-                                        onChange={(e) => handleInputChange('nom', e.target.value)}
-                                        invalid={nomError !== ''}
-                                    />
-                                    {nomError && <small className="p-error block">{nomError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Nom :</strong> {moniteurInfo.nom}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Prénom :</strong><br />
-                                    <InputText type="text"
-                                        className="p-inputtext-sm"
-                                        value={editedInfo?.prenom || ''}
-                                        onChange={(e) => handleInputChange('prenom', e.target.value)}
-                                        invalid={prenomError !== ''}
-                                    />
-                                    {prenomError && <small className="p-error block">{prenomError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong style={{ fontSize: '1rem' }}>Prénom :</strong> {moniteurInfo.prenom}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Genre :</strong><br />
-                                    <InputText type="text"
-                                        className="p-inputtext-sm"
-                                        value={editedInfo?.genre || ''}
-                                        onChange={(e) => handleInputChange('genre', e.target.value)}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Genre :</strong> {moniteurInfo.genre}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1" >
-                                    <strong>Naissance :</strong><br />
-                                    <Calendar
-                                        className="p-inputtext-sm"
-                                        dateFormat="dd/mm/yy"
-                                        value={editedInfo?.dateNaissance || null}
-                                        onChange={(e) => handleInputChange('dateNaissance', e.target.value as Date)}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Naissance :</strong> {new Date(moniteurInfo.dateNaissance).toLocaleDateString()
-                                    }
-                                </div>
-                            )}
-                        </div>
+            
+            <div className="p-2">
+                {/* Informations personnelles */}
+                <h3 className="text-indigo-600 text-xl font-semibold">Informations personnelles</h3>
+                <div className="grid p-fluid">
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Nom :</strong><br />
+                                <InputText type="text"
+                                    className="p-inputtext-sm"
+                                    value={editedInfo?.nom || ''}
+                                    onChange={(e) => handleInputChange('nom', e.target.value)}
+                                    invalid={nomError !== ''}
+                                />
+                                {nomError && <small className="p-error block">{nomError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Nom :</strong> {moniteurInfo.nom}
+                            </div>
+                        )}
                     </div>
-
-                    <Divider className="my-3" />
-
-                    {/* Contact */}
-                    <h3 className="text-indigo-600 text-xl font-semibold">Contact</h3>
-                    <div className="grid p-fluid">
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Email :</strong><br />
-                                    <InputText type="text"
-                                        className="p-inputtext-sm"
-                                        value={editedInfo?.email || ''}
-                                        onChange={(e) => handleInputChange('email', e.target.value)}
-                                        invalid={emailError !== ''}
-                                    />
-                                    {emailError && <small className="p-error block">{emailError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Email :</strong> {moniteurInfo.email}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Téléphone :</strong><br />
-                                    <InputText type="text"
-                                        className="p-inputtext-sm"
-                                        value={editedInfo?.telephone || ''}
-                                        onChange={(e) => handleInputChange('telephone', e.target.value)}
-                                        invalid={telephoneError !== ''}
-                                    />
-                                    {telephoneError && <small className="p-error block">{telephoneError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Téléphone :</strong> {moniteurInfo.telephone}
-                                </div>
-                            )}
-                        </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Prénom :</strong><br />
+                                <InputText type="text"
+                                    className="p-inputtext-sm"
+                                    value={editedInfo?.prenom || ''}
+                                    onChange={(e) => handleInputChange('prenom', e.target.value)}
+                                    invalid={prenomError !== ''}
+                                />
+                                {prenomError && <small className="p-error block">{prenomError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong style={{ fontSize: '1rem' }}>Prénom :</strong> {moniteurInfo.prenom}
+                            </div>
+                        )}
                     </div>
-
-                    <Divider className="my-3" />
-
-                    {/* Carrière */}
-                    <h3 className="text-indigo-600 text-xl font-semibold">Carrière</h3>
-                    <div className="grid p-fluid">
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Début de carrière :</strong><br />
-                                    <Calendar
-                                        className="p-inputtext-sm"
-                                        dateFormat="dd/mm/yy"
-                                        value={editedInfo?.dateDebutCarriere || null}
-                                        onChange={(e) => handleInputChange('dateDebutCarriere', e.target.value as Date)}
-                                    />
-                                    {dateDebutCarriereError && <small className="p-error block">{dateDebutCarriereError}</small>}
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Début de carrière :</strong>{' '}
-                                    {moniteurInfo.dateDebutCarriere
-                                        ? new Date(moniteurInfo.dateDebutCarriere).toLocaleDateString('fr-FR')
-                                        : 'Non renseignée'}
-                                </div>
-
-                            )}
-                        </div>
-                        <div className="col-12 md:col-6 p-2">
-                            {isEditing ? (
-                                <div className="mb-1">
-                                    <strong>Status :</strong><br />
-                                    <InputText type="text"
-                                        className="p-inputtext-sm"
-                                        placeholder={moniteurInfo.status}
-                                        onChange={(e) => handleInputChange('status', e.target.value)}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mb-1">
-                                    <strong>Status :</strong> {moniteurInfo.status}
-                                </div>
-                            )}
-                        </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Genre :</strong><br />
+                                <InputText type="text"
+                                    className="p-inputtext-sm"
+                                    value={editedInfo?.genre || ''}
+                                    onChange={(e) => handleInputChange('genre', e.target.value)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Genre :</strong> {moniteurInfo.genre}
+                            </div>
+                        )}
+                    </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1" >
+                                <strong>Naissance :</strong><br />
+                                <Calendar
+                                    className="p-inputtext-sm"
+                                    dateFormat="dd/mm/yy"
+                                    value={editedInfo?.dateNaissance || null}
+                                    onChange={(e) => handleInputChange('dateNaissance', e.target.value as Date)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Naissance :</strong> {new Date(moniteurInfo.dateNaissance).toLocaleDateString()
+                                }
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="flex w-full mt-2">
-                    {isEditing ? (
-                        <Button
-                            label="Sauvegarder"
-                            icon="pi pi-check"
-                            onClick={handleSaveClick}
-                            className="button-text text-sm ml-auto"
-                        />
-                    ) : (
-                        !readOnly && isOwnProfile && (
-                            <Button
-                                label="Modifier"
-                                icon="pi pi-pencil"
-                                onClick={handleEditClick}
-                                className="button-text text-sm ml-auto"
-                            />
-                        )
-                    )}
+                <Divider className="my-3" />
+
+                {/* Contact */}
+                <h3 className="text-indigo-600 text-xl font-semibold">Contact</h3>
+                <div className="grid p-fluid">
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Email :</strong><br />
+                                <InputText type="text"
+                                    className="p-inputtext-sm"
+                                    value={editedInfo?.email || ''}
+                                    onChange={(e) => handleInputChange('email', e.target.value)}
+                                    invalid={emailError !== ''}
+                                />
+                                {emailError && <small className="p-error block">{emailError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Email :</strong> {moniteurInfo.email}
+                            </div>
+                        )}
+                    </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Téléphone :</strong><br />
+                                <InputText type="text"
+                                    className="p-inputtext-sm"
+                                    value={editedInfo?.telephone || ''}
+                                    onChange={(e) => handleInputChange('telephone', e.target.value)}
+                                    invalid={telephoneError !== ''}
+                                />
+                                {telephoneError && <small className="p-error block">{telephoneError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Téléphone :</strong> {moniteurInfo.telephone}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <Divider className="my-3" />
+
+                {/* Carrière */}
+                <h3 className="text-indigo-600 text-xl font-semibold">Carrière</h3>
+                <div className="grid p-fluid">
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Début de carrière :</strong><br />
+                                <Calendar
+                                    className="p-inputtext-sm"
+                                    dateFormat="dd/mm/yy"
+                                    value={editedInfo?.dateDebutCarriere || null}
+                                    onChange={(e) => handleInputChange('dateDebutCarriere', e.target.value as Date)}
+                                />
+                                {dateDebutCarriereError && <small className="p-error block">{dateDebutCarriereError}</small>}
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Début de carrière :</strong>{' '}
+                                {moniteurInfo.dateDebutCarriere
+                                    ? new Date(moniteurInfo.dateDebutCarriere).toLocaleDateString('fr-FR')
+                                    : 'Non renseignée'}
+                            </div>
+
+                        )}
+                    </div>
+                    <div className="col-12 md:col-6 p-2">
+                        {isEditing ? (
+                            <div className="mb-1">
+                                <strong>Status :</strong><br />
+                                <InputText type="text"
+                                    className="p-inputtext-sm"
+                                    placeholder={moniteurInfo.status}
+                                    onChange={(e) => handleInputChange('status', e.target.value)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="mb-1">
+                                <strong>Status :</strong> {moniteurInfo.status}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            <Divider className="my-3 md:mx-2" />
+            <div className="flex w-full mt-2">
+                {isEditing ? (
+                    <Button
+                        label="Sauvegarder"
+                        icon="pi pi-check"
+                        onClick={handleSaveClick}
+                        className="button-text text-sm ml-auto"
+                    />
+                ) : (
+                    !readOnly && isOwnProfile && (
+                        <Button
+                            label="Modifier"
+                            icon="pi pi-pencil"
+                            onClick={handleEditClick}
+                            className="button-text text-sm ml-auto"
+                        />
+                    )
+                )}
+            </div>
+            
 
-            <h2 className="text-2xl font-semibold mt-3 mb-2 md:mx-2 flex items-center">
+            <Divider/>
+
+            <h2 className="text-center">
                 <FontAwesomeIcon icon={faChartBar} className="mr-2 text-indigo-600" />
-                Mes statistiques
+                Statistiques
             </h2>
 
             <div className="flex flex-column md:flex-row gap-2 mt-2 md:mx-2">
@@ -449,7 +448,7 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({ userId, rea
                             </span>
                             <span className="text-xl ml-2">cours créés</span>
                             <Button
-                                label={!readOnly && isOwnProfile ? "Voir mes cours" : "Voir les cours"}
+                                label={isOwnProfile ? "Voir mes cours" : "Voir les cours"}
                                 className="button-text text-sm mr-auto mt-2 md:mt-3"
                                 onClick={handleOpenClassesModal}
                             />
@@ -532,7 +531,7 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({ userId, rea
                 visible={classesModalVisible}
                 onHide={() => setClassesModalVisible(false)}
                 userId={userId}
-                readOnly={readOnly}
+                readOnly={!isOwnProfile}
             />
         </>
     );
