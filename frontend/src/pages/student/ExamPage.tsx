@@ -612,7 +612,7 @@ const ExamPage: React.FC = () => {
                         color: "#fff",
                       }}
                     />
-                    <span className="text-600">{circuit.createur}</span>
+                    <span className="text-600">{new Date(circuit.createur).toLocaleString()}</span>
                   </div>
                   <div className="flex align-items-center">
                     {selectedCircuit === circuit.nom && (
