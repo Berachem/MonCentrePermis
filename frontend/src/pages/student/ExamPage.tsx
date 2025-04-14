@@ -11,6 +11,7 @@ import { Toast } from "primereact/toast";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getRequest } from "../../interfaces/utils/api";
 import { Chip } from "primereact/chip";
+import useAuth from "../../hooks/useAuth";
 
 // Interface pour un point du circuit
 interface Point {
@@ -20,6 +21,7 @@ interface Point {
   description: string;
   rang: number;
   type: string;
+  libelle: string;
 }
 
 // Interface pour un circuit
@@ -27,7 +29,16 @@ interface Circuit {
   id: number;
   nom: string;
   description: string;
-  createur?: string;
+  createur?: {
+    date: string;
+    nom?: string;
+    prenom?: string;
+  };
+  moniteur?: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
   points: Point[];
 }
 
@@ -56,6 +67,11 @@ interface CircuitApiResponse {
   libelle: string;
   description: string;
   createur?: string;
+  moniteur?: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
   ville_centre: string;
   points: string[];
 }
@@ -139,7 +155,7 @@ const pointTypes: PointType[] = [
     color: "#E91E63",
     svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E91E63" width="32" height="32">
       <path d="M0 0h24v24H0z" fill="none"/>
-      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
     </svg>`,
   },
 ];
@@ -157,8 +173,10 @@ const haversineDistance = (
   const dLon = toRad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -243,12 +261,13 @@ const ExamPage: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
   const defaultPosition: [number, number] = [48.8566, 2.3522];
   const [expandedCircuits, setExpandedCircuits] = useState<string[]>([]);
-  const [circuitModalVisible, setCircuitModalVisible] = useState<boolean>(false);
+  const [circuitModalVisible, setCircuitModalVisible] =
+    useState<boolean>(false);
   const [legendVisible, setLegendVisible] = useState<boolean>(true);
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useRef<Toast>(null);
-  
+
   // Distance maximale pour filtrer les circuits (en km)
   const MAX_DISTANCE = 6;
 
@@ -258,6 +277,8 @@ const ExamPage: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultPosition);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [centre, setCentre] = useState<Centre | null>(null);
+
+  const { typeUserid } = useAuth();
 
   // Récupérer le centre d'examen depuis location.state
   useEffect(() => {
@@ -270,16 +291,17 @@ const ExamPage: React.FC = () => {
   useEffect(() => {
     const fetchCircuits = async () => {
       if (!centre) return;
-  
+
       try {
         setIsLoading(true);
-  
+
         const circuitsProches = await getRequest<Circuit[]>(
           `/custom/centre_examens/${centre.id}/circuits-proches`
         );
-  
+
+        console.log("Circuits proches:", circuitsProches);
         setCircuits(circuitsProches);
-  
+
         if (circuitsProches.length > 0) {
           setSelectedCircuit(circuitsProches[0].nom);
           if (circuitsProches[0].points.length > 0) {
@@ -297,7 +319,10 @@ const ExamPage: React.FC = () => {
           });
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des circuits proches :", error);
+        console.error(
+          "Erreur lors du chargement des circuits proches :",
+          error
+        );
         toast.current?.show({
           severity: "error",
           summary: "Erreur",
@@ -308,12 +333,11 @@ const ExamPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-  
+
     if (centre) {
       fetchCircuits();
     }
   }, [centre]);
-  
 
   // Mettre à jour le centre de la carte quand le circuit change
   useEffect(() => {
@@ -386,7 +410,7 @@ const ExamPage: React.FC = () => {
     },
     chipContainer: {
       position: "absolute" as const,
-      top: "10%",
+      top: "2%",
       left: "50%",
       transform: "translateX(-50%)",
       zIndex: 1000,
@@ -403,28 +427,28 @@ const ExamPage: React.FC = () => {
     legendButton: {
       position: "fixed",
       left: "30px",
-      top: "100px", // Position au-dessus du bouton de sélection des circuits
+      top: window.innerWidth <= 768 ? "220px" : "100px", // Higher position on mobile
       zIndex: 1000,
     },
-    
+
     // Nouveau conteneur de légende sur la gauche
     legendContainer: {
       position: "fixed",
-      top: "160px",
+      top: window.innerWidth <= 768 ? "200px" : "160px", // Lower position on mobile
       left: "30px",
       zIndex: 1000,
-      maxWidth: "280px",
+      maxWidth: window.innerWidth <= 768 ? "240px" : "280px", // Slightly smaller on mobile
       transition: "all 0.3s ease",
     },
-    
+
     legendCard: {
       backgroundColor: "rgba(255, 255, 255, 0.95)",
-      padding: "1rem",
+      padding: window.innerWidth <= 768 ? "0.75rem" : "1rem", // Smaller padding on mobile
       borderRadius: "0.75rem",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
       border: "1px solid var(--surface-200)",
     },
-    
+
     legendTitle: {
       display: "flex",
       justifyContent: "space-between",
@@ -433,24 +457,24 @@ const ExamPage: React.FC = () => {
       borderBottom: "1px solid var(--surface-200)",
       paddingBottom: "0.5rem",
     },
-    
+
     legendItems: {
       display: "flex",
       flexDirection: "column",
-      gap: "0.75rem",
+      gap: window.innerWidth <= 768 ? "0.5rem" : "0.75rem", // Tighter spacing on mobile
     },
-    
+
     legendItem: {
       display: "flex",
       alignItems: "center",
-      fontSize: "0.875rem", 
+      fontSize: window.innerWidth <= 768 ? "0.8rem" : "0.875rem", // Smaller font on mobile
       padding: "0.25rem 0",
     },
-    
+
     legendIcon: {
-      width: "24px",
-      height: "24px",
-      marginRight: "0.75rem",
+      width: window.innerWidth <= 768 ? "20px" : "24px", // Smaller icons on mobile
+      height: window.innerWidth <= 768 ? "20px" : "24px",
+      marginRight: window.innerWidth <= 768 ? "0.5rem" : "0.75rem",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
@@ -476,49 +500,93 @@ const ExamPage: React.FC = () => {
       <Toast ref={toast} />
       <div
         style={styles.chipContainer}
-        className="flex gap-2 justify-content-center"
+        className="flex gap-2 justify-content-center flex-column align-items-center"
       >
         <Button
           icon="pi pi-arrow-left"
           className="p-button-rounded shadow-4"
           onClick={() => navigate("/")}
-          tooltip="Retour à l'accueil"
+          label="Quitter"
+          severity="secondary"
           tooltipOptions={{ position: "top" }}
         />
         {centre && (
-          <Chip
-            label={centre.name}
-            className="bg-primary text-white border-2 border-primary"
-          />
+          <div className="flex flex-column align-items-center gap-2 bg-white p-2 border-round-lg shadow-2 animate__animated animate__fadeIn">
+            <Chip
+              label={centre.name}
+              className="bg-primary text-white font-bold border-0 py-2"
+              icon="pi pi-map-marker"
+            />
+            {currentCircuit && (
+              <div className="flex flex-column align-items-center gap-1 w-full">
+                <div className="text-sm text-900 bg-primary-50 px-3 py-2 border-round-lg border-1 border-primary-100 w-full text-center">
+                  <div className="flex align-items-center justify-content-center gap-2">
+                    <i className="pi pi-user text-primary-700"></i>
+                    <span className="font-medium">
+                      {currentCircuit.moniteur
+                        ? `Moniteur: ${currentCircuit.moniteur.prenom} ${currentCircuit.moniteur.nom}`
+                        : "Circuit sans moniteur"}
+                    </span>
+                  </div>
+                  {currentCircuit.createur?.date && (
+                    <div className="text-xs text-600 mt-1">
+                      Créé le{" "}
+                      {new Date(
+                        currentCircuit.createur.date
+                      ).toLocaleDateString()}
+                    </div>
+                  )}
+                  {typeUserid.toString() ===
+                    currentCircuit.moniteur?.id?.toString() && (
+                    <div className="mt-2 flex justify-content-center">
+                      <Button
+                        icon="pi pi-pencil"
+                        label="Modifier"
+                        className="p-button-sm p-button-outlined"
+                        onClick={() =>
+                          navigate(`/circuits/edit/${currentCircuit.id}`)
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
-      
+
       <div style={styles.legendButton}>
         <Button
           icon={legendVisible ? "pi pi-eye-slash" : "pi pi-info-circle"}
           className="p-button-rounded p-button-info shadow-4 border-primary"
           onClick={() => setLegendVisible(!legendVisible)}
-          tooltip="Afficher/Masquer la légende"
           tooltipOptions={{ position: "right" }}
         />
       </div>
 
       {/* Légende des icônes */}
       {legendVisible && (
-        <div style={styles.legendContainer} className="animate__animated animate__fadeInLeft">
+        <div
+          style={styles.legendContainer}
+          className="animate__animated animate__fadeInLeft"
+        >
           <div style={styles.legendCard}>
             <div style={styles.legendTitle}>
               <span className="text-lg font-medium">Légende</span>
-              <Button 
-                icon="pi pi-times" 
-                className="p-button-text p-button-rounded p-button-sm bg-white" 
+              <Button
+                icon="pi pi-times"
+                className="p-button-text p-button-rounded p-button-sm bg-white"
                 onClick={() => setLegendVisible(false)}
               />
             </div>
             <div style={styles.legendItems}>
               {pointTypes.map((type) => (
                 <div key={type.value} style={styles.legendItem}>
-                  <div style={styles.legendIcon} dangerouslySetInnerHTML={{ __html: type.svgIcon }}></div>
+                  <div
+                    style={styles.legendIcon}
+                    dangerouslySetInnerHTML={{ __html: type.svgIcon }}
+                  ></div>
                   <span className="text-700">{type.label}</span>
                 </div>
               ))}
@@ -548,7 +616,20 @@ const ExamPage: React.FC = () => {
               position={[point.latitude, point.longitude]}
               icon={getPointIcon(point.type)}
             >
-              <Popup>{point.description}</Popup>
+              <Popup>
+                <span className="font-medium">{point.libelle}</span>
+
+                {point.description && (
+                  <>
+                    <hr className="my-2" />
+                    <div className="flex align-items-center mt-2">
+                      <span className="text-sm text-white">
+                        {point.description}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </Popup>
             </Marker>
           ))}
         </MapContainer>
@@ -557,11 +638,16 @@ const ExamPage: React.FC = () => {
       <div style={styles.circuitSelectorButton}>
         <Button
           icon="pi pi-flag"
-          label={isMobile ? undefined : "Sélectionner un circuit"}
+          label={isMobile ? undefined : `Sélectionner un circuit`}
           className="p-button-rounded shadow-4"
           onClick={() => setCircuitModalVisible(true)}
-          tooltip={isMobile ? "Sélectionner un circuit" : undefined}
+          tooltip={
+            isMobile ? `Circuits disponibles (${circuits.length})` : undefined
+          }
           tooltipOptions={{ position: "top" }}
+          disabled={circuits.length === 0}
+          badge={!isMobile ? circuits.length.toString() : undefined}
+          badgeClassName="bg-info"
         />
       </div>
 
@@ -586,7 +672,7 @@ const ExamPage: React.FC = () => {
               onClick={() => setCircuitModalVisible(false)}
             />
           </div>
-          
+
           <div className="p-2 bg-info-50 text-info-900 text-center border-bottom-1 border-200">
             <i className="pi pi-info-circle mr-2"></i>
             Circuits disponibles à moins de {MAX_DISTANCE} km du centre d'examen
@@ -605,14 +691,25 @@ const ExamPage: React.FC = () => {
                 <div className="flex align-items-center justify-content-between">
                   <div className="flex align-items-center">
                     <Avatar
-                      icon="pi pi-user"
+                      icon="pi pi-flag"
                       className="mr-2"
                       style={{
                         backgroundColor: "var(--primary-color)",
                         color: "#fff",
                       }}
                     />
-                    <span className="text-600">{new Date(circuit.createur).toLocaleString()}</span>
+                    <div className="flex flex-column">
+                      <span className="text-600">
+                        {circuit.createur &&
+                          new Date(circuit.createur.date).toLocaleString()}
+                      </span>
+                      {circuit.moniteur && (
+                        <span className="text-sm text-blue-600">
+                          Moniteur: {circuit.moniteur.prenom}{" "}
+                          {circuit.moniteur.nom}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex align-items-center">
                     {selectedCircuit === circuit.nom && (
@@ -664,7 +761,12 @@ const ExamPage: React.FC = () => {
                             {index + 1}
                           </span>
                           <i className="pi pi-map-marker text-primary mr-2"></i>
-                          <span className="text-900">{point.description}</span>
+                          <span className="text-900">{point.libelle}</span>
+                          <Chip
+                            label={point.description}
+                            className="ml-2 bg-primary-50 text-primary-900 font-medium"
+                            style={{ fontSize: "0.8rem" }}
+                          />
                         </div>
                       ))
                   ) : (

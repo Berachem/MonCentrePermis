@@ -10,17 +10,17 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\CentreExamenRepository;
 use App\Entity\CentreExamen;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Doctrine\ORM\EntityManagerInterface; 
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/api/custom/centre_examens')]
 class CentreExamenController extends AbstractController
 {
 
-    private EntityManagerInterface $entityManager; 
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager) 
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager; 
+        $this->entityManager = $entityManager;
     }
 
     #[Route('', name: 'api_centres_examen_list', methods: ['GET'])]
@@ -99,83 +99,88 @@ class CentreExamenController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
 
-#[Route('/{id}/circuits-proches', name: 'circuits_proches_centre', methods: ['GET'])]
-public function getCircuitsProchesCentre(int $id): JsonResponse
-{
-    $MAX_DISTANCE = 20; // En km
-    $centre = $this->entityManager->getRepository(CentreExamen::class)->find($id);
+    #[Route('/{id}/circuits-proches', name: 'circuits_proches_centre', methods: ['GET'])]
+    public function getCircuitsProchesCentre(int $id): JsonResponse
+    {
+        $MAX_DISTANCE = 20; // En km
+        $centre = $this->entityManager->getRepository(CentreExamen::class)->find($id);
 
-    if (!$centre) {
-        return new JsonResponse(['error' => 'Centre d\'examen non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        if (!$centre) {
+            return new JsonResponse(['error' => 'Centre d\'examen non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $centreLat = floatval($centre->getLatitude());
+        $centreLon = floatval($centre->getLongitude());
+
+        $circuits = $this->entityManager->getRepository(Circuit::class)->findAll();
+        $result = [];
+
+        foreach ($circuits as $circuit) {
+            $points = [];
+
+            // Récupération et formatage des points
+            foreach ($circuit->getPoints() as $point) {
+                $points[] = [
+                    'id' => $point->getId(),
+                    'libelle' => $point->getLibelle() ?? 'Point ' . $point->getId(),
+                    'latitude' => floatval($point->getLatitude()),
+                    'longitude' => floatval($point->getLongitude()),
+                    'description' => $point->getDescription() ?? 'Point ' . $point->getId(),
+                    'rang' => $point->getRang() ?? 0,
+                    'type' => $point->getType() ?? 'information',
+                ];
+            }
+
+            // Coordonnées pour distance (premier point ou fallback ville)
+            if (count($points) > 0) {
+                $circuitLat = $points[0]['latitude'];
+                $circuitLon = $points[0]['longitude'];
+            } else {
+                $ville = $circuit->getVilleCentre();
+                if (!$ville || !$ville->getLatitude() || !$ville->getLongitude()) continue;
+                $circuitLat = floatval($ville->getLatitude());
+                $circuitLon = floatval($ville->getLongitude());
+            }
+
+            // Calcul de la distance
+            $distance = $this->haversine($centreLat, $centreLon, $circuitLat, $circuitLon);
+
+            if ($distance <= $MAX_DISTANCE) {
+                usort($points, fn($a, $b) => $a['rang'] <=> $b['rang']);
+                $result[] = [
+                    'id' => $circuit->getId(),
+                    'nom' => $circuit->getLibelle(),
+                    'description' => $circuit->getDescription() ?? 'Aucune description',
+                    'createur' => $circuit->getCreatedAt() ?? 'Anonyme',
+                    'moniteur' => $circuit->getIdMoniteur() ? [
+                        'id' => $circuit->getIdMoniteur()->getId(),
+                        'nom' => $circuit->getIdMoniteur()->getCompte()->getNom(),
+                        'prenom' => $circuit->getIdMoniteur()->getCompte()->getNom(),
+
+                    ] : null,
+                    'points' => $points
+                ];
+            }
+        }
+
+        return new JsonResponse($result, JsonResponse::HTTP_OK);
     }
 
-    $centreLat = floatval($centre->getLatitude());
-    $centreLon = floatval($centre->getLongitude());
 
-    $circuits = $this->entityManager->getRepository(Circuit::class)->findAll();
-    $result = [];
 
-    foreach ($circuits as $circuit) {
-        $points = [];
+    private function haversine(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371; // km
 
-        // Récupération et formatage des points
-        foreach ($circuit->getPoints() as $point) {
-            $points[] = [
-                'id' => $point->getId(),
-                'latitude' => floatval($point->getLatitude()),
-                'longitude' => floatval($point->getLongitude()),
-                'description' => $point->getDescription() ?? 'Point ' . $point->getId(),
-                'rang' => $point->getRang() ?? 0,
-                'type' => $point->getType() ?? 'information',
-            ];
-        }
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
 
-        // Coordonnées pour distance (premier point ou fallback ville)
-        if (count($points) > 0) {
-            $circuitLat = $points[0]['latitude'];
-            $circuitLon = $points[0]['longitude'];
-        } else {
-            $ville = $circuit->getVilleCentre();
-            if (!$ville || !$ville->getLatitude() || !$ville->getLongitude()) continue;
-            $circuitLat = floatval($ville->getLatitude());
-            $circuitLon = floatval($ville->getLongitude());
-        }
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLon / 2) * sin($dLon / 2);
 
-        // Calcul de la distance
-        $distance = $this->haversine($centreLat, $centreLon, $circuitLat, $circuitLon);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
-        if ($distance <= $MAX_DISTANCE) {
-            usort($points, fn($a, $b) => $a['rang'] <=> $b['rang']);
-            $result[] = [
-                'id' => $circuit->getId(),
-                'nom' => $circuit->getLibelle(),
-                'description' => $circuit->getDescription() ?? 'Aucune description',
-                'createur' => $circuit->getCreatedAt() ?? 'Anonyme',
-                'points' => $points
-            ];
-        }
+        return $earthRadius * $c;
     }
-
-    return new JsonResponse($result, JsonResponse::HTTP_OK);
-}
-
-
-
-private function haversine(float $lat1, float $lon1, float $lat2, float $lon2): float
-{
-    $earthRadius = 6371; // km
-
-    $dLat = deg2rad($lat2 - $lat1);
-    $dLon = deg2rad($lon2 - $lon1);
-
-    $a = sin($dLat / 2) * sin($dLat / 2) +
-         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-         sin($dLon / 2) * sin($dLon / 2);
-
-    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-    return $earthRadius * $c;
-}
-
-
 }
