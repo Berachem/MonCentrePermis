@@ -56,11 +56,18 @@ class Moniteur
     #[ORM\OneToMany(targetEntity: Circuit::class, mappedBy: 'id_moniteur')]
     private Collection $circuits;
 
+    /**
+     * @var Collection<int, Media>
+     */
+    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'moniteur')]
+    private Collection $medias;
+
     public function __construct()
     {
         $this->autoEcoles = new ArrayCollection();
         $this->cours = new ArrayCollection();
         $this->circuits = new ArrayCollection();
+        $this->medias = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -208,6 +215,36 @@ class Moniteur
             // set the owning side to null (unless already changed)
             if ($circuit->getIdMoniteur() === $this) {
                 $circuit->setIdMoniteur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Media>
+     */
+    public function getMedias(): Collection
+    {
+        return $this->medias;
+    }
+
+    public function addMedia(Media $media): static
+    {
+        if (!$this->medias->contains($media)) {
+            $this->medias->add($media);
+            $media->setMoniteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMedia(Media $media): static
+    {
+        if ($this->medias->removeElement($media)) {
+            // set the owning side to null (unless already changed)
+            if ($media->getMoniteur() === $this) {
+                $media->setMoniteur(null);
             }
         }
 

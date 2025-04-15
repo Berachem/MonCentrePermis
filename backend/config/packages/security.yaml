@@ -13,6 +13,13 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        
+        media:
+            pattern: ^/media
+            stateless: true
+            provider: app_user_provider
+            jwt: ~
+
         # Configuration principale pour les routes sécurisées par JWT
         main:
             pattern: ^/api
@@ -34,6 +41,7 @@ security:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: PUBLIC_ACCESS } # pour plus tard mettre IS_AUTHENTICATED_FULLY
+        - { path: ^/media, roles: PUBLIC_ACCESS }
 
 #         main:
 #             lazy: true

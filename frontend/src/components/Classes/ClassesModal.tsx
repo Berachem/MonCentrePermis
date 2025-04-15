@@ -7,6 +7,7 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Paginator } from 'primereact/paginator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
+import AddCourses from './AddClasses';
 
 interface ClassesModalProps {
   visible: boolean;
@@ -31,6 +32,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   const fetchCourseGroups = async () => {
     // Même mockup de données que dans la page Classes
@@ -189,9 +191,19 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
             icon="pi pi-plus"
             label="Ajouter un cours"
             className="p-button-rounded mb-3 text-sm w-full"
-            onClick={() => console.log('Ajouter un cours')}
+            onClick={() => setShowAddDialog(true)}
           />
         )}
+
+
+        <AddCourses
+          visible={showAddDialog}
+          onHide={() => setShowAddDialog(false)}
+          onCourseAdded={() => {
+            console.log('Cours ajouté ✅');
+            // ici tu peux re-fetch ou update la liste
+          }}
+        />
 
         <Divider/>
 
