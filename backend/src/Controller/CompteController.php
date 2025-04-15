@@ -283,6 +283,7 @@ public function getUserInfo(int $id): JsonResponse
             $eleve->setDateExamenPratique($dto->dateExamen);
             // Sauvegarder l'élève
             $em->persist($eleve);
+            $compte->setEleve($eleve);
         } elseif ($role === 'moniteur') {
             // Créer un moniteur et l'associer au compte
             $compte->setRoles(['ROLE_MONITEUR']);
@@ -326,14 +327,17 @@ public function getUserInfo(int $id): JsonResponse
 
             // Sauvegarder le moniteur
             $em->persist($moniteur);
+            $compte->setMoniteur($moniteur);
         } elseif ($role === 'autoecole') {
             // Créer une auto-école et l'associer au compte
+            $compte->setRoles(['ROLE_AUTO_ECOLE']);
             $autoEcole = new AutoEcole();
             $autoEcole->setCompte($compte);
             $autoEcole->setLibelle($dto->libelle); // Assurez-vous que le DTO a bien ce champ
 
             // Sauvegarder l'auto-école
             $em->persist($autoEcole);
+            $compte->setAutoEcole($autoEcole);
         } else {
             return $this->json([], 400);
         }
