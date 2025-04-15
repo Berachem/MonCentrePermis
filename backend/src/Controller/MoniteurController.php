@@ -162,24 +162,27 @@ class MoniteurController extends AbstractController
         // Créer le cours
         $cours = new Cours();
         $cours->setLibelle($data['libelle']);
-        $cours->setDescription($description);
-        $cours->setMoniteur($moniteur);
-       
-        // Regex pour identifier les UUID dans la description
-        $pattern = '/media\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/';
         
-        // Vérification des UUID dans la description
-        preg_match_all($pattern, $description, $matches);
+        // Nettoyer la description pour enlever les tokens dans les URLs des images
+        $pattern = '/<img src="http:\/\/localhost:8000\/media\/([a-f0-9\-]+)\?token=[^"]+">/';
+        $replacement = '<img src="http://localhost:8000/media/$1">';
     
-        // Vérifier si des UUID ont été extraits
+        // Remplacer l'URL avec token par celle sans token
+        $descriptionNettoyee = preg_replace($pattern, $replacement, $description);
+        
+        // Sauvegarder la description nettoyée
+        $cours->setDescription($descriptionNettoyee);
+       
+        $cours->setMoniteur($moniteur);
+        
+        // Recherche et association des médias
+        preg_match_all('/media\/([a-f0-9\-]{36})/', $descriptionNettoyee, $matches);
         $fichiers = $matches[1] ?? [];
-    
-        // Si aucun UUID n'est trouvé
+        
         if (empty($fichiers)) {
             return new JsonResponse(['error' => 'Aucun media trouvé dans la description'], JsonResponse::HTTP_BAD_REQUEST);
         }
-    
-        // Recherche et association des médias
+        
         foreach ($fichiers as $uuid) {
             $media = $this->entityManager->getRepository(Media::class)->findOneBy(['nom_fichier' => $uuid]);
             if ($media) {
@@ -191,11 +194,11 @@ class MoniteurController extends AbstractController
                 // log('Media introuvable pour UUID: ' . $uuid);
             }
         }
-    
+        
         // Persister et flusher le cours
         $this->entityManager->persist($cours);
         $this->entityManager->flush();
-    
+        
         return new JsonResponse(['success' => true, 'message' => 'Cours ajouté avec succès'], JsonResponse::HTTP_CREATED);
     }
     
