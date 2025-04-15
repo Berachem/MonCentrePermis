@@ -27,7 +27,13 @@ class CentreExamenController extends AbstractController
     public function list(CentreExamenRepository $repository): JsonResponse
     {
         // Récupérer tous les centres d'examen
-        $centresExamen = $repository->findAll();
+        $centresExamen = $repository->createQueryBuilder('ce')
+            ->join('ce.ville', 'v')
+            ->join('v.pays', 'p')
+            ->where('p.code_iso = :codeIso')
+            ->setParameter('codeIso', 'FRA')
+            ->getQuery()
+            ->getResult();
 
         // Construire la réponse avec les données de la ville intégrées
         $responseData = array_map(function ($centreExamen) {
