@@ -13,6 +13,7 @@ import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocation } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
+import youAreHereIcon from "../../assets/images/you_are_here.svg";
 
 /* Icones */
 const examCenterIconFrance = new L.Icon({
@@ -36,13 +37,10 @@ const examCenterIconUK = new L.Icon({
 });
 
 const userIcon = new L.Icon({
-  iconUrl: "https://i.ibb.co/H7ntmhd/abd-laurent.png",
-  iconSize: [40, 60],
+  iconUrl: youAreHereIcon, //"https://i.ibb.co/H7ntmhd/abd-laurent.png"
+  iconSize: [30, 40],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  shadowSize: [41, 41],
 });
 
 // Composant pour afficher les centres favoris
