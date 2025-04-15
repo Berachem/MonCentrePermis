@@ -21,19 +21,6 @@ function AppRoutes() {
     <>
       <UserIndicator />
       <Routes>
-        {/* Routes pour les visiteurs */}
-        {!isAuthenticated && userRole === UserType.Visitor && (
-          <>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/schools" element={<SchoolsPage />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </>
-        )}
-
         {/* Routes pour les élèves */}
         {/*     {isAuthenticated && userRole === UserType.Student && (
           <>
@@ -53,7 +40,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/settings" element={<Settings />} />
-
+        <Route path="/schools" element={<SchoolsPage />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/examen/:id" element={<ExamPage />} />
         <Route path="/admin/circuit/create" element={<CircuitCreationPage />} />

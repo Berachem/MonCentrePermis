@@ -57,8 +57,19 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
     setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
   };
 
+  // Styles pour le conteneur du bouton de menu
+  const buttonContainerStyle: React.CSSProperties = {
+    position: "fixed",
+    top: "20px",
+    left: "20px",
+    zIndex: 1000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
   return (
-    <div>
+    <div style={buttonContainerStyle}>
       {/* Bouton hamburger pour ouvrir le sidebar */}
       <Button
         icon="pi pi-bars"
