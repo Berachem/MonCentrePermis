@@ -12,6 +12,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getRequest } from "../../interfaces/utils/api";
 import { Chip } from "primereact/chip";
 import useAuth from "../../hooks/useAuth";
+import Loader from "../../components/utils/Loader";
 
 // Interface pour un point du circuit
 interface Point {
@@ -224,8 +225,9 @@ const RoutingMachineControl = ({ points }: { points: Point[] }) => {
 
       routingControlRef.current = routingControl;
 
-      if (routingControl && routingControl._container) {
-        routingControl._container.style.display = "none";
+      const container = routingControl?.getContainer();
+      if (container) {
+        container.style.display = "none";
       }
     }
 
@@ -487,17 +489,18 @@ const ExamPage: React.FC = () => {
     },
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-content-center align-items-center min-h-screen">
-        <i className="pi pi-spin pi-spinner text-4xl"></i>
-      </div>
-    );
-  }
-
   return (
     <div style={styles.mapContainer}>
       <Toast ref={toast} />
+
+      {/* Loader comme sur la homepage */}
+      {isLoading && (
+          <div className="loader-container">
+              <Loader />
+          </div>
+      )}
+
+
       <div
         style={styles.chipContainer}
         className="flex gap-2 justify-content-center flex-column align-items-center"
@@ -556,7 +559,7 @@ const ExamPage: React.FC = () => {
         )}
       </div>
 
-      <div style={styles.legendButton}>
+      <div style={styles.legendButton as React.CSSProperties}>
         <Button
           icon={legendVisible ? "pi pi-eye-slash" : "pi pi-info-circle"}
           className="p-button-rounded p-button-info shadow-4 border-primary"
@@ -568,7 +571,7 @@ const ExamPage: React.FC = () => {
       {/* Légende des icônes */}
       {legendVisible && (
         <div
-          style={styles.legendContainer}
+          style={styles.legendContainer as React.CSSProperties}
           className="animate__animated animate__fadeInLeft"
         >
           <div style={styles.legendCard}>
@@ -580,7 +583,7 @@ const ExamPage: React.FC = () => {
                 onClick={() => setLegendVisible(false)}
               />
             </div>
-            <div style={styles.legendItems}>
+            <div style={styles.legendItems as React.CSSProperties}>
               {pointTypes.map((type) => (
                 <div key={type.value} style={styles.legendItem}>
                   <div

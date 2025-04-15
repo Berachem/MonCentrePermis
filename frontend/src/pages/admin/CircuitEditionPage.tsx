@@ -26,6 +26,7 @@ import {
   patchRequest,
   deleteRequest,
 } from "../../interfaces/utils/api";
+import Loader from "../../components/utils/Loader";
 
 // Interface pour les types de points
 interface PointType {
@@ -617,7 +618,7 @@ const CircuitEditionPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex flex-column align-items-center justify-content-center min-h-screen">
-        <ProgressSpinner />
+        <Loader />
         <div className="mt-3">Chargement du circuit...</div>
       </div>
     );
