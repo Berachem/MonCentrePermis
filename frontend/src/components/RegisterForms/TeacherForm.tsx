@@ -29,7 +29,7 @@ const TeacherForm = forwardRef((props, ref) =>{
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [telephone, setTelephone] = useState('');
-    const [genre, setGenre] = useState('');
+    const [genre, setGenre] = useState<Genre>(Genre.homme);
     const [dateNaissance, setDateNaissance] = useState<Date | null>(null);
     const [dateDebutCarriere, setDateDebutCarriere] = useState<Date | null>(null);
     const [numeroCertification, setNumeroCertification] = useState('');
@@ -175,6 +175,27 @@ const TeacherForm = forwardRef((props, ref) =>{
                     {renderInput("Nom", nom, setNom, "nom")}
                     {renderInput("Prénom", prenom, setPrenom, "prenom")}
                     {renderInput("Email", email, setEmail, "email", "email")}
+
+                    <div className="flex flex-column align-items-center w-full">
+                        <FloatLabel>
+                            <label htmlFor="genre">Genre</label>
+                            <Dropdown
+                                id="genre"
+                                value={genre}
+                                options={Object.entries(Genre).map(([_, value]) => ({
+                                    label: GenreLabels[value],
+                                    value
+                                }))}
+                                onChange={(e) => setGenre(e.value)}
+                                placeholder="Sélectionner un genre"
+                                optionLabel="label"
+                                optionValue="value"
+                                className="w-full"
+                            />
+                        </FloatLabel>
+                        <small className="p-error">{errors.genre}</small>
+                    </div>
+                    
                     {renderInput("Numéro de certification", numeroCertification, setNumeroCertification, "numeroCertification")}
                     {renderInput("Mot de passe", password, setPassword, "password", "password")}
                     <div className="flex flex-column align-items-start text-center px-3 mb-3" style={{ margin: '0 auto', width: 'fit-content' }}>
@@ -218,26 +239,6 @@ const TeacherForm = forwardRef((props, ref) =>{
                     
                     <Divider align="left"><b>Champs non obligatoires</b></Divider>
                     {renderInput("Téléphone", telephone, setTelephone, "telephone")}
-
-                    <div className="flex flex-column align-items-center w-full">
-                        <FloatLabel>
-                            <label htmlFor="genre">Genre</label>
-                            <Dropdown
-                                id="genre"
-                                value={genre}
-                                options={Object.entries(Genre).map(([_, value]) => ({
-                                    label: GenreLabels[value],
-                                    value
-                                }))}
-                                onChange={(e) => setGenre(e.value)}
-                                placeholder="Sélectionner un genre"
-                                optionLabel="label"
-                                optionValue="value"
-                                className="w-full"
-                            />
-                        </FloatLabel>
-                        <small className="p-error">{errors.genre}</small>
-                    </div>
 
                     <label htmlFor="dateNaissance">Date de naissance</label>
                     <Calendar id="dateNaissance" value={dateNaissance} onChange={(e) => setDateNaissance(e.value as Date)} dateFormat="dd/mm/yy" showIcon />
