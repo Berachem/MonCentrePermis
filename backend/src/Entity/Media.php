@@ -8,15 +8,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
-use App\Entity\utils\Timestampable; // AJOUTEZ CA
-#[ApiResource] // AJOUTEZ CA
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\utils\Timestampable; 
+#[ApiResource]
 
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
 class Media
 {
-
-    use Timestampable; // AJOUTEZ CA
+    use Timestampable;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -41,6 +40,9 @@ class Media
     #[ORM\ManyToOne(inversedBy: 'medias')]
     private ?Compte $compte = null;
 
+    #[ORM\ManyToOne(inversedBy: 'medias')]
+    private ?Cours $cours = null; // Relation ManyToOne entre Media et Cours
+
     /**
      * @var Collection<int, Point>
      */
@@ -50,8 +52,11 @@ class Media
     /**
      * @var Collection<int, Circuit>
      */
-    #[ORM\ManyToMany(targetEntity: Circuit::class, mappedBy: 'medias')]
-    private Collection $circuits;
+    #[ORM\ManyToMany(targetEntity: Circuit::class, mappedBy: 'medias')] 
+    private Collection $circuits; // Relation ManyToMany entre Media et Circuit
+
+    #[ORM\ManyToOne(inversedBy: 'medias')]
+    private ?Moniteur $moniteur = null;
 
     public function __construct()
     {
@@ -136,6 +141,19 @@ class Media
         return $this;
     }
 
+    // Getter et Setter pour la relation ManyToOne avec Cours
+    public function getCours(): ?Cours
+    {
+        return $this->cours;
+    }
+
+    public function setCours(?Cours $cours): static
+    {
+        $this->cours = $cours;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Point>
      */
@@ -189,6 +207,18 @@ class Media
         if ($this->circuits->removeElement($circuit)) {
             $circuit->removeMedia($this);
         }
+
+        return $this;
+    }
+
+    public function getMoniteur(): ?Moniteur
+    {
+        return $this->moniteur;
+    }
+
+    public function setMoniteur(?Moniteur $moniteur): static
+    {
+        $this->moniteur = $moniteur;
 
         return $this;
     }

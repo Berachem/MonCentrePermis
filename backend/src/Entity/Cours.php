@@ -8,8 +8,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
-use App\Entity\utils\Timestampable; // AJOUTEZ CA
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\utils\Timestampable;
+
 #[ApiResource] // AJOUTEZ CA
 
 #[ORM\Entity(repositoryClass: CoursRepository::class)]
@@ -43,11 +44,17 @@ class Cours
     #[ORM\ManyToMany(targetEntity: Eleve::class, mappedBy: 'cours_favoris')]
     private Collection $eleves;
 
+    /**
+     * @var Collection<int, Media>
+     */
+    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'cours')]  // Changement en OneToMany
+    private Collection $medias;
 
     public function __construct()
     {
         $this->circuits = new ArrayCollection();
         $this->eleves = new ArrayCollection();
+        $this->medias = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,25 +133,46 @@ class Cours
         return $this->eleves;
     }
 
-    public function addElefe(Eleve $elefe): static
+    public function addEleve(Eleve $eleve): static
     {
-        if (!$this->eleves->contains($elefe)) {
-            $this->eleves->add($elefe);
-            $elefe->addCoursFavori($this);
+        if (!$this->eleves->contains($eleve)) {
+            $this->eleves->add($eleve);
+            $eleve->addCoursFavori($this);
         }
 
         return $this;
     }
 
-    public function removeElefe(Eleve $elefe): static
+    public function removeEleve(Eleve $eleve): static
     {
-        if ($this->eleves->removeElement($elefe)) {
-            $elefe->removeCoursFavori($this);
+        if ($this->eleves->removeElement($eleve)) {
+            $eleve->removeCoursFavori($this);
         }
 
         return $this;
     }
 
+    /**
+     * @return Collection<int, Media>
+     */
+    public function getMedias(): Collection
+    {
+        return $this->medias;
+    }
 
+    public function addMedia(Media $media): static
+    {
+        if (!$this->medias->contains($media)) {
+            $this->medias->add($media);
+        }
 
+        return $this;
+    }
+
+    public function removeMedia(Media $media): static
+    {
+        $this->medias->removeElement($media);
+
+        return $this;
+    }
 }

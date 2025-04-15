@@ -7,6 +7,8 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Paginator } from 'primereact/paginator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
+import AddCourses from './AddClasses';
+import CoursesModal from './CoursesModal';
 
 interface ClassesModalProps {
   visible: boolean;
@@ -31,6 +33,10 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+
 
   const fetchCourseGroups = async () => {
     // Même mockup de données que dans la page Classes
@@ -129,7 +135,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
     const end = start + itemsPerPage;
     return items.slice(start, end);
   };
-  
+
   const currentCourseGroups = paginate(filteredCourseGroups, currentPage);
 
   const onPageChange = (e: any) => {
@@ -158,14 +164,14 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
       breakpoints={{ '960px': '95vw' }}
       contentStyle={{ padding: 0 }}
     >
-        <div className="flex justify-between items-center p-2">
-            <Button 
-                icon="pi pi-times" 
-                onClick={onHide} 
-                className="text-white p-button-text p-button-rounded p-button-plain ml-auto p-2" 
-                aria-label="Close"
-            />
-        </div>
+      <div className="flex justify-between items-center p-2">
+        <Button
+          icon="pi pi-times"
+          onClick={onHide}
+          className="text-white p-button-text p-button-rounded p-button-plain ml-auto p-2"
+          aria-label="Close"
+        />
+      </div>
 
       <div className="p-4 pt-12">
         <h2 className="text-center mb-4">
@@ -189,11 +195,21 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
             icon="pi pi-plus"
             label="Ajouter un cours"
             className="p-button-rounded mb-3 text-sm w-full"
-            onClick={() => console.log('Ajouter un cours')}
+            onClick={() => setShowAddDialog(true)}
           />
         )}
 
-        <Divider/>
+
+        <AddCourses
+          visible={showAddDialog}
+          onHide={() => setShowAddDialog(false)}
+          onCourseAdded={() => {
+            console.log('Cours ajouté ✅');
+            // ici tu peux re-fetch ou update la liste
+          }}
+        />
+
+        <Divider />
 
         <Paginator
           first={(currentPage - 1) * itemsPerPage}
@@ -213,7 +229,16 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
                   <div className="flex flex-column mb-3">
                     <h3 className="text-indigo-600">{course.title}</h3>
                     <p>{course.description}</p>
-                    <Button label="Voir le cours" icon="pi pi-arrow-right" className="button-text text-sm ml-auto" />
+                    <Button
+                      label="Voir le cours"
+                      icon="pi pi-arrow-right"
+                      className="button-text text-sm ml-auto"
+                      onClick={() => {
+                        setSelectedCourseId(course.id);
+                        setShowCourseModal(true);
+                      }}
+                    />
+
                   </div>
                 </div>
               ))}
@@ -231,7 +256,12 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
         />
       </div>
 
-      
+      <CoursesModal
+        visible={showCourseModal}
+        courseId={selectedCourseId}
+        onHide={() => setShowCourseModal(false)}
+      />
+
     </Dialog>
   );
 };

@@ -86,6 +86,27 @@ export const patchRequest = async <T, R>(
   }
 };
 
+//file upload
+export const getProtectedBlob = async (url: string): Promise<Blob> => {
+  try {
+    const token = localStorage.getItem("jwtToken");
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: "blob",
+    });
+
+    return response.data;
+  } catch (error) {
+    handleApiError(error);
+    throw error;
+  }
+};
+
+
+
 // DELETE
 export const deleteRequest = async <T>(
   url: string,
