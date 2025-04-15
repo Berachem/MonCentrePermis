@@ -13,6 +13,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface; // Utilisation de l'interface pour le décodeur JWT
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use App\Entity\Cours; // ✅ Correct si `Cours.php` est bien une entité
+
+
 
 #[Route('/media')]
 class FileController extends AbstractController
@@ -85,5 +88,36 @@ class FileController extends AbstractController
         $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE); // Ouvre directement dans le navigateur
     
         return $response;
+    }
+
+
+    #[Route('/cours/{id}', name: 'serve_course_by_id', methods: ['GET'])]
+    public function getCourseById(int $id): JsonResponse
+    {
+        // Récupérer le cours à partir de l'ID
+        $cours = $this->entityManager->getRepository(Cours::class)->find($id);
+    
+        if (!$cours) {
+            return new JsonResponse(['error' => 'Cours non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+    
+        // Récupérer les fichiers associés au cours (si nécessaire)
+        $mediaFiles = [];
+        foreach ($cours->getMedias() as $media) {
+            $mediaFiles[] = [
+                'uuid' => $media->getNomFichier(),
+                'extension' => $media->getExtension(),
+                'url' => $this->generateUrl('serve_protected_file_by_uuid', ['uuid' => $media->getNomFichier()])
+            ];
+        }
+    
+        return new JsonResponse([
+            'cours' => [
+                'id' => $cours->getId(),
+                'libelle' => $cours->getLibelle(),
+                'description' => $cours->getDescription(),
+                'medias' => $mediaFiles,
+            ]
+        ]);
     }
 }
