@@ -3160,19 +3160,6 @@
             "dep": "Aberdeenshire"
         },
         {
-            "id": 247,
-            "name": "Bangor MPTC Test Centre",
-            "lat": 53.2277163,
-            "long": -4.1268822,
-            "country": "United Kingdom",
-            "formattedAddress": {
-                "address": "Llandygai Industrial Estate Llandygai",
-                "cp": "LL57 4YH",
-                "city": "Bangor"
-            },
-            "dep": "Gwynedd"
-        },
-        {
             "id": 248,
             "name": "Barking Test Centre",
             "lat": -46.3847388,
