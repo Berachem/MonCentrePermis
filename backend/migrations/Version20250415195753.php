@@ -37,8 +37,7 @@ final class Version20250415195753 extends AbstractMigration
             $this->connection->update(
                 'centre_examen',
                 [
-                    'ville' => null,
-                    'code_postal' => null,
+                    'ville_id' => null,
                 ],
                 ['id' => $centreExamen['id']]
             );
