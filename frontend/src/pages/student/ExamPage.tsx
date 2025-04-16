@@ -514,7 +514,7 @@ const ExamPage: React.FC = () => {
           tooltipOptions={{ position: "top" }}
         />
         {centre && (
-          <div className="flex flex-column align-items-center gap-2 bg-white p-2 border-round-lg shadow-2 animate__animated animate__fadeIn">
+          <div className="flex flex-column align-items-center gap-2 p-2 border-round-lg shadow-2 animate__animated animate__fadeIn">
             <Chip
               label={centre.name}
               className="bg-primary text-white font-bold border-0 py-2"

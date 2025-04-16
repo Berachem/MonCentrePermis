@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { useNavigate } from "react-router-dom"; // Importer useNavigate
+import { useNavigate } from "react-router-dom";
 import "../../assets/css/DetailsCentreMap.css";
 import useAuth from "../../hooks/useAuth";
 import { UserType } from "../../enum/user";
@@ -14,24 +14,23 @@ interface CentreDetailsProps {
     address: string;
     city: string;
     postalCode: string;
-    id: number; // Ajout de l'ID
-    isFavorite?: boolean; // Ajout de la propriété isFavorite
+    id: number;
+    isFavorite?: boolean;
   };
-  onToggleFavorite?: (centreId: number) => void; // Fonction pour changer l'état de favori
+  onToggleFavorite?: (centreId: number) => void;
 }
 
 const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
   visible,
   onHide,
   centre,
-  onToggleFavorite, // Fonction pour changer l'état de favori
+  onToggleFavorite,
 }) => {
-  const navigate = useNavigate(); // Hook pour la navigation
+  const navigate = useNavigate();
   const { userRole, isAuthenticated } = useAuth();
   const [isFavorite, setIsFavorite] = useState(centre.isFavorite || false);
   const [isToggling, setIsToggling] = useState(false);
 
-  // Mettre à jour l'état local quand la prop change
   useEffect(() => {
     setIsFavorite(centre.isFavorite || false);
   }, [centre.isFavorite]);
@@ -55,15 +54,12 @@ const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
   };
 
   const handleFavoriteClick = async () => {
-    if (isToggling) return; // Éviter les clics multiples pendant le traitement
+    if (isToggling) return;
 
     setIsToggling(true);
 
     try {
       if (onToggleFavorite) {
-        // Ne pas changer l'état visuel immédiatement
-        // laissez le composant parent (HomePageMap) mettre à jour la prop isFavorite
-        // qui déclenchera useEffect pour changer l'état local
         await onToggleFavorite(centre.id);
       }
     } finally {
@@ -110,18 +106,14 @@ const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
           <Button
             label="Voir les circuits"
             icon="pi pi-eye"
-            className="p-button-outlined b-reussir"
+            className="p-button-outlined b-reussir mr-2"
             onClick={handleSuccessClick}
           />
-        </div>
-        <hr className="w-2" />
-        <div className="reussir">
           <Button
-            label="Itinéraire"
             icon="pi pi-directions"
-            className="p-button-outlined "
-            size="small"
-            severity="contrast"
+            className="p-button-outlined p-button-rounded bg-white"
+            title="Itinéraire"
+            aria-label="Itinéraire"
             onClick={() =>
               window.open(
                 `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
