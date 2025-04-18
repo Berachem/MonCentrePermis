@@ -1,5 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "../../assets/css/home-map.css";
@@ -20,32 +27,73 @@ import useAuth from "../../hooks/useAuth";
 import youAreHereIcon from "../../assets/images/you_are_here.svg";
 
 /* Icones */
-const examCenterIconFrance = new L.Icon({
-  iconUrl: "https://i.postimg.cc/FFJWRnMS/point-map.png",
-  iconSize: [30, 31],
-  iconAnchor: [15, 31],
-  popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  shadowSize: [31, 31],
-});
+// Icône personnalisée pour les centres en France
+const createExamCenterIcon = (
+  centre: CentreExamen,
+  showLabels: boolean = true
+) => {
+  let displayName = centre.libelle || "Centre";
 
-const examCenterIconUK = new L.Icon({
-  iconUrl: "https://i.postimg.cc/v8fyVYvk/output-onlinepngtools-2.png",
-  iconSize: [30, 31],
-  iconAnchor: [15, 31],
-  popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  shadowSize: [31, 31],
-});
+  //enleve 'Centre d'examen' du nom
+  const regex = /Centre d'examen de/i;
+  const match = displayName.match(regex);
+  if (match) {
+    displayName = displayName.replace(regex, "Centre d'examen de").trim();
+  }
 
+  // Conditionnellement inclure ou non le div avec le nom du centre
+  const nameDiv = showLabels
+    ? `
+    <div class="centre-name" style="position: absolute; top: 50%; right: -5px; transform: translate(100%, -50%); 
+         text-align: left; white-space: nowrap; font-weight: 800; color: #6366F1; 
+         font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
+         background-color: rgba(255,255,255,0.9); padding: 2px 6px; 
+         border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+         ${displayName}
+    </div>
+  `
+    : "";
+
+  return new L.DivIcon({
+    className: "custom-div-icon",
+    html: `
+      <div style="position: relative; text-align: center;">
+        ${nameDiv}
+        <svg height="31" width="30" viewBox="0 0 30 31">
+          <path d="M15 0 C21 0, 30 6, 30 15 C30 24, 21 31, 15 31 C9 31, 0 24, 0 15 C0 6, 9 0, 15 0 Z" fill="#6366F1"/>
+          <circle cx="15" cy="15" r="8" fill="white"/>
+        </svg>
+      </div>
+    `,
+    iconSize: [30, 31],
+    iconAnchor: [15, 31],
+    popupAnchor: [1, -34],
+  });
+};
+
+// Icône personnalisée pour la position de l'utilisateur
 const userIcon = new L.Icon({
-  iconUrl: youAreHereIcon, //"https://i.ibb.co/H7ntmhd/abd-laurent.png"
-  iconSize: [30, 40],
-  iconAnchor: [12, 41],
+  iconUrl: youAreHereIcon,
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
   popupAnchor: [1, -34],
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  shadowSize: [41, 41],
 });
+
+// Composant pour surveiller les changements de zoom
+function ZoomListener({
+  onZoomChange,
+}: {
+  onZoomChange: (zoom: number) => void;
+}) {
+  const map = useMapEvents({
+    zoomend: () => {
+      onZoomChange(map.getZoom());
+    },
+  });
+  return null;
+}
 
 // Composant pour afficher les centres favoris
 function FavoritesCentresList({
@@ -111,13 +159,15 @@ function FavoritesCentresList({
   );
 }
 
-// Nouveau composant de contrôles de la carte
-export function MapControls({ userPos }: { userPos: [number, number] }) {
+// Modification des contrôles de la carte pour utiliser la nouvelle fonction de recentrage
+export function MapControls({
+  userPos,
+  onRecenterClick,
+}: {
+  userPos: [number, number];
+  onRecenterClick: () => void;
+}) {
   const map = useMap();
-
-  const handleRecenter = () => {
-    map.setView(userPos, map.getZoom());
-  };
 
   const handleZoomIn = () => {
     map.zoomIn();
@@ -130,7 +180,7 @@ export function MapControls({ userPos }: { userPos: [number, number] }) {
   return (
     <div className="map-controls">
       <Button
-        onClick={handleRecenter}
+        onClick={onRecenterClick}
         className="p-button-rounded justify-content-center w-9 h-9"
       >
         <FontAwesomeIcon icon={faLocation} className="text-2xl" />
@@ -149,6 +199,30 @@ export function MapControls({ userPos }: { userPos: [number, number] }) {
   );
 }
 
+// Modification du composant RecenterMap pour ajouter un contrôle quand il doit recenter
+const RecenterMap = ({
+  position,
+  shouldRecenter,
+  onRecenterComplete,
+}: {
+  position: [number, number];
+  shouldRecenter: boolean;
+  onRecenterComplete?: () => void;
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (shouldRecenter) {
+      map.setView(position);
+      if (onRecenterComplete) {
+        onRecenterComplete();
+      }
+    }
+  }, [map, position, shouldRecenter, onRecenterComplete]);
+
+  return null;
+};
+
 export function HomePageMap() {
   const toast = useRef<Toast>(null);
   const markerRef = useRef(null);
@@ -156,6 +230,8 @@ export function HomePageMap() {
 
   const [position, setPosition] = useState<[number, number]>([48.8566, 2.3522]);
   const [userLocated, setUserLocated] = useState(false);
+  const [shouldRecenterToUser, setShouldRecenterToUser] = useState(true);
+  const [shouldRecenterToCenter, setShouldRecenterToCenter] = useState(false);
   const [tileLayerUrl, setTileLayerUrl] = useState(
     localStorage.getItem("tileLayerUrl") ||
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -169,11 +245,20 @@ export function HomePageMap() {
   );
   const [centresData, setCentresData] = useState<CentreExamen[]>([]);
   const [loading, setLoading] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(13); // État pour suivre le niveau de zoom
 
   // Gestion favoris
   const { isAuthenticated, userId, userRole } = useAuth();
   const [favoriteCentres, setFavoriteCentres] = useState<CentreExamen[]>([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
+
+  // Déterminer si on affiche les noms des centres en fonction du niveau de zoom
+  const showLabels = zoomLevel >= 9;
+
+  // Fonction pour mettre à jour le niveau de zoom
+  const handleZoomChange = (zoom: number) => {
+    setZoomLevel(zoom);
+  };
 
   //récupération de la localisation
   useEffect(() => {
@@ -314,6 +399,7 @@ export function HomePageMap() {
       parseFloat(centre.latitude),
       parseFloat(centre.longitude),
     ]);
+    setShouldRecenterToCenter(true);
   };
 
   // Gestion de l'ajout/suppression des favoris
@@ -415,10 +501,9 @@ export function HomePageMap() {
     }
   };
 
-  const RecenterMap = ({ position }: { position: [number, number] }) => {
-    const map = useMap();
-    map.setView(position);
-    return null;
+  // Bouton de recentrage dans les contrôles de la carte
+  const handleManualRecenter = () => {
+    setShouldRecenterToUser(true);
   };
 
   return (
@@ -442,8 +527,23 @@ export function HomePageMap() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url={tileLayerUrl}
           />
-          {userLocated && <RecenterMap position={position} />}
-          {centerPosition && <RecenterMap position={centerPosition} />}
+          {userLocated && (
+            <RecenterMap
+              position={position}
+              shouldRecenter={shouldRecenterToUser}
+              onRecenterComplete={() => setShouldRecenterToUser(false)}
+            />
+          )}
+          {centerPosition && (
+            <RecenterMap
+              position={centerPosition}
+              shouldRecenter={shouldRecenterToCenter}
+              onRecenterComplete={() => setShouldRecenterToCenter(false)}
+            />
+          )}
+
+          {/* Composant pour surveiller les changements de zoom */}
+          <ZoomListener onZoomChange={handleZoomChange} />
 
           {userLocated && (
             <Marker position={position} icon={userIcon} ref={markerRef}>
@@ -464,15 +564,14 @@ export function HomePageMap() {
                 parseFloat(centre.latitude),
                 parseFloat(centre.longitude),
               ];
-              const icon =
-                centre.pays === "France"
-                  ? examCenterIconFrance
-                  : examCenterIconUK;
+              const icon = createExamCenterIcon(centre, showLabels);
               return (
                 <Marker
                   key={centre.id}
                   position={pos}
                   icon={icon}
+                  title={centre.libelle}
+                  alt={centre.libelle}
                   eventHandlers={{
                     click: () => handleMarkerClick(centre),
                     mouseover: (e) => {
@@ -494,7 +593,10 @@ export function HomePageMap() {
                 />
               );
             })}
-          <MapControls userPos={position} />
+          <MapControls
+            userPos={position}
+            onRecenterClick={handleManualRecenter}
+          />
         </MapContainer>
         {/* Affichage des centres favoris en bas à gauche */}
         {isAuthenticated && !loadingFavorites && (
