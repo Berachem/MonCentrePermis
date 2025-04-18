@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Dialog } from 'primereact/dialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { getRequest } from "../../interfaces/utils/api";
 
 interface CoursesModalProps {
   visible: boolean;
@@ -24,19 +25,8 @@ const CoursesModal: React.FC<CoursesModalProps> = ({ visible, onHide, courseId }
       const fetchCourse = async () => {
         setLoading(true);
         try {
-          const res = await fetch(`http://localhost:8000/media/cours/33`);
-          if (!res.ok) throw new Error('Erreur lors de la récupération du cours');
-          const data = await res.json();
-          const coursData = data.cours;
-  
-          // Ajouter token aux URLs des images dans la description
-          const token = localStorage.getItem('jwtToken');
-          if (token && coursData.description) {
-            coursData.description = coursData.description.replace(/src="(http:\/\/localhost:8000[^"]+)"/g, (match, url) => {
-              const urlWithToken = `${url}?token=${token}`;
-              return `src="${urlWithToken}"`;
-            });
-          }
+          const res = await getRequest(`http://localhost:8000/media/cours/3`);
+          const coursData = res.cours;
   
           setCourse(coursData);
         } catch (error) {
