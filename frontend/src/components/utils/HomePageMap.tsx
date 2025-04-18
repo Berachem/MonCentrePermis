@@ -22,7 +22,7 @@ import Loader from "./Loader";
 import HomePageTopBar from "./HomePageTopBar";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLocation } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faLocation } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
 import youAreHereIcon from "../../assets/images/you_are_here.svg";
 
@@ -46,7 +46,7 @@ const createExamCenterIcon = (
     ? `
     <div class="centre-name" style="position: absolute; top: 50%; right: -5px; transform: translate(100%, -50%); 
          text-align: left; white-space: nowrap; font-weight: 800; color: #6366F1; 
-         font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
+         font-size: 13px; 
          background-color: rgba(255,255,255,0.9); padding: 2px 6px; 
          border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
          ${displayName}
@@ -105,6 +105,8 @@ function FavoritesCentresList({
   onCentreClick: (centre: CentreExamen) => void;
   onRemoveFavorite: (centreId: number) => void;
 }) {
+  const [isVisible, setIsVisible] = useState(false);
+
   if (!favorites || favorites.length === 0) {
     return null;
   }
@@ -127,35 +129,135 @@ function FavoritesCentresList({
     }
   };
 
+  const toggleVisibility = () => {
+    setIsVisible(!isVisible);
+  };
+
   return (
-    <div className="favorites-panel" role="region" aria-label="Centres favoris">
-      <h3 id="favorites-heading">Mes centres favoris</h3>
-      <ul className="favorites-list" aria-labelledby="favorites-heading">
-        {favorites.map((centre) => (
-          <li key={centre.id} className="favorite-item">
-            <div
-              className="favorite-name"
-              onClick={() => onCentreClick(centre)}
-              onKeyDown={(e) => handleKeyDown(e, centre)}
-              tabIndex={0}
-              role="button"
-              aria-label={`Voir le centre ${centre.libelle}`}
-            >
-              {centre.libelle}
-            </div>
-            <button
-              className="remove-favorite"
-              onClick={() => onRemoveFavorite(centre.id)}
-              onKeyDown={(e) => handleRemoveKeyDown(e, centre.id)}
-              title="Retirer des favoris"
-              aria-label={`Retirer ${centre.libelle} des favoris`}
-            >
-              ×
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      {/* Floating button to toggle favorites panel */}
+      <Button
+        className="favorites-toggle-btn p-button-rounded shadow-lg flex items-center"
+        onClick={toggleVisibility}
+        aria-expanded={isVisible}
+        aria-label="Afficher les centres favoris"
+      >
+        <FontAwesomeIcon icon={faHeart} className="text-lg" />
+        <span className="favorites-btn-text ml-2">Favoris</span>
+      </Button>
+
+      {/* Favorites panel (shown/hidden based on isVisible state) */}
+      {isVisible && (
+        <div
+          className="favorites-panel shadow-md rounded-lg bg-white"
+          role="region"
+          aria-label="Centres favoris"
+        >
+          <h3
+            id="favorites-heading"
+            className="text-lg font-bold text-primary border-b flex justify-between items-center p-2"
+          >
+            <span className="flex items-center">
+              <FontAwesomeIcon icon={faHeart} className="mr-2 text-primary" />
+              Mes centres favoris
+            </span>
+            <Button
+              icon="pi pi-times"
+              className="p-button-text p-button-rounded w-2rem h-2rem bg-white hover:bg-gray-100"
+              onClick={toggleVisibility}
+              aria-label="Fermer les favoris"
+            />
+          </h3>
+          <ul
+            className="favorites-list p-2"
+            aria-labelledby="favorites-heading"
+          >
+            {favorites.map((centre) => {
+              // Nettoyer le nom du centre en enlevant "Centre d'examen de"
+              const cleanName = centre.libelle
+                ? centre.libelle.replace(/Centre d['']examen de/i, "").trim()
+                : "Centre sans nom";
+
+              return (
+                <li
+                  key={centre.id}
+                  className="favorite-item flex justify-between items-center p-2 hover:bg-gray-50 rounded"
+                >
+                  <div
+                    className="favorite-name flex-grow cursor-pointer text-gray-700 hover:text-primary"
+                    onClick={() => onCentreClick(centre)}
+                    onKeyDown={(e) => handleKeyDown(e, centre)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Voir le centre ${cleanName}`}
+                  >
+                    {cleanName}
+                  </div>
+
+                  {/* voir */}
+                  <Button
+                    icon="pi pi-eye"
+                    className="p-button-text p-button-primary p-button-rounded w-2rem h-2rem bg-white hover:bg-gray-100"
+                    onClick={() => onCentreClick(centre)}
+                    onKeyDown={(e) => handleKeyDown(e, centre)}
+                    tabIndex={0}
+                    aria-label={`Voir le centre ${cleanName}`}
+                    style={{ marginLeft: "5px", fontSize: "0.8rem" }}
+                  />
+
+                  {/* supprimer */}
+                  <Button
+                    icon="pi pi-times"
+                    className="p-button-text p-button-danger p-button-rounded w-2rem h-2rem bg-white hover:bg-gray-100"
+                    onClick={() => onRemoveFavorite(centre.id)}
+                    onKeyDown={(e) => handleRemoveKeyDown(e, centre.id)}
+                    tabIndex={0}
+                    aria-label={`Retirer ${cleanName} des favoris`}
+                    style={{ marginLeft: "5px", fontSize: "0.8rem" }}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Add these styles to your CSS file */}
+      <style jsx>{`
+        .favorites-toggle-btn {
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          z-index: 1000;
+          background-color: white;
+          color: #6366f1;
+          border: 2px solid #6366f1;
+        }
+
+        .favorites-panel {
+          position: absolute;
+          bottom: 80px;
+          left: 20px;
+          z-index: 1000;
+          width: 300px;
+          max-height: 70vh;
+          overflow-y: auto;
+        }
+
+        /* Hide text on mobile */
+        @media (max-width: 768px) {
+          .favorites-btn-text {
+            display: none;
+          }
+
+          .favorites-panel {
+            width: 90%;
+            left: 5%;
+            bottom: 70px;
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
