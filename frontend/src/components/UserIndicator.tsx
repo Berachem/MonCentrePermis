@@ -67,29 +67,49 @@ const UserIndicator = () => {
               cursor: "pointer",
               transition: "all 0.2s ease-in-out",
               transform: showLogoutButton ? "scale(0.97)" : "scale(1)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
             onClick={toggleLogoutButton}
           >
-            {userRole === "eleve" ? (
-              <img
-                src="https://amelesarcades.bleep.fr/wp-content/uploads/2017/06/permisb.png"
-                alt="eleve"
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {userRole === "eleve" ? (
+                <img
+                  src="https://amelesarcades.bleep.fr/wp-content/uploads/2017/06/permisb.png"
+                  alt="eleve"
+                  style={{
+                    width: "25px",
+                    height: "25px",
+                    borderRadius: "50%",
+                    marginBottom: "5px",
+                    verticalAlign: "middle",
+                    display: "inline-block",
+                  }}
+                />
+              ) : (
+                "🕵️"
+              )}
+              <span
                 style={{
-                  width: "25px",
-                  height: "25px",
-                  borderRadius: "50%",
-                  marginBottom: "5px",
-                  verticalAlign: "middle",
-                  display: "inline-block",
+                  fontWeight: "bold",
+                  marginLeft: "5px",
+                  fontSize: "1em",
                 }}
-              />
-            ) : (
-              "🕵️"
-            )}
+              >
+                {prenom}
+              </span>
+            </div>
             <span
-              style={{ fontWeight: "bold", marginLeft: "5px", fontSize: "1em" }}
+              style={{
+                fontSize: "0.65em",
+                opacity: 0.9,
+                textTransform: "lowercase",
+                fontWeight: "normal",
+                marginTop: "-2px",
+              }}
             >
-              {prenom}
+              {userRole === "eleve" ? "élève" : "moniteur"}
             </span>
           </span>
 
@@ -98,7 +118,7 @@ const UserIndicator = () => {
               style={{
                 position: "absolute",
                 top: "100%",
-                right: 0,
+                right: 15,
                 marginTop: "5px",
                 zIndex: 1001,
               }}

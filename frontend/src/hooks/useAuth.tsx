@@ -71,10 +71,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!response.ok) throw new Error("Unauthorized");
 
       const { token } = await response.json(); // Ton backend doit renvoyer le token décodable
+      localStorage.setItem("jwtToken", token);
       const decoded = decodeToken(token);
 
       if (decoded) {
-        const userRole = decoded.roles?.[0]?.split("_")[0]?.toLowerCase() || "visitor";
+        // Modification de l'extraction du rôle
+        let userRole;
+
+        if (decoded.roles && decoded.roles.length > 0) {
+          const roleString = decoded.roles[0];
+          // Vérifier si le rôle contient un underscore
+          if (roleString.includes("_")) {
+            userRole = roleString.split("_")[1]?.toLowerCase() || "visitor";
+          } else {
+            userRole = roleString.toLowerCase();
+          }
+        } else {
+          userRole = "visitor";
+        }
+
+        console.log("Connexion réussie, rôle utilisateur :", userRole);
         setUserRole(userRole as UserType);
         setUserId(decoded.userId);
         setUsername(decoded.username);
