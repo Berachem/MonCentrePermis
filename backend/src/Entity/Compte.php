@@ -94,6 +94,12 @@ class Compte implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'compte', cascade: ['persist', 'remove'])]
     private ?Eleve $eleve = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $refreshToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $refreshTokenExpiresAt = null;
+
     public function __construct()
     {
         $this->langues = new ArrayCollection();
@@ -424,6 +430,30 @@ class Compte implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->eleve = $eleve;
+
+        return $this;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refreshToken;
+    }
+
+    public function setRefreshToken(?string $refreshToken): static
+    {
+        $this->refreshToken = $refreshToken;
+
+        return $this;
+    }
+
+    public function getRefreshTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->refreshTokenExpiresAt;
+    }
+
+    public function setRefreshTokenExpiresAt(?\DateTimeImmutable $refreshTokenExpiresAt): static
+    {
+        $this->refreshTokenExpiresAt = $refreshTokenExpiresAt;
 
         return $this;
     }

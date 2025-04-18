@@ -126,7 +126,7 @@ const AddCourses: React.FC<AddCoursesProps> = ({ visible, onHide, onCourseAdded 
       const urlWithToken = `${directUrl}?token=${token}`;
       
       // Insérer l'image avec l'URL directe + token
-      quill.insertEmbed(range.index, tag, urlWithToken);
+      quill.insertEmbed(range.index, tag, `http://localhost:8000/media/${url}`);
       quill.setSelection(range.index + 1);
       quill.update();
     } catch (err) {

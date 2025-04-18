@@ -34,7 +34,9 @@ class FileController extends AbstractController
     public function getProtectedFileByUuid(string $uuid, Request $request): BinaryFileResponse|JsonResponse
     {
         // Récupérer le token depuis les paramètres de l'URL
-        $token = $request->query->get('token');
+        //$token = $request->query->get('token');
+
+        $token = $request->cookies->get('BEARER');
         
         if (!$token) {
             return new JsonResponse(['error' => 'Token manquant'], JsonResponse::HTTP_BAD_REQUEST);

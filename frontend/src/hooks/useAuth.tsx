@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import { jwtDecode } from "jwt-decode";
+// Pas besoin de js-cookie si cookie httpOnly
 import { UserType } from "../enum/user";
 
 // Définir le type pour le token décodé
@@ -21,13 +22,13 @@ type DecodedToken = {
 
 type AuthContextType = {
   userRole: string;
-  typeUserid : string;
+  typeUserid: string;
   userId: string;
   isAuthenticated: boolean;
   username: string;
   nom: string;
   prenom: string;
-  login: (token: string) => void;
+  login: () => void;
   logout: () => void;
 };
 
@@ -44,7 +45,7 @@ const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userRole, setUserRole] = useState<UserType>(UserType.Visitor);
   const [userId, setUserId] = useState<string>("");
-  const [typeUserid, settypeUserid] = useState<string>("");
+  const [typeUserid, setTypeUserid] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [nom, setNom] = useState<string>("");
@@ -59,29 +60,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const login = useCallback((token: string) => {
-    localStorage.setItem("jwtToken", token);
-    const decoded = decodeToken(token);
-    if (decoded) {
-      const userRole =
-        decoded.roles && decoded.roles.length > 0
-          ? decoded.roles[0].split("_")[0].toLowerCase()
-          : "visitor";
-      setUserRole(userRole as UserType);
-      setUserId(decoded.userId);
-      setUsername(decoded.username);
-      settypeUserid(decoded.typeUserid);
-      setNom(decoded.nom);
-      setPrenom(decoded.prenom);
-      setIsAuthenticated(true);
+  const login = useCallback(async () => {
+    try {
+      // Appelle une route sécurisée qui utilise le cookie httpOnly envoyé par le backend
+      const response = await fetch("http://localhost:8000/api/me", {
+        method: "GET",
+        credentials: "include", // Important pour envoyer le cookie httpOnly
+      });
+
+      if (!response.ok) throw new Error("Unauthorized");
+
+      const { token } = await response.json(); // Ton backend doit renvoyer le token décodable
+      const decoded = decodeToken(token);
+
+      if (decoded) {
+        const userRole = decoded.roles?.[0]?.split("_")[0]?.toLowerCase() || "visitor";
+        setUserRole(userRole as UserType);
+        setUserId(decoded.userId);
+        setUsername(decoded.username);
+        setTypeUserid(decoded.typeUserid);
+        setNom(decoded.nom);
+        setPrenom(decoded.prenom);
+        setIsAuthenticated(true);
+      }
+    } catch (err) {
+      console.error("Erreur lors du login", err);
+      logout();
     }
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("jwtToken");
+  const logout = useCallback(async () => {
+    try {
+      await fetch("http://localhost:8000/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.warn("Erreur lors du logout (côté backend)", err);
+    }
+
     setUserRole(UserType.Visitor);
     setUserId("");
-    settypeUserid("");
+    setTypeUserid("");
     setUsername("");
     setNom("");
     setPrenom("");
@@ -89,33 +109,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    if (token) {
-      const decoded = decodeToken(token); 
-      if (decoded && decoded.exp * 1000 > Date.now()) {
-        const userRole =
-          decoded.roles && decoded.roles.length > 0
-            ? decoded.roles[0].split("_")[1].toLowerCase()
-            : "visitor";
-        setUserRole(userRole as UserType);
-        setUserId(decoded.userId);
-        setUsername(decoded.username);
-        setNom(decoded.nom);
-        settypeUserid(decoded.typeUserid);
-        setPrenom(decoded.prenom);
-        setIsAuthenticated(true);
-      } else {
-        logout();
-      }
-    } else {
-      setUserRole(UserType.Visitor);
-      setUserId("");
-      setUsername("");
-      setNom("");
-      setPrenom("");
-      setIsAuthenticated(false);
-    }
-  }, [logout]);
+    login();
+  }, [login]);
 
   return (
     <AuthContext.Provider

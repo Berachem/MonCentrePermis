@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\HttpFoundation\Cookie;
 
 
 
@@ -342,12 +343,39 @@ public function getUserInfo(int $id): JsonResponse
             return $this->json([], 400);
         }
 
-        // Sauvegarder toutes les entités dans la base de données
-        $em->flush();
-
         // Générer un JWT pour l'utilisateur
         $token = $this->jwtManager->create($compte);
 
-        return new JsonResponse(['message' => 'Inscription réussie', 'token' => $token], 200);
+        $refreshToken = bin2hex(random_bytes(64)); // Générer un refresh token aléatoire (à stocker en base de données si nécessaire)
+
+       // Associer le refreshToken à l'utilisateur
+        $compte->setRefreshToken($refreshToken);
+
+        // Sauvegarder le refreshToken dans la base de données
+        $em->flush();
+        
+        $cookie = Cookie::create('BEARER', $token)
+            ->withHttpOnly(true)
+            ->withSecure(true)
+            ->withSameSite('Lax')
+            ->withPath('/');
+
+        // Créer un cookie pour le refresh token
+        $refreshCookie = Cookie::create('REFRESH_TOKEN', $refreshToken)
+            ->withHttpOnly(true)
+            ->withSecure(true)
+            ->withSameSite('Lax')
+            ->withPath('/');
+        
+        $response = new JsonResponse([
+            'message' => 'Inscription réussie',
+            'token' => $token // facultatif
+        ]);
+        
+        $response->headers->setCookie($cookie);
+        $response->headers->setCookie($refreshCookie);
+        
+        return $response;
+        
     }
 }

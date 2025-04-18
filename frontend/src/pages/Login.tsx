@@ -49,8 +49,8 @@ function Login() {
       try {
         const response: ApiResponse = await postRequest("login", formData);
 
-        if (response && response.token) {
-          localStorage.setItem("jwtToken", response.token);
+        console.log(response);
+        if (response === "") {
           toastRef.current?.show({
             severity: "success",
             summary: "Connexion réussie!",

@@ -24,7 +24,7 @@ const CoursesModal: React.FC<CoursesModalProps> = ({ visible, onHide, courseId }
       const fetchCourse = async () => {
         setLoading(true);
         try {
-          const res = await fetch(`http://localhost:8000/media/cours/2`);
+          const res = await fetch(`http://localhost:8000/media/cours/33`);
           if (!res.ok) throw new Error('Erreur lors de la récupération du cours');
           const data = await res.json();
           const coursData = data.cours;
