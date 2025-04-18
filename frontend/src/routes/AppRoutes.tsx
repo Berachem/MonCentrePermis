@@ -43,11 +43,8 @@ function AppRoutes() {
         <Route path="/schools" element={<SchoolsPage />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/examen/:id" element={<ExamPage />} />
-        <Route path="/admin/circuit/create" element={<CircuitCreationPage />} />
-        <Route
-          path="/admin/circuit/edit/:id"
-          element={<CircuitEditionPage />}
-        />
+        <Route path="/circuit/create" element={<CircuitCreationPage />} />
+        <Route path="/circuit/edit/:id" element={<CircuitEditionPage />} />
       </Routes>
     </>
   );

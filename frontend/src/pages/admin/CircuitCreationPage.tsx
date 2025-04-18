@@ -36,8 +36,6 @@ interface CircuitResponse {
 }
 
 const CircuitCreationPage: React.FC = () => {
-
-
   const { typeUserid } = useAuth();
   const [libelle, setLibelle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -133,7 +131,7 @@ const CircuitCreationPage: React.FC = () => {
       selectedVille,
       typeUserid,
     });
-    
+
     try {
       // Créer le circuit via l'API
       const circuitData = {
@@ -157,7 +155,7 @@ const CircuitCreationPage: React.FC = () => {
 
       // Rediriger vers la page d'édition avec l'ID du circuit créé
       setTimeout(() => {
-        navigate(`/admin/circuit/edit/${response.id}`);
+        navigate(`/circuit/edit/${response.id}`);
       }, 1500);
     } catch (error) {
       console.error("Erreur lors de la création du circuit:", error);

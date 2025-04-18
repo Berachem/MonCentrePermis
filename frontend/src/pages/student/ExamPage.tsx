@@ -495,11 +495,10 @@ const ExamPage: React.FC = () => {
 
       {/* Loader comme sur la homepage */}
       {isLoading && (
-          <div className="loader-container">
-              <Loader />
-          </div>
+        <div className="loader-container">
+          <Loader />
+        </div>
       )}
-
 
       <div
         style={styles.chipContainer}
@@ -547,7 +546,7 @@ const ExamPage: React.FC = () => {
                         label="Modifier"
                         className="p-button-sm p-button-outlined"
                         onClick={() =>
-                          navigate(`/circuits/edit/${currentCircuit.id}`)
+                          navigate(`/circuit/edit/${currentCircuit.id}`)
                         }
                       />
                     </div>
