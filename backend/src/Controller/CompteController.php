@@ -7,6 +7,7 @@ use App\Entity\Compte;
 use App\Entity\Moniteur;
 use App\Entity\Eleve;
 use App\Entity\AutoEcole;
+use App\Entity\Center;
 use App\Repository\AutoEcoleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -98,7 +99,7 @@ public function getUserInfo(int $id): JsonResponse
         'permis' => array_map(fn($permis) => $permis->getNom(), $compte->getPermis()->toArray()),
         'auto_ecole' => $compte->getAutoEcole()?->getNom(),
         'centres_examen_favoris' => $compte->getEleve()
-            ? array_map(fn($centre) => $centre->getNom(), $compte->getEleve()->getCentresExemenFavoris()->toArray())
+            ? array_map(fn($centre) => $centre->getLibelle(), $compte->getEleve()->getCentresExemenFavoris()->toArray())
             : [],
         'cours_favoris' => $compte->getEleve()
             ? array_map(fn($cours) => $cours->getNom(), $compte->getEleve()->getCoursFavoris()->toArray())
