@@ -541,19 +541,20 @@ const ExamPage: React.FC = () => {
                       ).toLocaleDateString()}
                     </div>
                   )}
-                  {typeUserid.toString() ===
-                    currentCircuit.moniteur?.id?.toString() && (
-                    <div className="mt-2 flex justify-content-center">
-                      <Button
-                        icon="pi pi-pencil"
-                        label="Modifier"
-                        className="p-button-sm p-button-outlined"
-                        onClick={() =>
-                          navigate(`/circuit/edit/${currentCircuit.id}`)
-                        }
-                      />
-                    </div>
-                  )}
+                  {userRole === UserType.Teacher &&
+                    typeUserid.toString() ===
+                      currentCircuit.moniteur?.id?.toString() && (
+                      <div className="mt-2 flex justify-content-center">
+                        <Button
+                          icon="pi pi-pencil"
+                          label="Modifier"
+                          className="p-button-sm p-button-outlined"
+                          onClick={() =>
+                            navigate(`/circuit/edit/${currentCircuit.id}`)
+                          }
+                        />
+                      </div>
+                    )}
                 </div>
               </div>
             )}
