@@ -41,7 +41,6 @@ security:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/custom/centre_examens, roles: PUBLIC_ACCESS }
         - { path: ^/api/compte/create-compte, roles: PUBLIC_ACCESS }
-        - { path: ^/api/moniteurs/ping, roles: PUBLIC_ACCESS }
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
