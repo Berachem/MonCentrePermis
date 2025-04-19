@@ -13,6 +13,7 @@ import { getRequest } from "../../interfaces/utils/api";
 import { Chip } from "primereact/chip";
 import useAuth from "../../hooks/useAuth";
 import Loader from "../../components/utils/Loader";
+import { UserType } from "../../enum/user";
 
 // Interface pour un point du circuit
 interface Point {
@@ -279,6 +280,7 @@ const ExamPage: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultPosition);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [centre, setCentre] = useState<Centre | null>(null);
+  const { userRole } = useAuth();
 
   const { typeUserid } = useAuth();
 
@@ -806,9 +808,28 @@ const ExamPage: React.FC = () => {
               </CSSTransition>
             </div>
           ))}
-          {circuits.length === 0 && (
+          {circuits.length === 0 && userRole !== UserType.Teacher && (
             <div className="p-4 text-center text-500">
               Aucun circuit disponible à moins de {MAX_DISTANCE} km du centre.
+            </div>
+          )}
+
+          {circuits.length === 0 && userRole === UserType.Teacher && (
+            <div className="p-4 text-center text-500">
+              Malheureusement, aucun circuit n'est disponible à moins de{" "}
+              {MAX_DISTANCE} km du centre.
+              <br />
+              <div className="text-900 font-bold mt-2 flex flex-column align-items-center mt-5">
+                <span className="text-900 font-bold">
+                  Et si vous en créiez un ?
+                </span>
+                <Button
+                  label="Créer un circuit"
+                  icon="pi pi-plus"
+                  className="p-button-primary mt-2"
+                  onClick={() => navigate("/circuit/create")}
+                />
+              </div>
             </div>
           )}
         </div>
