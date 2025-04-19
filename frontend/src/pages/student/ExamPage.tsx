@@ -13,6 +13,7 @@ import { getRequest } from "../../interfaces/utils/api";
 import { Chip } from "primereact/chip";
 import useAuth from "../../hooks/useAuth";
 import Loader from "../../components/utils/Loader";
+import { UserType } from "../../enum/user";
 
 // Interface pour un point du circuit
 interface Point {
@@ -279,6 +280,7 @@ const ExamPage: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultPosition);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [centre, setCentre] = useState<Centre | null>(null);
+  const { userRole } = useAuth();
 
   const { typeUserid } = useAuth();
 
@@ -539,19 +541,20 @@ const ExamPage: React.FC = () => {
                       ).toLocaleDateString()}
                     </div>
                   )}
-                  {typeUserid.toString() ===
-                    currentCircuit.moniteur?.id?.toString() && (
-                    <div className="mt-2 flex justify-content-center">
-                      <Button
-                        icon="pi pi-pencil"
-                        label="Modifier"
-                        className="p-button-sm p-button-outlined"
-                        onClick={() =>
-                          navigate(`/circuit/edit/${currentCircuit.id}`)
-                        }
-                      />
-                    </div>
-                  )}
+                  {userRole === UserType.Teacher &&
+                    typeUserid.toString() ===
+                      currentCircuit.moniteur?.id?.toString() && (
+                      <div className="mt-2 flex justify-content-center">
+                        <Button
+                          icon="pi pi-pencil"
+                          label="Modifier"
+                          className="p-button-sm p-button-outlined"
+                          onClick={() =>
+                            navigate(`/circuit/edit/${currentCircuit.id}`)
+                          }
+                        />
+                      </div>
+                    )}
                 </div>
               </div>
             )}
@@ -736,13 +739,27 @@ const ExamPage: React.FC = () => {
                             {circuit.description}
                           </p>
                         )}
+
+                        {selectedCircuit === circuit.nom && (
+                          <span className="mr-2 font-medium flex align-items-center text-green-500">
+                            {/* affiche que sur pc */}
+                            <span className="lg:hidden flex">
+                              appliqué
+                              <i className="pi pi-check-circle ml-1"></i>
+                            </span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                   <div className="flex align-items-center">
                     {selectedCircuit === circuit.nom && (
                       <span className="mr-2 font-medium flex align-items-center text-green-500">
-                        appliqué <i className="pi pi-check-circle ml-1"></i>
+                        {/* affiche que sur pc */}
+                        <span className="hidden lg:flex">
+                          appliqué
+                          <i className="pi pi-check-circle ml-1"></i>
+                        </span>
                       </span>
                     )}
                     <i
@@ -806,9 +823,28 @@ const ExamPage: React.FC = () => {
               </CSSTransition>
             </div>
           ))}
-          {circuits.length === 0 && (
+          {circuits.length === 0 && userRole !== UserType.Teacher && (
             <div className="p-4 text-center text-500">
               Aucun circuit disponible à moins de {MAX_DISTANCE} km du centre.
+            </div>
+          )}
+
+          {circuits.length === 0 && userRole === UserType.Teacher && (
+            <div className="p-4 text-center text-500">
+              Malheureusement, aucun circuit n'est disponible à moins de{" "}
+              {MAX_DISTANCE} km du centre.
+              <br />
+              <div className="text-900 font-bold mt-2 flex flex-column align-items-center mt-5">
+                <span className="text-900 font-bold">
+                  Et si vous en créiez un ?
+                </span>
+                <Button
+                  label="Créer un circuit"
+                  icon="pi pi-plus"
+                  className="p-button-primary mt-2"
+                  onClick={() => navigate("/circuit/create")}
+                />
+              </div>
             </div>
           )}
         </div>

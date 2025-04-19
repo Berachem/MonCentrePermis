@@ -161,7 +161,7 @@ class CentreExamenController extends AbstractController
                     'moniteur' => $circuit->getIdMoniteur() ? [
                         'id' => $circuit->getIdMoniteur()->getId(),
                         'nom' => $circuit->getIdMoniteur()->getCompte()->getNom(),
-                        'prenom' => $circuit->getIdMoniteur()->getCompte()->getNom(),
+                        'prenom' => $circuit->getIdMoniteur()->getCompte()->getPrenom(),
 
                     ] : null,
                     'points' => $points

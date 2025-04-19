@@ -2484,6 +2484,110 @@
             "dep": "Haute-Vienne"
         },
         {
+            "id": 246,
+            "name": "Centre d'examen de Basse-Terre",
+            "lat": 16.010416,
+            "long": -61.7064107,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Rue du Général de Gaulle",
+              "cp": "97100",
+              "city": "Basse-Terre"
+            },
+            "dep": "Guadeloupe"
+          },
+          {
+            "id": 247,
+            "name": "Centre d'examen de Baie-Mahault",
+            "lat": 16.2679,
+            "long": -61.5859,
+            "country": "France",
+            "formattedAddress": {
+              "address": "ZI Jarry",
+              "cp": "97122",
+              "city": "Baie-Mahault"
+            },
+            "dep": "Guadeloupe"
+          },
+          {
+            "id": 248,
+            "name": "Centre d'examen de Fort-de-France",
+            "lat": 14.6104,
+            "long": -61.0792,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Rocade Route de Redoute",
+              "cp": "97200",
+              "city": "Fort-de-France"
+            },
+            "dep": "Martinique"
+          },
+          {
+            "id": 249,
+            "name": "Centre d'examen de Cayenne",
+            "lat": 4.9224,
+            "long": -52.3135,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Avenue du Général de Gaulle",
+              "cp": "97300",
+              "city": "Cayenne"
+            },
+            "dep": "Guyane"
+          },
+          {
+            "id": 250,
+            "name": "Centre d'examen de Remire-Montjoly",
+            "lat": 4.8772,
+            "long": -52.2786,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Lotissement Les Ames Claires",
+              "cp": "97354",
+              "city": "Remire-Montjoly"
+            },
+            "dep": "Guyane"
+          },
+          {
+            "id": 251,
+            "name": "Centre d'examen de Saint-Denis",
+            "lat": -20.8789,
+            "long": 55.4481,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Rue de la Digue",
+              "cp": "97400",
+              "city": "Saint-Denis"
+            },
+            "dep": "La Réunion"
+          },
+          {
+            "id": 252,
+            "name": "Centre d'examen de Le Port",
+            "lat": -20.9394,
+            "long": 55.2915,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Avenue Rico Carpaye",
+              "cp": "97420",
+              "city": "Le Port"
+            },
+            "dep": "La Réunion"
+          },
+          {
+            "id": 253,
+            "name": "Centre d'examen de Mamoudzou",
+            "lat": -12.7794,
+            "long": 45.2272,
+            "country": "France",
+            "formattedAddress": {
+              "address": "Place de France",
+              "cp": "97600",
+              "city": "Mamoudzou"
+            },
+            "dep": "Mayotte"
+          },
+        {
             "id": 195,
             "name": "Centre d'examen de Tourcoing",
             "lat": 50.7304674,
