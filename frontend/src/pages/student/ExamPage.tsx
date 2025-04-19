@@ -303,6 +303,7 @@ const ExamPage: React.FC = () => {
 
         console.log("Circuits proches:", circuitsProches);
         setCircuits(circuitsProches);
+        setCircuitModalVisible(true);
 
         if (circuitsProches.length > 0) {
           setSelectedCircuit(circuitsProches[0].nom);
@@ -508,7 +509,7 @@ const ExamPage: React.FC = () => {
           icon="pi pi-arrow-left"
           className="p-button-rounded shadow-4"
           onClick={() => navigate("/")}
-          label="Quitter"
+          label="Retour"
           severity="secondary"
           tooltipOptions={{ position: "top" }}
         />
@@ -666,7 +667,7 @@ const ExamPage: React.FC = () => {
         transitionOptions={{ timeout: 400 }}
       >
         <div className="overflow-y-auto" style={{ maxHeight: "70vh" }}>
-          <div className="flex justify-content-between align-items-center p-3 border-bottom-1 border-200">
+          <div className="flex justify-content-between align-items-center p-3 border-200">
             <h2 className="text-xl font-bold m-0">Sélectionner un circuit</h2>
             <Button
               icon="pi pi-times"
@@ -675,7 +676,7 @@ const ExamPage: React.FC = () => {
             />
           </div>
 
-          <div className="p-2 bg-info-50 text-info-900 text-center border-bottom-1 border-200">
+          <div className="p-2 bg-info-50 text-info-900 text-center border-bottom-1 p-3 border-200">
             <i className="pi pi-info-circle mr-2"></i>
             Circuits disponibles à moins de {MAX_DISTANCE} km du centre d'examen
           </div>
@@ -689,7 +690,6 @@ const ExamPage: React.FC = () => {
               onClick={() => handleCircuitSelection(circuit.nom)}
             >
               <div className="relative">
-                <div className="font-medium mb-2 text-900">{circuit.nom}</div>
                 <div className="flex align-items-center justify-content-between">
                   <div className="flex align-items-center">
                     <Avatar
@@ -701,16 +701,42 @@ const ExamPage: React.FC = () => {
                       }}
                     />
                     <div className="flex flex-column">
-                      <span className="text-600">
-                        {circuit.createur &&
-                          new Date(circuit.createur.date).toLocaleString()}
-                      </span>
-                      {circuit.moniteur && (
-                        <span className="text-sm text-blue-600">
-                          Moniteur: {circuit.moniteur.prenom}{" "}
-                          {circuit.moniteur.nom}
+                      <div className="flex align-items-center gap-1">
+                        <span className="font-medium text-900">
+                          {circuit.nom}
                         </span>
-                      )}
+                        <span className="text-xs bg-primary-50 text-primary-700 px-2 py-1 border-round">
+                          {circuit.points.length} points
+                        </span>
+                      </div>
+
+                      <div className="flex flex-column mt-1 gap-1">
+                        {circuit.moniteur && (
+                          <div className="flex align-items-center text-sm text-blue-700">
+                            <i className="pi pi-user mr-1"></i>
+                            <span>
+                              {circuit.moniteur.prenom} {circuit.moniteur.nom}
+                            </span>
+                          </div>
+                        )}
+
+                        {circuit.createur && (
+                          <div className="flex align-items-center text-xs text-500">
+                            <i className="pi pi-calendar mr-1"></i>
+                            <span>
+                              Créé le{" "}
+                              {new Date(
+                                circuit.createur.date
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                        {circuit.description && (
+                          <p className="text-sm text-600 mt-1 mb-1 line-height-2 border-top-1 border-200 pt-2">
+                            {circuit.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex align-items-center">
