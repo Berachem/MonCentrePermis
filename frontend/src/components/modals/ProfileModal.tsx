@@ -6,8 +6,8 @@ import { Divider } from 'primereact/divider';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import useAuth from "../../hooks/useAuth";
-import StudentInformations from "./StudentInformations";
-import MoniteurInformations from "./MoniteurInformations";
+import StudentInformations from "../Profils/StudentInformations";
+import MoniteurInformations from "../Profils/MoniteurInformations";
 import { UserType } from "../../enum/user";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
 
@@ -40,7 +40,7 @@ interface UserInfoResponse {
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, idRequested }) => {
-  const { userId, prenom: currentPrenom, nom: currentNom, userRole: currentUserRole } = useAuth();
+  const { userId, userRole: currentUserRole } = useAuth();
   const [description, setDescription] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -100,7 +100,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, idRequeste
 
   // Chargement des données utilisateur à l'ouverture de la modale
   useEffect(() => {
-    if (visible) {
+    if (visible && idRequested) {
       const loadUserData = async () => {
         try {
           
@@ -123,7 +123,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onHide, idRequeste
       
       loadUserData();
     }
-  }, [visible, idRequested, userId, currentUserRole, currentNom, currentPrenom]);
+  }, [visible, idRequested]);
 
   const handleEditClick = () => {
     setIsEditing(true);

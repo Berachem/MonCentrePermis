@@ -7,8 +7,8 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Paginator } from 'primereact/paginator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
-import AddCourses from './AddClasses';
-import CoursesModal from './CoursesModal';
+import AddCourses from '../Classes/AddClasses';
+import { useModal } from "../../contexts/ModalContext";
 
 interface ClassesModalProps {
   visible: boolean;
@@ -34,9 +34,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [showCourseModal, setShowCourseModal] = useState(false);
-
+  const { openModal } = useModal();
 
   const fetchCourseGroups = async () => {
     // Même mockup de données que dans la page Classes
@@ -143,14 +141,6 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
     setItemsPerPage(e.rows);
   };
 
-  // Fonction pour faire défiler jusqu'en haut de la modale
-  const scrollToTop = () => {
-    const modalContent = document.querySelector('.p-dialog-content');
-    if (modalContent) {
-      modalContent.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
   return (
     <Dialog
       visible={visible}
@@ -234,8 +224,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
                       icon="pi pi-arrow-right"
                       className="button-text text-sm ml-auto"
                       onClick={() => {
-                        setSelectedCourseId(course.id);
-                        setShowCourseModal(true);
+                        openModal("courses", { courseId: course.id });
                       }}
                     />
 
@@ -255,13 +244,6 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
           className="mt-3"
         />
       </div>
-
-      <CoursesModal
-        visible={showCourseModal}
-        courseId={selectedCourseId}
-        onHide={() => setShowCourseModal(false)}
-      />
-
     </Dialog>
   );
 };

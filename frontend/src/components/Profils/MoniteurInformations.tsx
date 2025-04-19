@@ -9,7 +9,7 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
 import useAuth from "../../hooks/useAuth";
-import ClassesModal from "../Classes/ClassesModal";
+import ClassesModal from "../modals/ClassesModal";
 import { getRequest, postRequest } from '../../interfaces/utils/api';
 
 

@@ -8,13 +8,18 @@ import "leaflet/dist/leaflet.css";
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './hooks/useAuth'; // Importer AuthProvider
+import { ModalProvider } from './contexts/ModalContext';
+import ModalContainer from './components/modals/ModalContainer';
 
 function App() {
   return (
     <AuthProvider> {/* Encapsuler l'application avec AuthProvider */}
-      <Router>
-        <AppRoutes />
-      </Router>
+      <ModalProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+        <ModalContainer />
+      </ModalProvider>
     </AuthProvider>
   );
 }

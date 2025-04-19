@@ -14,14 +14,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import LogoApp from "../../assets/images/branding/logo_moncentrepermis.png";
 import useAuth from "../../hooks/useAuth";
-import ProfileModal from "../Profils/ProfileModal";
+import { useModal } from "../../contexts/ModalContext";
 
 function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const navigate = useNavigate();
   const { isAuthenticated, prenom, logout, userId, userRole } = useAuth();
+  const { openModal } = useModal();
 
   // Liste des éléments de menu
   const inviteRoutes = [
@@ -41,20 +40,6 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
   // Fonction pour basculer l'affichage du sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  // Fonction pour afficher la modale du profil avec l'ID de l'utilisateur connecté
-  const openOwnProfileModal = () => {
-    setSelectedProfileId(userId);
-    setIsProfileModalOpen(true);
-    setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
-  };
-
-  // Fonction pour afficher la modale du profil d'un autre utilisateur (ID 9)
-  const openOtherProfileModal = (id: string) => {
-    setSelectedProfileId(id); // ID fixe pour l'exemple
-    setIsProfileModalOpen(true);
-    setIsSidebarOpen(false); // Ferme le sidebar quand on ouvre la modale
   };
 
   // Styles pour le conteneur du bouton de menu
@@ -114,7 +99,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
 
               <li
                 onClick={() => {
-                  openOtherProfileModal("9");
+                  ()=>{openModal("profile", { idRequested: "9" })};
                 }}
               >
                 <a className="p-ripple flex align-items-center cursor-pointer p-3 text-700 hover:surface-100 transition-duration-150 transition-colors w-full">
@@ -133,7 +118,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
               <>
                 <a
                   className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
-                  onClick={openOwnProfileModal}
+                  onClick={()=>{openModal("profile", { idRequested: userId })}}
                 >
                   {userRole === "eleve" ? (
                     <img
@@ -143,7 +128,6 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
                         width: "25px",
                         height: "25px",
                         borderRadius: "50%",
-
                         verticalAlign: "middle",
                         display: "inline-block",
                       }}
@@ -176,13 +160,6 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
           </div>
         </div>
       </Sidebar>
-
-      {/* Modale du profil unique avec ID dynamique */}
-      <ProfileModal
-        visible={isProfileModalOpen}
-        onHide={() => setIsProfileModalOpen(false)}
-        idRequested={selectedProfileId}
-      />
     </div>
   );
 }
