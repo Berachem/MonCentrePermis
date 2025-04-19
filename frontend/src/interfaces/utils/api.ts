@@ -12,23 +12,23 @@ const apiClient = axios.create({
 
 
 // Fonction pour rafraîchir le token
-const refreshAuthToken = async () => {
-  try {
-    // Appel pour rafraîchir le token avec le refresh token
-    const response = await apiClient.post("/api/token/refresh"); // Ajuste l'URL selon ton API
-    const { token, refreshToken } = response.data;
+// const refreshAuthToken = async () => {
+//   try {
+//     // Appel pour rafraîchir le token avec le refresh token
+//     const response = await apiClient.post("/token/refresh"); // Ajuste l'URL selon ton API
+//     const { token, refreshToken } = response.data;
     
-    // Sauvegarder le nouveau token et refreshToken dans les cookies
-    document.cookie = `BEARER=${token};path=/;Secure;HttpOnly;SameSite=Lax`;
-    document.cookie = `REFRESH_TOKEN=${refreshToken};path=/;Secure;HttpOnly;SameSite=Lax`;
+//     // Sauvegarder le nouveau token et refreshToken dans les cookies
+//     document.cookie = `BEARER=${token};path=/;Secure;HttpOnly;SameSite=Lax`;
+//     document.cookie = `REFRESH_TOKEN=${refreshToken};path=/;Secure;HttpOnly;SameSite=Lax`;
     
-    return token;
-  } catch (error) {
-    // Si le refresh échoue, on peut rediriger l'utilisateur vers la page de login
-    console.error("Erreur lors du rafraîchissement du token", error);
-    throw error;
-  }
-};
+//     return token;
+//   } catch (error) {
+//     // Si le refresh échoue, on peut rediriger l'utilisateur vers la page de login
+//     console.error("Erreur lors du rafraîchissement du token", error);
+//     throw error;
+//   }
+// };
 
 apiClient.interceptors.response.use(
   (response) => response, // Si la réponse est ok, on la retourne
@@ -37,10 +37,10 @@ apiClient.interceptors.response.use(
       // Vérifie si la config est définie avant de l'utiliser
       if (error.config) {
         try {
-          const newToken = await refreshAuthToken();
+          //const newToken = await refreshAuthToken();
           
           // Réessayer la requête originale avec le nouveau token
-          error.config.headers['Authorization'] = `Bearer ${newToken}`;
+          //error.config.headers['Authorization'] = `Bearer ${newToken}`;
           return apiClient(error.config);  // Ré-exécuter la requête originale
         } catch (refreshError) {
           // Si le rafraîchissement échoue, rediriger l'utilisateur vers la page de login

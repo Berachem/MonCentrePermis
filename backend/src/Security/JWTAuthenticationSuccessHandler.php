@@ -47,7 +47,7 @@ class JWTAuthenticationSuccessHandler implements AuthenticationSuccessHandlerInt
             new Cookie(
                 'BEARER', // Nom du cookie
                 $jwt, // La valeur du cookie est le JWT généré
-                time() + 3600, // Expiration dans 1 heure
+                time() + 24 * 3 * 3600, // Expiration dans 1 heure
                 '/', // Path
                 null, // Domaine (null signifie domaine actuel)
                 true, // Secure, nécessite une connexion HTTPS
