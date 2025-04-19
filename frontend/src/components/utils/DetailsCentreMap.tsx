@@ -5,6 +5,12 @@ import { useNavigate } from "react-router-dom";
 import "../../assets/css/DetailsCentreMap.css";
 import useAuth from "../../hooks/useAuth";
 import { UserType } from "../../enum/user";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faHeartCircleBolt,
+  faHeartCircleMinus,
+  faHeartCirclePlus,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface CentreDetailsProps {
   visible: boolean;
@@ -82,19 +88,32 @@ const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
           <p>
             <strong>Adresse:</strong> {centre.address}
           </p>
-          <button
-            className={`favorite-icon ${isFavorite ? "is-favorite" : ""} ${
-              isToggling ? "toggling" : ""
-            }`}
-            onClick={handleFavoriteClick}
-            title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-            aria-label={
-              isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
-            }
-            disabled={isToggling}
-          >
-            {isFavorite ? "★" : "☆"}
-          </button>
+
+          {userRole !== UserType.Teacher && (
+            <button
+              className={`favorite-icon ${isFavorite ? "is-favorite" : ""} ${
+                isToggling ? "toggling" : ""
+              }`}
+              onClick={handleFavoriteClick}
+              title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+              aria-label={
+                isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+              }
+              disabled={isToggling}
+            >
+              {isFavorite ? (
+                <FontAwesomeIcon
+                  icon={faHeartCircleMinus}
+                  className="text-red-400"
+                />
+              ) : (
+                <FontAwesomeIcon
+                  icon={faHeartCirclePlus}
+                  className="text-green-400"
+                />
+              )}
+            </button>
+          )}
         </div>
         <p>
           <strong>Ville:</strong> {centre.city}
