@@ -738,13 +738,27 @@ const ExamPage: React.FC = () => {
                             {circuit.description}
                           </p>
                         )}
+
+                        {selectedCircuit === circuit.nom && (
+                          <span className="mr-2 font-medium flex align-items-center text-green-500">
+                            {/* affiche que sur pc */}
+                            <span className="lg:hidden flex">
+                              appliqué
+                              <i className="pi pi-check-circle ml-1"></i>
+                            </span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                   <div className="flex align-items-center">
                     {selectedCircuit === circuit.nom && (
                       <span className="mr-2 font-medium flex align-items-center text-green-500">
-                        appliqué <i className="pi pi-check-circle ml-1"></i>
+                        {/* affiche que sur pc */}
+                        <span className="hidden lg:flex">
+                          appliqué
+                          <i className="pi pi-check-circle ml-1"></i>
+                        </span>
                       </span>
                     )}
                     <i
