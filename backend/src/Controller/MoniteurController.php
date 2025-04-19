@@ -31,6 +31,47 @@ class MoniteurController extends AbstractController
         EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
+    } 
+
+    #[Route('/mycourses', name: 'moniteur_courses', methods: ['POST'])]
+    public function getMyCourses(Request $request): JsonResponse
+    {
+        // Récupérer l'utilisateur connecté
+        $compte = $this->getUser();
+
+        // Vérifier si l'utilisateur est authentifié
+        if (!$compte) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        // Récupérer le moniteur associé à l'utilisateur
+        $moniteur = $compte->getMoniteur();
+
+        // Vérifier si le moniteur existe
+        if (!$moniteur) {
+            return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Récupérer la liste des cours du moniteur
+        $coursList = $moniteur->getCours();
+        
+        // Si aucun cours n'est trouvé, retourner une réponse vide
+        if (empty($coursList)) {
+            return new JsonResponse(['message' => 'Aucun cours trouvé'], JsonResponse::HTTP_OK);
+        }
+
+        // Structurer les données des cours
+        $coursData = [];
+        foreach ($coursList as $cours) {
+            $coursData[] = [
+                'id' => $cours->getId(),
+                'libelle' => $cours->getLibelle(),
+                'description' => $cours->getDescription(),
+            ];
+        }
+
+        // Retourner la réponse JSON avec les données des cours
+        return new JsonResponse($coursData, JsonResponse::HTTP_OK);
     }
 
     #[Route('/{id}/info', name: 'moniteur_info', methods: ['GET'])]
@@ -107,34 +148,7 @@ class MoniteurController extends AbstractController
     }
 
 
-    #[Route('/Mycourses', name: 'moniteur_courses', methods: ['GET'])]
-    public function getMyCourses(): JsonResponse
-    {
-        $compte = $this->getUser();
-    
-        if (!$compte) {
-            return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
-        }
-    
-        $moniteur = $compte->getMoniteur();
-    
-        if (!$moniteur) {
-            return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
-        }
-    
-        $coursList = $moniteur->getCours();
-        $coursData = [];
-    
-        foreach ($coursList as $cours) {
-            $coursData[] = [
-                'id' => $cours->getId(),
-                'libelle' => $cours->getLibelle(),
-                'description' => $cours->getDescription(),
-            ];
-        }
-    
-        return new JsonResponse($coursData, JsonResponse::HTTP_OK);
-    }
+
 
     #[Route('/addMycourses', name: 'moniteur_add_courses', methods: ['POST'])]
     public function postMyCourses(Request $request): JsonResponse

@@ -25,7 +25,8 @@ const CoursesModal: React.FC<CoursesModalProps> = ({ visible, onHide, courseId }
       const fetchCourse = async () => {
         setLoading(true);
         try {
-          const res = await getRequest(`http://localhost:8000/media/cours/3`);
+          // Utilisez la variable courseId dans l'URL
+          const res = await getRequest(`http://localhost:8000/media/cours/${courseId}`);
           const coursData = res.cours;
   
           setCourse(coursData);
@@ -38,6 +39,7 @@ const CoursesModal: React.FC<CoursesModalProps> = ({ visible, onHide, courseId }
       fetchCourse();
     }
   }, [visible, courseId]);
+  
   
 
   return (
