@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
-import { Paginator } from 'primereact/paginator';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
-import AddCourses from '../Classes/AddClasses';
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import { Divider } from "primereact/divider";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChalkboardTeacher } from "@fortawesome/free-solid-svg-icons";
+import AddCourses from "../Classes/AddClasses";
 import { useModal } from "../../contexts/ModalContext";
-import { getRequest, postRequest } from "../../interfaces/utils/api";
+import { postRequest } from "../../interfaces/utils/api";
+import CourseContent from "../../components/utils/CourseContent";
+import ScrollableCourses, {
+  Course as ScrollCourse,
+} from "../../components/utils/ScrollableCourses";
 
 interface ClassesModalProps {
   visible: boolean;
@@ -23,15 +26,16 @@ interface Course {
   description: string;
 }
 
-const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, readOnly = false }) => {
+const ClassesModal: React.FC<ClassesModalProps> = ({
+  visible,
+  onHide,
+  userId,
+  readOnly = false,
+}) => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { openModal } = useModal();
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [showCourseModal, setShowCourseModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,12 +43,13 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
     setLoading(true);
     setError(null);
     try {
-      // Make sure to use the correct API path
-      const response = await postRequest('/moniteurs/mycourses', { userId });
+      const response = await postRequest("/moniteurs/mycourses", { userId });
       setCourses(response);
     } catch (error) {
       console.error("Erreur lors du chargement des cours :", error);
-      setError("Impossible de charger les cours. Veuillez réessayer plus tard.");
+      setError(
+        "Impossible de charger les cours. Veuillez réessayer plus tard."
+      );
     } finally {
       setLoading(false);
     }
@@ -58,24 +63,11 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
   };
 
-  const filteredCourses = courses.filter(course =>
+  const filteredCourses = courses.filter((course) =>
     course.libelle.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const paginate = (items: Course[], currentPage: number) => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return items.slice(start, start + itemsPerPage);
-  };
-
-  const currentCourses = paginate(filteredCourses, currentPage);
-
-  const onPageChange = (e: any) => {
-    setCurrentPage(e.page + 1);
-    setItemsPerPage(e.rows);
-  };
 
   return (
     <Dialog
@@ -84,11 +76,17 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
       dismissableMask
       showHeader={false}
       closeOnEscape
-      position="bottom"
-      className="rounded-t-xl overflow-hidden p-0"
-      style={{ width: '100%', maxWidth: '900px' }}
-      breakpoints={{ '960px': '95vw' }}
-      contentStyle={{ padding: 0 }}
+      position="center"
+      className="rounded-lg overflow-hidden p-0"
+      style={{
+        width: "95vw",
+        height: "90vh",
+        maxWidth: "1400px",
+        margin: "auto",
+      }}
+      breakpoints={{ "960px": "98vw", "640px": "99vw" }}
+      contentStyle={{ padding: 0, height: "100%" }}
+      maximizable
     >
       <div className="flex justify-between items-center p-2">
         <Button
@@ -99,9 +97,15 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
         />
       </div>
 
-      <div className="p-4 pt-12">
+      <div
+        className="p-4 pt-12 overflow-auto"
+        style={{ maxHeight: "calc(90vh - 60px)" }}
+      >
         <h2 className="text-center mb-4">
-          <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-2 text-indigo-600" />
+          <FontAwesomeIcon
+            icon={faChalkboardTeacher}
+            className="mr-2 text-indigo-600"
+          />
           {readOnly ? "Cours" : "Mes cours"}
         </h2>
 
@@ -131,11 +135,12 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
           onCourseAdded={fetchCourses}
         />
 
-        <Divider />
-
         {loading ? (
           <div className="text-center p-4">
-            <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
+            <i
+              className="pi pi-spin pi-spinner"
+              style={{ fontSize: "2rem" }}
+            ></i>
             <p className="mt-2">Chargement des cours...</p>
           </div>
         ) : error ? (
@@ -151,52 +156,24 @@ const ClassesModal: React.FC<ClassesModalProps> = ({ visible, onHide, userId, re
         ) : filteredCourses.length === 0 ? (
           <div className="text-center p-4">
             {searchQuery ? (
-              <>Aucun cours ne correspond à votre recherche "<strong>{searchQuery}</strong>"</>
+              <>
+                Aucun cours ne correspond à votre recherche "
+                <strong>{searchQuery}</strong>"
+              </>
             ) : (
-              <>Vous n'avez pas encore de cours. Cliquez sur "Ajouter un cours" pour commencer.</>
+              <>
+                Vous n'avez pas encore de cours. Cliquez sur "Ajouter un cours"
+                pour commencer.
+              </>
             )}
           </div>
         ) : (
-          <>
-            <Paginator
-              first={(currentPage - 1) * itemsPerPage}
-              rows={itemsPerPage}
-              totalRecords={filteredCourses.length}
-              onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]}
-              className="mb-3"
-            />
-
-            {currentCourses.map((course) => (
-              <div key={course.id} className="mb-4 border-b pb-2">
-                <h3 className="text-indigo-600">{course.libelle}</h3>
-                <Button
-                  label="Voir le cours"
-                  icon="pi pi-arrow-right"
-                  className="button-text text-sm ml-auto"
-                  onClick={() => {
-                    setSelectedCourseId(course.id); // Récupérer l'id du cours
-                    setShowCourseModal(true); // Afficher le modal pour voir le cours
-                  }}
-                />
-
-              </div>
-            ))}
-
-            <Paginator
-              first={(currentPage - 1) * itemsPerPage}
-              rows={itemsPerPage}
-              totalRecords={filteredCourses.length}
-              onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]}
-              className="mt-3"
-            />
-          </>
+          <ScrollableCourses
+            courses={filteredCourses as ScrollCourse[]}
+            readOnly={readOnly}
+          />
         )}
       </div>
-
-      
-
     </Dialog>
   );
 };
