@@ -57,9 +57,6 @@ class MoniteurController extends AbstractController
             if ($compte && $compte->getId() != $requestedUserId && $viewMode === 'owner') {
                 // Vérifier si l'utilisateur connecté a un rôle qui lui permet de voir les cours d'un autre utilisateur
                 $roles = $compte->getRoles();
-                if (!in_array('ROLE_ADMIN', $roles) && !in_array('ROLE_MONITEUR', $roles)) {
-                    return new JsonResponse(['error' => 'Accès non autorisé'], JsonResponse::HTTP_FORBIDDEN);
-                }
             }
         }
 

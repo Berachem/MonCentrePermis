@@ -48,7 +48,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
     setError(null);
     try {
       const response = await postRequest("/moniteurs/mycourses", { userId });
-      setCourses(response);
+      setCourses(response as Course[]);
 
       // Si userId est défini, récupérer les informations du moniteur
       if (userId) {
