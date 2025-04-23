@@ -28,4 +28,24 @@ class CircuitRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve tous les circuits créés par un moniteur spécifique
+     *
+     * @return Circuit[]
+     */
+    public function findByMoniteurId(int $moniteurId): array
+    {
+        $qb = $this->createQueryBuilder('c');
+        
+        // 1. Si vous voulez voir tous les circuits sans filtrer, retirez le where
+        // return $qb->getQuery()->getResult();
+        
+        // 2. Vérifiez le nom exact de la relation entre Circuit et Moniteur
+        return $qb
+            ->where('c.id_moniteur = :moniteur')
+            ->setParameter('moniteur', $moniteurId)
+            ->getQuery()
+            ->getResult();
+    }
 }

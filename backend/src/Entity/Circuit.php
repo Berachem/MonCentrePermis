@@ -8,29 +8,37 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-use ApiPlatform\Metadata\ApiResource; // AJOUTEZ CA
-use App\Entity\utils\Timestampable; // AJOUTEZ CA
-#[ApiResource] // AJOUTEZ CA
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
+use App\Entity\utils\Timestampable;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    normalizationContext: ['groups' => ['circuit:read']],
+    denormalizationContext: ['groups' => ['circuit:write']]
+)]
 #[ORM\Entity(repositoryClass: CircuitRepository::class)]
 class Circuit
 {
-    use Timestampable; // AJOUTEZ CA
+    use Timestampable;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['circuit:read', 'default'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['circuit:read', 'circuit:write', 'default'])]
     private ?string $libelle = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['circuit:read', 'circuit:write', 'default'])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'circuits')]
+    #[Groups(['circuit:read', 'circuit:write'])]
     private ?Ville $ville_centre = null;
-
 
     /**
      * @var Collection<int, Media>
@@ -59,10 +67,9 @@ class Circuit
     // Ajoute la relation ManyToOne avec l'entité Moniteur
     #[ORM\ManyToOne(targetEntity: Moniteur::class, inversedBy: 'circuits')]
     #[ORM\JoinColumn(nullable: false)]
-    #[ApiProperty]  // Pas besoin de spécifier l'IRI ici, API Platform gère ça automatiquement
+    #[ApiProperty]
+    #[Groups(['circuit:read', 'circuit:write'])]
     private ?Moniteur $id_moniteur = null;
-
-    
 
     public function __construct()
     {

@@ -12,6 +12,7 @@ import CourseContent from "../../components/utils/CourseContent";
 import ScrollableCourses, {
   Course as ScrollCourse,
 } from "../../components/utils/ScrollableCourses";
+import CircuitLinker from "../../components/utils/CircuitLinker";
 
 interface ClassesModalProps {
   visible: boolean;
@@ -38,6 +39,8 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
   const { openModal } = useModal();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkCourseId, setLinkCourseId] = useState<string>("");
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -66,10 +69,16 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
   };
 
   const handleAddCircuit = (courseId: string) => {
-    // Fermer le modal avant de naviguer
-    onHide();
-    // Rediriger vers la page de création de circuit
-    window.location.href = `/circuit/create/${courseId}`;
+    setLinkCourseId(courseId);
+    setShowLinkDialog(true);
+  };
+
+  const createNew = () => {
+    window.location.href = `/circuit/create/${linkCourseId}`;
+  };
+
+  const onLinked = () => {
+    // peut-être rafraîchir la liste ou afficher un toast
   };
 
   const handleEditCourse = (courseId: string) => {
@@ -198,9 +207,18 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
             onAddCircuit={handleAddCircuit}
             onEditCourse={handleEditCourse}
             onDeleteCourse={handleDeleteCourse}
-            onViewCircuit={handleViewCircuit} // Passer la fonction de redirection
+            onViewCircuit={handleViewCircuit}
           />
         )}
+
+        <CircuitLinker
+          visible={showLinkDialog}
+          moniteurId={userId!}
+          coursId={linkCourseId}
+          onHide={() => setShowLinkDialog(false)}
+          onCreateNew={createNew}
+          onLinked={onLinked}
+        />
       </div>
     </Dialog>
   );
