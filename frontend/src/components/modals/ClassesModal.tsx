@@ -98,6 +98,11 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
     window.location.href = `/circuit/edit/${circuitId}`;
   };
 
+  const handleRemoveCircuit = (circuitId: number, courseId: string) => {
+    console.log(`Circuit ${circuitId} détaché du cours ${courseId}`);
+    // Vous pourriez vouloir rafraîchir les données ou mettre à jour l'état ici
+  };
+
   const filteredCourses = courses.filter((course) =>
     course.libelle.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -208,6 +213,10 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
             onEditCourse={handleEditCourse}
             onDeleteCourse={handleDeleteCourse}
             onViewCircuit={handleViewCircuit}
+            onRemoveCircuit={(circuitId, courseId) => {
+              handleRemoveCircuit(circuitId, courseId);
+              fetchCourses(); // Refresh courses after removing a circuit
+            }}
           />
         )}
 
@@ -217,7 +226,10 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
           coursId={linkCourseId}
           onHide={() => setShowLinkDialog(false)}
           onCreateNew={createNew}
-          onLinked={onLinked}
+          onLinked={() => {
+            fetchCourses(); // Refresh courses after linking a circuit
+            setShowLinkDialog(false);
+          }}
         />
       </div>
     </Dialog>

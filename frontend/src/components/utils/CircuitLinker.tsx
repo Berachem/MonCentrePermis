@@ -29,41 +29,57 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
   onLinked,
 }) => {
   const [circuits, setCircuits] = useState<Circuit[]>([]);
+  const [linkedCircuits, setLinkedCircuits] = useState<Circuit[]>([]);
   const [selected, setSelected] = useState<Circuit | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingLinked, setLoadingLinked] = useState(false);
   const toast = React.useRef<Toast>(null);
 
+  // Fetch already linked circuits
   useEffect(() => {
-    if (visible) {
+    if (visible && coursId) {
+      setLoadingLinked(true);
+      getRequest<Circuit[]>(`/circuits/bycours/${coursId}`)
+        .then((data) => {
+          setLinkedCircuits(data || []);
+        })
+        .catch((err) => {
+          console.error("Erreur lors du chargement des circuits liés:", err);
+        })
+        .finally(() => setLoadingLinked(false));
+    }
+  }, [visible, coursId]);
+
+  // Fetch all circuits by the monitor
+  useEffect(() => {
+    if (visible && moniteurId) {
       setLoading(true);
-      console.log(
-        "Chargement des circuits pour le moniteur :",
-        moniteurId,
-        "..."
-      );
+      setSelected(null);
+      console.log("Chargement des circuits pour le moniteur:", moniteurId);
+
       getRequest<Circuit[]>(`/circuits/bymoniteurs/${moniteurId}`)
-        .then(setCircuits)
-        .catch(() =>
+        .then((data) => {
+          setCircuits(data || []);
+        })
+        .catch(() => {
           toast.current?.show({
             severity: "error",
             summary: "Erreur",
             detail: "Chargement circuits",
-          })
-        )
+          });
+        })
         .finally(() => setLoading(false));
-      console.log(
-        "Circuits chargés pour le moniteur :",
-        moniteurId,
-        ":",
-        circuits
-      );
     }
-  }, [visible, moniteurId]);
+  }, [visible, moniteurId, linkedCircuits]);
+
+  // Filter out already linked circuits
+  const availableCircuits = circuits.filter(
+    (circuit) => !linkedCircuits.some((linked) => linked.id === circuit.id)
+  );
 
   const linkCircuit = async () => {
     if (!selected) return;
     try {
-      // Utiliser la nouvelle route personnalisée
       await postRequest("/circuits/link-circuit-cours", {
         circuit: selected.id,
         cours: coursId,
@@ -91,15 +107,38 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
       <Toast ref={toast} />
       <div className="p-fluid">
         <h4>Choisir un circuit existant :</h4>
-        <ListBox
-          options={circuits}
-          optionLabel="libelle"
-          value={selected}
-          onChange={(e) => setSelected(e.value)}
-          filter
-          loading={loading}
-        />
-        <div className="p-d-flex p-jc-between p-mt-3">
+
+        {loadingLinked || loading ? (
+          <div className="flex align-items-center justify-content-center">
+            <i
+              className="pi pi-spin pi-spinner"
+              style={{ fontSize: "2rem" }}
+            ></i>
+            <span className="ml-2">Chargement des circuits...</span>
+          </div>
+        ) : availableCircuits.length === 0 ? (
+          <div className="p-message p-message-info">
+            <div className="p-message-icon">
+              <i className="pi pi-info-circle"></i>
+            </div>
+            <div className="p-message-text">
+              Tous vos circuits sont déjà liés à ce cours ou vous n'avez pas
+              encore créé de circuits.
+            </div>
+          </div>
+        ) : (
+          <ListBox
+            options={availableCircuits}
+            optionLabel="libelle"
+            value={selected}
+            onChange={(e) => setSelected(e.value)}
+            filter
+            emptyMessage="Aucun circuit disponible"
+            className="mb-3"
+          />
+        )}
+
+        <div className="flex justify-content-between mt-3">
           <Button
             label="Lier le circuit"
             disabled={!selected}
@@ -107,7 +146,7 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
             className="p-button-success"
             icon="pi pi-link"
           />
-          <Divider className="p-mx-2" />
+
           <Button
             label="Créer un nouveau"
             className="p-button-primary"

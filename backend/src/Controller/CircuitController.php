@@ -169,4 +169,55 @@ class CircuitController extends AbstractController
             );
         }
     }
+
+    /**
+     * Route personnalisée pour supprimer une liaison circuit-cours
+     */
+    #[Route('/unlink-circuit-cours', name: 'api_unlink_circuit_cours', methods: ['POST'])]
+    public function unlinkCircuitCours(
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        try {
+            // Récupérer les données de la requête
+            $data = json_decode($request->getContent(), true);
+
+            if (!isset($data['circuit']) || !isset($data['cours'])) {
+                return new JsonResponse(
+                    ['message' => 'Les identifiants du circuit et du cours sont requis.'],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $circuitId = (int) $data['circuit'];
+            $coursId = (int) $data['cours'];
+
+            // Rechercher la liaison dans la base de données
+            $circuitCours = $entityManager->getRepository(CircuitCours::class)->findOneBy([
+                'circuit' => $circuitId,
+                'cours' => $coursId
+            ]);
+
+            if (!$circuitCours) {
+                return new JsonResponse(
+                    ['message' => 'Liaison non trouvée.'],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            // Supprimer la liaison
+            $entityManager->remove($circuitCours);
+            $entityManager->flush();
+
+            return new JsonResponse(
+                ['message' => 'Liaison supprimée avec succès.'],
+                Response::HTTP_OK
+            );
+        } catch (\Exception $e) {
+            return new JsonResponse(
+                ['message' => 'Erreur lors de la suppression de la liaison: ' . $e->getMessage()],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
