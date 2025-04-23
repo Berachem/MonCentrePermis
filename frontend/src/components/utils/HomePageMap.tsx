@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart, faLocation } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
 import youAreHereIcon from "../../assets/images/you_are_here.svg";
+import { UserType } from "../../enum/user";
 
 /* Icones */
 // Icône personnalisée pour les centres en France
@@ -434,9 +435,12 @@ export function HomePageMap() {
   useEffect(() => {
     const fetchFavoriteCentres = async () => {
       if (!isAuthenticated || !userId) return;
+      // si on est pas moniteur, on ne peut pas avoir de favoris
+      if (userRole !== UserType.Student) return;
 
       try {
         setLoadingFavorites(true);
+
         const data = await getRequest(
           `/eleves/${userId}/centres-examen-favoris`
         );

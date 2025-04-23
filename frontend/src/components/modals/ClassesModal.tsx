@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChalkboardTeacher } from "@fortawesome/free-solid-svg-icons";
 import AddCourses from "../Classes/AddClasses";
 import { useModal } from "../../contexts/ModalContext";
-import { postRequest } from "../../interfaces/utils/api";
+import { postRequest, getRequest } from "../../interfaces/utils/api";
 import CourseContent from "../../components/utils/CourseContent";
 import ScrollableCourses, {
   Course as ScrollCourse,
@@ -31,7 +31,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
   visible,
   onHide,
   userId,
-  readOnly = false,
+  readOnly = true,
 }) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,6 +41,7 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkCourseId, setLinkCourseId] = useState<string>("");
+  const [instructorName, setInstructorName] = useState<string>("");
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -48,6 +49,21 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
     try {
       const response = await postRequest("/moniteurs/mycourses", { userId });
       setCourses(response);
+
+      // Si userId est défini, récupérer les informations du moniteur
+      if (userId) {
+        try {
+          const instructorInfo = await getRequest(`/moniteurs/${userId}/info`);
+          if (instructorInfo && instructorInfo.nom && instructorInfo.prenom) {
+            setInstructorName(`${instructorInfo.prenom} ${instructorInfo.nom}`);
+          }
+        } catch (error) {
+          console.error(
+            "Erreur lors de la récupération du nom du moniteur:",
+            error
+          );
+        }
+      }
     } catch (error) {
       console.error("Erreur lors du chargement des cours :", error);
       setError(
@@ -94,8 +110,12 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
     console.log(`Redirection vers la page d'édition du circuit ${circuitId}`);
     // Fermer d'abord le modal
     onHide();
-    // Ensuite rediriger vers la page d'édition
-    window.location.href = `/circuit/edit/${circuitId}`;
+    // Ensuite rediriger vers la page d'édition ou afficher le circuit si lecture seule
+    if (!readOnly) {
+      window.location.href = `/circuit/edit/${circuitId}`;
+    } else {
+      window.location.href = `/circuit/view/${circuitId}`;
+    }
   };
 
   const handleRemoveCircuit = (circuitId: number, courseId: string) => {
@@ -144,7 +164,22 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
             icon={faChalkboardTeacher}
             className="mr-2 text-indigo-600"
           />
-          {readOnly ? "Cours" : "Mes cours"}
+          {instructorName && (
+            <span className="font-semibold  text-indigo-700">
+              Cours de{" "}
+              <span className="font-bold text-indigo-900">
+                {instructorName}
+              </span>{" "}
+              {readOnly && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (Lecture seule)
+                </span>
+              )}
+            </span>
+          )}
+          {!instructorName && (
+            <p className="text-center font-semibold text-indigo-700">Cours</p>
+          )}
         </h2>
 
         <div className="p-inputgroup flex-1 mb-3">

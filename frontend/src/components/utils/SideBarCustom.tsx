@@ -141,7 +141,7 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
               {process.env.NODE_ENV === "development" && (
                 <li
                   onClick={() => {
-                    openModal("profile", { idRequested: "9" });
+                    openModal("profile", { idRequested: "4" });
                     toggleSidebar();
                   }}
                 >

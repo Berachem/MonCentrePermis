@@ -20,8 +20,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Mime\MimeTypes;
 use Psr\Log\LoggerInterface;
 
-
-
 #[Route('/api/moniteurs')]
 class MoniteurController extends AbstractController
 {
@@ -36,18 +34,46 @@ class MoniteurController extends AbstractController
     #[Route('/mycourses', name: 'moniteur_courses', methods: ['POST'])]
     public function getMyCourses(Request $request): JsonResponse
     {
-        // Récupérer l'utilisateur connecté
-        $compte = $this->getUser();
+        // Récupérer le contenu de la requête
+        $data = json_decode($request->getContent(), true);
+        $requestedUserId = $data['userId'] ?? null;
+        $viewMode = $data['viewMode'] ?? 'owner';
 
-        // Vérifier si l'utilisateur est authentifié
-        if (!$compte) {
-            return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+        // Si aucun ID n'a été fourni, utiliser celui de l'utilisateur connecté
+        if (!$requestedUserId) {
+            // Récupérer l'utilisateur connecté
+            $compte = $this->getUser();
+
+            if (!$compte) {
+                return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+            }
+
+            $requestedUserId = $compte->getId();
+        } else {
+            // Vérifier si l'utilisateur connecté a le droit de consulter ces cours
+            $compte = $this->getUser();
+
+            // Si ce n'est pas l'utilisateur lui-même et que le mode est 'owner' (pas lecture seule)
+            if ($compte && $compte->getId() != $requestedUserId && $viewMode === 'owner') {
+                // Vérifier si l'utilisateur connecté a un rôle qui lui permet de voir les cours d'un autre utilisateur
+                $roles = $compte->getRoles();
+                if (!in_array('ROLE_ADMIN', $roles) && !in_array('ROLE_MONITEUR', $roles)) {
+                    return new JsonResponse(['error' => 'Accès non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+                }
+            }
         }
 
-        // Récupérer le moniteur associé à l'utilisateur
-        $moniteur = $compte->getMoniteur();
+        // Trouver le compte correspondant à l'ID demandé
+        $compteRepository = $this->entityManager->getRepository(Compte::class);
+        $requestedCompte = $compteRepository->find($requestedUserId);
 
-        // Vérifier si le moniteur existe
+        if (!$requestedCompte) {
+            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Récupérer le moniteur associé au compte demandé
+        $moniteur = $requestedCompte->getMoniteur();
+
         if (!$moniteur) {
             return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
         }
@@ -57,7 +83,7 @@ class MoniteurController extends AbstractController
 
         // Si aucun cours n'est trouvé, retourner une réponse vide
         if (empty($coursList)) {
-            return new JsonResponse(['message' => 'Aucun cours trouvé'], JsonResponse::HTTP_OK);
+            return new JsonResponse([], JsonResponse::HTTP_OK);
         }
 
         // Structurer les données des cours
