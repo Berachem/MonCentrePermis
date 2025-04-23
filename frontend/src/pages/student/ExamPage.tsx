@@ -14,6 +14,15 @@ import { Chip } from "primereact/chip";
 import useAuth from "../../hooks/useAuth";
 import Loader from "../../components/utils/Loader";
 import { UserType } from "../../enum/user";
+import { Accordion, AccordionTab } from "primereact/accordion";
+import CourseContent from "../../components/utils/CourseContent";
+
+// Interface pour un cours associé
+interface AssociatedCourse {
+  id: string;
+  libelle: string;
+  description: string;
+}
 
 // Interface pour un point du circuit
 interface Point {
@@ -264,8 +273,7 @@ const ExamPage: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
   const defaultPosition: [number, number] = [48.8566, 2.3522];
   const [expandedCircuits, setExpandedCircuits] = useState<string[]>([]);
-  const [circuitModalVisible, setCircuitModalVisible] =
-    useState<boolean>(false);
+  const [circuitModalVisible, setCircuitModalVisible] = useState<boolean>(false);
   const [legendVisible, setLegendVisible] = useState<boolean>(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -282,7 +290,15 @@ const ExamPage: React.FC = () => {
   const [centre, setCentre] = useState<Centre | null>(null);
   const { userRole } = useAuth();
 
+  // Nouveaux états pour les cours associés
+  const [associatedCourses, setAssociatedCourses] = useState<AssociatedCourse[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState<boolean>(false);
+  const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
+
   const { typeUserid } = useAuth();
+  
+  // Définir la largeur du panneau de cours
+  const COURSES_PANEL_WIDTH = isMobile ? "85%" : "500px";  // Augmenté à 500px (avant 400px)
 
   // Récupérer le centre d'examen depuis location.state
   useEffect(() => {
@@ -343,6 +359,97 @@ const ExamPage: React.FC = () => {
       fetchCircuits();
     }
   }, [centre]);
+
+  // Nouveau : Récupérer les cours associés au circuit sélectionné
+  useEffect(() => {
+    const fetchAssociatedCourses = async () => {
+      const currentCircuit = circuits.find(
+        (circuit) => circuit.nom === selectedCircuit
+      );
+      
+      if (!currentCircuit) return;
+
+      try {
+        setLoadingCourses(true);
+        console.log(`Récupération des cours pour le circuit ID ${currentCircuit.id}...`);
+        
+        // Récupérer les relations circuit-cours
+        const response = await getRequest<{
+          "@context": string,
+          "@id": string,
+          "@type": string,
+          "totalItems": number,
+          "member": {
+            "@id": string,
+            "@type": string,
+            "id": number,
+            "circuit": string,
+            "cours": string
+          }[]
+        }>(`/circuit_cours?circuit=${currentCircuit.id}`);
+        
+        console.log("Réponse circuit_cours:", response);
+        
+        if (!response || !response.member || response.totalItems === 0) {
+          console.log("Aucun cours associé trouvé");
+          setAssociatedCourses([]);
+          return;
+        }
+        
+        // Extraire les IDs des cours à partir des IRIs
+        const coursUrls = response.member
+          .filter(item => item.circuit === `/api/circuits/${currentCircuit.id}`)
+          .map(item => item.cours);
+        
+        console.log("URLs des cours trouvés:", coursUrls);
+        
+        if (coursUrls.length === 0) {
+          setAssociatedCourses([]);
+          return;
+        }
+        
+        // Récupérer les détails de chaque cours
+        const coursesData: AssociatedCourse[] = [];
+        for (const coursUrl of coursUrls) {
+          try {
+            // Extraire l'ID du cours depuis l'URL
+            const coursId = coursUrl.split('/').pop();
+            console.log(`Récupération du cours ID: ${coursId}`);
+            
+            if (!coursId) continue;
+            
+            // Récupérer les détails du cours
+            const courseData = await getRequest<AssociatedCourse>(`/cours/${coursId}`);
+            if (courseData) {
+              console.log("Cours récupéré:", courseData);
+              coursesData.push(courseData);
+            }
+          } catch (err) {
+            console.error("Erreur lors de la récupération d'un cours:", err);
+          }
+        }
+        
+        console.log(`${coursesData.length} cours récupérés avec succès:`, coursesData);
+        setAssociatedCourses(coursesData);
+        
+      } catch (error) {
+        console.error("Erreur lors de la récupération des cours associés:", error);
+        toast.current?.show({
+          severity: "error",
+          summary: "Erreur",
+          detail: "Impossible de charger les cours associés au circuit",
+          life: 3000,
+        });
+        setAssociatedCourses([]);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+    if (selectedCircuit && circuits.length > 0) {
+      fetchAssociatedCourses();
+    }
+  }, [selectedCircuit, circuits]);
 
   // Mettre à jour le centre de la carte quand le circuit change
   useEffect(() => {
@@ -409,19 +516,20 @@ const ExamPage: React.FC = () => {
       position: "absolute" as const,
       top: 0,
       left: 0,
-      width: "100%",
+      width: `calc(100% - ${COURSES_PANEL_WIDTH})`, // Toujours ajusté pour le panneau
       height: "100%",
       zIndex: 1,
+      transition: "width 0.3s ease-in-out",
     },
     chipContainer: {
       position: "absolute" as const,
       top: "2%",
-      left: "50%",
+      left: "40%", // Déplacé vers la gauche (avant 50%)
       transform: "translateX(-50%)",
       zIndex: 1000,
       display: "flex",
       justifyContent: "center",
-      width: "100%",
+      width: "80%", // Réduit pour éviter les chevauchements
     },
     circuitSelectorButton: {
       position: "fixed" as const,
@@ -430,30 +538,38 @@ const ExamPage: React.FC = () => {
       zIndex: 1000,
     },
     legendButton: {
-      position: "fixed",
+      position: "fixed" as const,
       left: "30px",
-      top: window.innerWidth <= 768 ? "220px" : "100px", // Higher position on mobile
+      top: window.innerWidth <= 768 ? "220px" : "100px",
       zIndex: 1000,
     },
-
-    // Nouveau conteneur de légende sur la gauche
+    coursesPanel: {
+      position: "fixed" as const,
+      top: 0,
+      right: 0,
+      height: "100vh",
+      width: COURSES_PANEL_WIDTH,
+      backgroundColor: "white",
+      boxShadow: "-2px 0 10px rgba(0, 0, 0, 0.1)",
+      zIndex: 1000,
+      padding: "20px",
+      overflowY: "auto" as const,
+    },
     legendContainer: {
-      position: "fixed",
-      top: window.innerWidth <= 768 ? "200px" : "160px", // Lower position on mobile
+      position: "fixed" as const,
+      top: window.innerWidth <= 768 ? "200px" : "160px",
       left: "30px",
       zIndex: 1000,
-      maxWidth: window.innerWidth <= 768 ? "240px" : "280px", // Slightly smaller on mobile
+      maxWidth: window.innerWidth <= 768 ? "240px" : "280px",
       transition: "all 0.3s ease",
     },
-
     legendCard: {
       backgroundColor: "rgba(255, 255, 255, 0.95)",
-      padding: window.innerWidth <= 768 ? "0.75rem" : "1rem", // Smaller padding on mobile
+      padding: window.innerWidth <= 768 ? "0.75rem" : "1rem",
       borderRadius: "0.75rem",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
       border: "1px solid var(--surface-200)",
     },
-
     legendTitle: {
       display: "flex",
       justifyContent: "space-between",
@@ -462,22 +578,19 @@ const ExamPage: React.FC = () => {
       borderBottom: "1px solid var(--surface-200)",
       paddingBottom: "0.5rem",
     },
-
     legendItems: {
       display: "flex",
-      flexDirection: "column",
-      gap: window.innerWidth <= 768 ? "0.5rem" : "0.75rem", // Tighter spacing on mobile
+      flexDirection: "column" as const,
+      gap: window.innerWidth <= 768 ? "0.5rem" : "0.75rem",
     },
-
     legendItem: {
       display: "flex",
       alignItems: "center",
-      fontSize: window.innerWidth <= 768 ? "0.8rem" : "0.875rem", // Smaller font on mobile
+      fontSize: window.innerWidth <= 768 ? "0.8rem" : "0.875rem",
       padding: "0.25rem 0",
     },
-
     legendIcon: {
-      width: window.innerWidth <= 768 ? "20px" : "24px", // Smaller icons on mobile
+      width: window.innerWidth <= 768 ? "20px" : "24px",
       height: window.innerWidth <= 768 ? "20px" : "24px",
       marginRight: window.innerWidth <= 768 ? "0.5rem" : "0.75rem",
       display: "flex",
@@ -491,6 +604,8 @@ const ExamPage: React.FC = () => {
       borderRadius: "50%",
     },
   };
+
+  const mapStyle = styles.map;
 
   return (
     <div style={styles.mapContainer}>
@@ -562,7 +677,7 @@ const ExamPage: React.FC = () => {
         )}
       </div>
 
-      <div style={styles.legendButton as React.CSSProperties}>
+      <div style={styles.legendButton}>
         <Button
           icon={legendVisible ? "pi pi-eye-slash" : "pi pi-info-circle"}
           className="p-button-rounded p-button-info shadow-4 border-primary"
@@ -571,10 +686,93 @@ const ExamPage: React.FC = () => {
         />
       </div>
 
+      {/* Panneau latéral pour les cours - maintenant toujours visible */}
+      <div style={styles.coursesPanel}>
+        <div className="flex justify-content-between align-items-center mb-4">
+          <h2 className="text-xl font-bold">Cours associés</h2>
+        </div>
+
+        {loadingCourses ? (
+          <div className="flex flex-column align-items-center justify-content-center p-5 h-full">
+            <i className="pi pi-spin pi-spinner text-primary" style={{ fontSize: '2rem' }}></i>
+            <p className="mt-3">Chargement des cours...</p>
+          </div>
+        ) : associatedCourses.length === 0 ? (
+          <div className="flex flex-column align-items-center justify-content-center p-5">
+            <i className="pi pi-book text-500" style={{ fontSize: '2rem' }}></i>
+            <p className="mt-3 text-center">Aucun cours n'est associé à ce circuit.</p>
+            {userRole === UserType.Teacher && currentCircuit && (
+              <Button
+                icon="pi pi-plus"
+                label="Ajouter un cours"
+                className="p-button-outlined mt-4"
+                onClick={() => alert("TODO - Ajouter un cours")}
+              />
+            )}
+            <div className="mt-5 border-top-1 border-200 pt-4 w-full">
+              <h3 className="text-lg font-semibold text-primary">Comment utiliser ce circuit?</h3>
+              <ul className="list-none p-0 mt-3">
+                <li className="flex align-items-center mb-2">
+                  <i className="pi pi-map text-primary mr-2"></i>
+                  <span>Explorez les points d'intérêt sur la carte</span>
+                </li>
+                <li className="flex align-items-center mb-2">
+                  <i className="pi pi-info-circle text-primary mr-2"></i>
+                  <span>Cliquez sur les marqueurs pour plus d'informations</span>
+                </li>
+                <li className="flex align-items-center mb-2">
+                  <i className="pi pi-car text-primary mr-2"></i>
+                  <span>Suivez les instructions du moniteur</span>
+                </li>
+                <li className="flex align-items-center mb-2">
+                  <i className="pi pi-check-circle text-primary mr-2"></i>
+                  <span>Préparez-vous pour l'examen avec ce parcours</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Accordion 
+              activeIndex={expandedCourseId ? associatedCourses.findIndex(c => c.id === expandedCourseId) : null}
+              onTabChange={(e) => {
+                const courseId = e.index !== null ? associatedCourses[e.index].id : null;
+                setExpandedCourseId(courseId);
+              }}
+              className="courses-accordion"
+            >
+              {associatedCourses.map((course) => (
+                <AccordionTab
+                  key={course.id}
+                  header={
+                    <div className="flex align-items-center">
+                      <i className="pi pi-book text-primary mr-2"></i>
+                      <span>{course.libelle}</span>
+                    </div>
+                  }
+                >
+                  <div className="p-3">
+                    <CourseContent content={course.description} className="p-3 bg-gray-50 border-round" />
+                  </div>
+                </AccordionTab>
+              ))}
+            </Accordion>
+            
+            <div className="mt-4 p-3 border-round bg-primary-50 border-1 border-primary-100">
+              <h3 className="text-lg font-semibold text-primary">Conseils de révision</h3>
+              <p className="text-sm mt-2">
+                Prenez le temps d'étudier chaque cours associé à ce circuit. 
+                Ces informations sont essentielles pour réussir votre examen!
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Légende des icônes */}
       {legendVisible && (
         <div
-          style={styles.legendContainer as React.CSSProperties}
+          style={styles.legendContainer}
           className="animate__animated animate__fadeInLeft"
         >
           <div style={styles.legendCard}>
@@ -586,7 +784,7 @@ const ExamPage: React.FC = () => {
                 onClick={() => setLegendVisible(false)}
               />
             </div>
-            <div style={styles.legendItems as React.CSSProperties}>
+            <div style={styles.legendItems}>
               {pointTypes.map((type) => (
                 <div key={type.value} style={styles.legendItem}>
                   <div
@@ -601,7 +799,7 @@ const ExamPage: React.FC = () => {
         </div>
       )}
 
-      <div style={styles.map}>
+      <div style={mapStyle}>
         <MapContainer
           center={mapCenter}
           zoom={13}
@@ -742,7 +940,6 @@ const ExamPage: React.FC = () => {
 
                         {selectedCircuit === circuit.nom && (
                           <span className="mr-2 font-medium flex align-items-center text-green-500">
-                            {/* affiche que sur pc */}
                             <span className="lg:hidden flex">
                               appliqué
                               <i className="pi pi-check-circle ml-1"></i>
@@ -755,7 +952,6 @@ const ExamPage: React.FC = () => {
                   <div className="flex align-items-center">
                     {selectedCircuit === circuit.nom && (
                       <span className="mr-2 font-medium flex align-items-center text-green-500">
-                        {/* affiche que sur pc */}
                         <span className="hidden lg:flex">
                           appliqué
                           <i className="pi pi-check-circle ml-1"></i>
@@ -823,6 +1019,7 @@ const ExamPage: React.FC = () => {
               </CSSTransition>
             </div>
           ))}
+          
           {circuits.length === 0 && userRole !== UserType.Teacher && (
             <div className="p-4 text-center text-500">
               Aucun circuit disponible à moins de {MAX_DISTANCE} km du centre.
@@ -849,6 +1046,35 @@ const ExamPage: React.FC = () => {
           )}
         </div>
       </Dialog>
+
+      {/* CSS pour animations et styles */}
+      <style>{`
+        .courses-accordion .p-accordion-header-link {
+          background-color: var(--surface-0);
+          border-radius: 6px;
+          margin-bottom: 8px;
+          transition: all 0.2s;
+        }
+        
+        .courses-accordion .p-accordion-header-link:hover {
+          background-color: var(--surface-50);
+        }
+        
+        .courses-accordion .p-accordion-content {
+          background-color: var(--surface-0);
+          padding: 0;
+          border-radius: 0 0 6px 6px;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .fade-in {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };
