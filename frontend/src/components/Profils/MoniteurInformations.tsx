@@ -5,6 +5,7 @@ import {
   faChartBar,
   faQuestionCircle,
   faUser,
+  faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 import { Tooltip } from "primereact/tooltip";
 import { Button } from "primereact/button";
@@ -12,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
+import { Accordion, AccordionTab } from "primereact/accordion";
 import useAuth from "../../hooks/useAuth";
 import ClassesModal from "../modals/ClassesModal";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
@@ -257,8 +259,11 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
   if (!moniteurInfo) {
     return (
       <div className="md:mx-8">
-        <div className="text-center text-gray-500">
-          Chargement des informations...
+        <div className="text-center p-5">
+          <i className="pi pi-spin pi-spinner" style={{ fontSize: "2rem" }}></i>
+          <div className="text-gray-500 mt-3">
+            Chargement des informations...
+          </div>
         </div>
       </div>
     );
@@ -267,245 +272,14 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
   return (
     <>
       <Toast ref={toastRef} />
-      <h2 className="text-center">
-        <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-600" />
-        Informations
-      </h2>
 
-      <div className="p-2">
-        {/* Informations personnelles */}
-        <h3 className="text-indigo-600 text-xl font-semibold">
-          Informations personnelles
-        </h3>
-        <div className="grid p-fluid">
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong style={{ fontSize: "1rem" }}>Nom :</strong>
-                <br />
-                <InputText
-                  type="text"
-                  className="p-inputtext-sm"
-                  value={editedInfo?.nom || ""}
-                  onChange={(e) => handleInputChange("nom", e.target.value)}
-                  invalid={nomError !== ""}
-                />
-                {nomError && (
-                  <small className="p-error block">{nomError}</small>
-                )}
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong style={{ fontSize: "1rem" }}>Nom :</strong>{" "}
-                {moniteurInfo.nom}
-              </div>
-            )}
-          </div>
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong style={{ fontSize: "1rem" }}>Prénom :</strong>
-                <br />
-                <InputText
-                  type="text"
-                  className="p-inputtext-sm"
-                  value={editedInfo?.prenom || ""}
-                  onChange={(e) => handleInputChange("prenom", e.target.value)}
-                  invalid={prenomError !== ""}
-                />
-                {prenomError && (
-                  <small className="p-error block">{prenomError}</small>
-                )}
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong style={{ fontSize: "1rem" }}>Prénom :</strong>{" "}
-                {moniteurInfo.prenom}
-              </div>
-            )}
-          </div>
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong>Genre :</strong>
-                <br />
-                <InputText
-                  type="text"
-                  className="p-inputtext-sm"
-                  value={editedInfo?.genre || ""}
-                  onChange={(e) => handleInputChange("genre", e.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong>Genre :</strong> {moniteurInfo.genre}
-              </div>
-            )}
-          </div>
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong>Naissance :</strong>
-                <br />
-                <Calendar
-                  className="p-inputtext-sm"
-                  dateFormat="dd/mm/yy"
-                  value={editedInfo?.dateNaissance || null}
-                  onChange={(e) =>
-                    handleInputChange("dateNaissance", e.target.value as Date)
-                  }
-                />
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong>Naissance :</strong>{" "}
-                {new Date(moniteurInfo.dateNaissance).toLocaleDateString()}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <Divider className="my-3" />
-
-        {/* Contact */}
-        <h3 className="text-indigo-600 text-xl font-semibold">Contact</h3>
-        <div className="grid p-fluid">
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong>Email :</strong>
-                <br />
-                <InputText
-                  type="text"
-                  className="p-inputtext-sm"
-                  value={editedInfo?.email || ""}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  invalid={emailError !== ""}
-                />
-                {emailError && (
-                  <small className="p-error block">{emailError}</small>
-                )}
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong>Email :</strong> {moniteurInfo.email}
-              </div>
-            )}
-          </div>
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong>Téléphone :</strong>
-                <br />
-                <InputText
-                  type="text"
-                  className="p-inputtext-sm"
-                  value={editedInfo?.telephone || ""}
-                  onChange={(e) =>
-                    handleInputChange("telephone", e.target.value)
-                  }
-                  invalid={telephoneError !== ""}
-                />
-                {telephoneError && (
-                  <small className="p-error block">{telephoneError}</small>
-                )}
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong>Téléphone :</strong> {moniteurInfo.telephone}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <Divider className="my-3" />
-
-        {/* Carrière */}
-        <h3 className="text-indigo-600 text-xl font-semibold">Carrière</h3>
-        <div className="grid p-fluid">
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong>Début de carrière :</strong>
-                <br />
-                <Calendar
-                  className="p-inputtext-sm"
-                  dateFormat="dd/mm/yy"
-                  value={editedInfo?.dateDebutCarriere || null}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "dateDebutCarriere",
-                      e.target.value as Date
-                    )
-                  }
-                />
-                {dateDebutCarriereError && (
-                  <small className="p-error block">
-                    {dateDebutCarriereError}
-                  </small>
-                )}
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong>Début de carrière :</strong>{" "}
-                {moniteurInfo.dateDebutCarriere
-                  ? new Date(moniteurInfo.dateDebutCarriere).toLocaleDateString(
-                      "fr-FR"
-                    )
-                  : "Non renseignée"}
-              </div>
-            )}
-          </div>
-          <div className="col-12 md:col-6 p-2">
-            {isEditing ? (
-              <div className="mb-1">
-                <strong>Status :</strong>
-                <br />
-                <InputText
-                  type="text"
-                  className="p-inputtext-sm"
-                  placeholder={moniteurInfo.status}
-                  onChange={(e) => handleInputChange("status", e.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="mb-1">
-                <strong>Status :</strong> {moniteurInfo.status}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex w-full mt-2">
-        {isEditing ? (
-          <Button
-            label="Sauvegarder"
-            icon="pi pi-check"
-            onClick={handleSaveClick}
-            className="button-text text-sm ml-auto"
-          />
-        ) : (
-          !readOnly &&
-          isOwnProfile && (
-            <Button
-              label="Modifier"
-              icon="pi pi-pencil"
-              onClick={handleEditClick}
-              className="button-text text-sm ml-auto"
-            />
-          )
-        )}
-      </div>
-
-      <Divider />
-
-      <h2 className="text-center">
+      {/* SECTION STATISTIQUES - Maintenant en premier */}
+      <h2 className="text-center mb-4">
         <FontAwesomeIcon icon={faChartBar} className="mr-2 text-indigo-600" />
         Statistiques
       </h2>
 
-      <div className="flex flex-column md:flex-row gap-2 mt-2 md:mx-2">
+      <div className="flex flex-column md:flex-row gap-2 mt-2 md:mx-2 mb-5">
         <div className="relative w-full md:w-6">
           <div className="w-full p-3 bg-white shadow-sm rounded-md relative overflow-hidden">
             <i
@@ -591,8 +365,261 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
         </div>
       </div>
 
+      <Divider className="my-4" />
+
+      {/* SECTION INFORMATIONS - Maintenant en second dans un Accordion */}
+      <h2 className="text-center mb-3">
+        <FontAwesomeIcon icon={faIdCard} className="mr-2 text-indigo-600" />
+        Détails du profil
+      </h2>
+
+      <Accordion className="w-full">
+        <AccordionTab
+          header={
+            <div className="flex align-items-center">
+              <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-500" />
+              <span>Informations personnelles</span>
+            </div>
+          }
+        >
+          <div className="grid p-fluid">
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong style={{ fontSize: "1rem" }}>Nom :</strong>
+                  <br />
+                  <InputText
+                    type="text"
+                    className="p-inputtext-sm"
+                    value={editedInfo?.nom || ""}
+                    onChange={(e) => handleInputChange("nom", e.target.value)}
+                    invalid={nomError !== ""}
+                  />
+                  {nomError && (
+                    <small className="p-error block">{nomError}</small>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong style={{ fontSize: "1rem" }}>Nom :</strong>{" "}
+                  {moniteurInfo.nom}
+                </div>
+              )}
+            </div>
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong style={{ fontSize: "1rem" }}>Prénom :</strong>
+                  <br />
+                  <InputText
+                    type="text"
+                    className="p-inputtext-sm"
+                    value={editedInfo?.prenom || ""}
+                    onChange={(e) =>
+                      handleInputChange("prenom", e.target.value)
+                    }
+                    invalid={prenomError !== ""}
+                  />
+                  {prenomError && (
+                    <small className="p-error block">{prenomError}</small>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong style={{ fontSize: "1rem" }}>Prénom :</strong>{" "}
+                  {moniteurInfo.prenom}
+                </div>
+              )}
+            </div>
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong>Genre :</strong>
+                  <br />
+                  <InputText
+                    type="text"
+                    className="p-inputtext-sm"
+                    value={editedInfo?.genre || ""}
+                    onChange={(e) => handleInputChange("genre", e.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong>Genre :</strong> {moniteurInfo.genre}
+                </div>
+              )}
+            </div>
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong>Naissance :</strong>
+                  <br />
+                  <Calendar
+                    className="p-inputtext-sm"
+                    dateFormat="dd/mm/yy"
+                    value={editedInfo?.dateNaissance || null}
+                    onChange={(e) =>
+                      handleInputChange("dateNaissance", e.target.value as Date)
+                    }
+                  />
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong>Naissance :</strong>{" "}
+                  {new Date(moniteurInfo.dateNaissance).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          </div>
+        </AccordionTab>
+
+        <AccordionTab
+          header={
+            <div className="flex align-items-center">
+              <i className="pi pi-envelope mr-2 text-indigo-500" />
+              <span>Informations de contact</span>
+            </div>
+          }
+        >
+          <div className="grid p-fluid">
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong>Email :</strong>
+                  <br />
+                  <InputText
+                    type="text"
+                    className="p-inputtext-sm"
+                    value={editedInfo?.email || ""}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    invalid={emailError !== ""}
+                  />
+                  {emailError && (
+                    <small className="p-error block">{emailError}</small>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong>Email :</strong> {moniteurInfo.email}
+                </div>
+              )}
+            </div>
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong>Téléphone :</strong>
+                  <br />
+                  <InputText
+                    type="text"
+                    className="p-inputtext-sm"
+                    value={editedInfo?.telephone || ""}
+                    onChange={(e) =>
+                      handleInputChange("telephone", e.target.value)
+                    }
+                    invalid={telephoneError !== ""}
+                  />
+                  {telephoneError && (
+                    <small className="p-error block">{telephoneError}</small>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong>Téléphone :</strong> {moniteurInfo.telephone}
+                </div>
+              )}
+            </div>
+          </div>
+        </AccordionTab>
+
+        <AccordionTab
+          header={
+            <div className="flex align-items-center">
+              <i className="pi pi-briefcase mr-2 text-indigo-500" />
+              <span>Informations professionnelles</span>
+            </div>
+          }
+        >
+          <div className="grid p-fluid">
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong>Début de carrière :</strong>
+                  <br />
+                  <Calendar
+                    className="p-inputtext-sm"
+                    dateFormat="dd/mm/yy"
+                    value={editedInfo?.dateDebutCarriere || null}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "dateDebutCarriere",
+                        e.target.value as Date
+                      )
+                    }
+                  />
+                  {dateDebutCarriereError && (
+                    <small className="p-error block">
+                      {dateDebutCarriereError}
+                    </small>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong>Début de carrière :</strong>{" "}
+                  {moniteurInfo.dateDebutCarriere
+                    ? new Date(
+                        moniteurInfo.dateDebutCarriere
+                      ).toLocaleDateString("fr-FR")
+                    : "Non renseignée"}
+                </div>
+              )}
+            </div>
+            <div className="col-12 md:col-6 p-2">
+              {isEditing ? (
+                <div className="mb-1">
+                  <strong>Status :</strong>
+                  <br />
+                  <InputText
+                    type="text"
+                    className="p-inputtext-sm"
+                    placeholder={moniteurInfo.status}
+                    onChange={(e) =>
+                      handleInputChange("status", e.target.value)
+                    }
+                  />
+                </div>
+              ) : (
+                <div className="mb-1">
+                  <strong>Status :</strong> {moniteurInfo.status}
+                </div>
+              )}
+            </div>
+          </div>
+        </AccordionTab>
+      </Accordion>
+
+      <div className="flex w-full mt-4">
+        {isEditing ? (
+          <Button
+            label="Sauvegarder"
+            icon="pi pi-check"
+            onClick={handleSaveClick}
+            className="button-text text-sm ml-auto"
+          />
+        ) : (
+          !readOnly &&
+          isOwnProfile && (
+            <Button
+              label="Modifier"
+              icon="pi pi-pencil"
+              onClick={handleEditClick}
+              className="button-text text-sm ml-auto"
+            />
+          )
+        )}
+      </div>
+
       {!readOnly && isOwnProfile && (
-        <div className="flex w-full m-2">
+        <div className="flex w-full mt-4">
           <Button
             label="Se déconnecter"
             icon="pi pi-sign-out"
