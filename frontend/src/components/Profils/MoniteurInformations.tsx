@@ -34,6 +34,7 @@ interface moniteurInformations {
   studentCount: string;
   viewCount: string;
   rating: string;
+  circuitsCount: string; // Ajoutons cette propriété
 }
 
 interface MoniteurInformationsProps {
@@ -273,22 +274,23 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
     <>
       <Toast ref={toastRef} />
 
-      {/* SECTION STATISTIQUES - Maintenant en premier */}
+      {/* SECTION STATISTIQUES - Modifiée pour n'inclure que les cours et circuits */}
       <h2 className="text-center mb-4">
         <FontAwesomeIcon icon={faChartBar} className="mr-2 text-indigo-600" />
         Statistiques
       </h2>
 
-      <div className="flex flex-column md:flex-row gap-2 mt-2 md:mx-2 mb-5">
-        <div className="relative w-full md:w-6">
-          <div className="w-full p-3 bg-white shadow-sm rounded-md relative overflow-hidden">
+      <div className="flex flex-column md:flex-row gap-4 mt-2 md:mx-2 mb-5 justify-content-center">
+        {/* Carte pour les cours */}
+        <div className="relative w-full md:w-5">
+          <div className="w-full p-4 bg-white shadow-sm rounded-md relative overflow-hidden">
             <i
               className={`pi pi-book text-indigo-200 text-8xl absolute top-0 right-0 m-3 pointer-events-none`}
             ></i>
 
             <div className="flex flex-column">
               <span className="text-indigo-600 text-6xl my-2">
-                {moniteurInfo.coursesCount}
+                {moniteurInfo.coursesCount || "0"}
               </span>
               <span className="text-xl ml-2">cours créés</span>
               <Button
@@ -300,70 +302,91 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
           </div>
         </div>
 
-        <div className="hidden md:block">
-          <Divider layout="vertical" />
-        </div>
+        <Divider layout="vertical" />
 
-        <div className="relative w-full md:w-6">
-          <div className="relative">
-            <div className="p-3 bg-white shadow-sm rounded-md">
-              <Tooltip target=".eleve-tooltip" />
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                className="eleve-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
-                data-pr-tooltip="Nombre d'élèves inscrits a vos cours"
-              />
-              <div className="flex flex-column align-items-start relative">
-                <i className="pi pi-users text-indigo-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-                <span className="text-indigo-600 text-4xl my-2">
-                  {moniteurInfo.studentCount}
-                </span>
-                <span className="text-xl text-gray-500">Élèves</span>
-              </div>
-            </div>
-          </div>
+        {/* Carte pour les circuits */}
+        <div className="relative w-full md:w-5">
+          <div className="w-full p-4 bg-white shadow-sm rounded-md relative overflow-hidden">
+            <i
+              className={`pi pi-map text-red-200 text-8xl absolute top-0 right-0 m-3 pointer-events-none`}
+            ></i>
 
-          <Divider className="my-2" />
-
-          <div className="relative">
-            <div className="p-3 bg-white shadow-sm rounded-md">
-              <Tooltip target=".vues-tooltip" />
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                className="vues-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
-                data-pr-tooltip="Nombre de fois que vos cours on été consultés"
-              />
-              <div className="flex flex-column align-items-start relative">
-                <i className="pi pi-eye text-green-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-                <span className="text-green-600 text-4xl my-2">
-                  {moniteurInfo.viewCount}
-                </span>
-                <span className="text-xl text-gray-500">Vues</span>
-              </div>
-            </div>
-          </div>
-
-          <Divider className="my-2" />
-
-          <div className="relative">
-            <div className="p-3 bg-white shadow-sm rounded-md">
-              <Tooltip target=".note-tooltip" />
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                className="note-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
-                data-pr-tooltip="Note moyenne par rapport a toutes les évaluations laissées par vos élèves"
-              />
-              <div className="flex flex-column align-items-start relative">
-                <i className="pi pi-star text-yellow-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-                <span className="text-yellow-500 text-4xl my-2">
-                  {moniteurInfo.rating} / 5
-                </span>
-                <span className="text-xl text-gray-500">Note</span>
-              </div>
+            <div className="flex flex-column">
+              <span className="text-red-600 text-6xl my-2">
+                {moniteurInfo.circuitsCount || "0"}
+              </span>
+              <span className="text-xl ml-2">circuits créés</span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Autres statistiques commentées mais conservées pour référence future */}
+      {/* 
+      <div className="hidden md:block">
+        <Divider layout="vertical" />
+      </div>
+
+      <div className="relative w-full md:w-6">
+        <div className="relative">
+          <div className="p-3 bg-white shadow-sm rounded-md">
+            <Tooltip target=".eleve-tooltip" />
+            <FontAwesomeIcon
+              icon={faQuestionCircle}
+              className="eleve-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
+              data-pr-tooltip="Nombre d'élèves inscrits a vos cours"
+            />
+            <div className="flex flex-column align-items-start relative">
+              <i className="pi pi-users text-indigo-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
+              <span className="text-indigo-600 text-4xl my-2">
+                {moniteurInfo.studentCount}
+              </span>
+              <span className="text-xl text-gray-500">Élèves</span>
+            </div>
+          </div>
+        </div>
+
+        <Divider className="my-2" />
+
+        <div className="relative">
+          <div className="p-3 bg-white shadow-sm rounded-md">
+            <Tooltip target=".vues-tooltip" />
+            <FontAwesomeIcon
+              icon={faQuestionCircle}
+              className="vues-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
+              data-pr-tooltip="Nombre de fois que vos cours on été consultés"
+            />
+            <div className="flex flex-column align-items-start relative">
+              <i className="pi pi-eye text-green-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
+              <span className="text-green-600 text-4xl my-2">
+                {moniteurInfo.viewCount}
+              </span>
+              <span className="text-xl text-gray-500">Vues</span>
+            </div>
+          </div>
+        </div>
+
+        <Divider className="my-2" />
+
+        <div className="relative">
+          <div className="p-3 bg-white shadow-sm rounded-md">
+            <Tooltip target=".note-tooltip" />
+            <FontAwesomeIcon
+              icon={faQuestionCircle}
+              className="note-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
+              data-pr-tooltip="Note moyenne par rapport a toutes les évaluations laissées par vos élèves"
+            />
+            <div className="flex flex-column align-items-start relative">
+              <i className="pi pi-star text-yellow-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
+              <span className="text-yellow-500 text-4xl my-2">
+                {moniteurInfo.rating} / 5
+              </span>
+              <span className="text-xl text-gray-500">Note</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      */}
 
       <Divider className="my-4" />
 
