@@ -201,7 +201,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                 </p>
               </>
             ) : (
-              <p className="text-center">Chargement des informations...</p>
+              <p className="text-center"></p>
             )}
           </div>
           <div className="flex justify-between items-center">
