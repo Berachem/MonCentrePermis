@@ -65,6 +65,30 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
     setSearchQuery(e.target.value);
   };
 
+  const handleAddCircuit = (courseId: string) => {
+    // Fermer le modal avant de naviguer
+    onHide();
+    // Rediriger vers la page de création de circuit
+    window.location.href = `/circuit/create/${courseId}`;
+  };
+
+  const handleEditCourse = (courseId: string) => {
+    alert(`Modifier le cours ${courseId}`);
+  };
+
+  const handleDeleteCourse = (courseId: string) => {
+    alert(`Supprimer le cours ${courseId}`);
+  };
+
+  // Gestionnaire pour la redirection vers la page d'édition de circuit
+  const handleViewCircuit = (circuitId: number) => {
+    console.log(`Redirection vers la page d'édition du circuit ${circuitId}`);
+    // Fermer d'abord le modal
+    onHide();
+    // Ensuite rediriger vers la page d'édition
+    window.location.href = `/circuit/edit/${circuitId}`;
+  };
+
   const filteredCourses = courses.filter((course) =>
     course.libelle.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -171,6 +195,10 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
           <ScrollableCourses
             courses={filteredCourses as ScrollCourse[]}
             readOnly={readOnly}
+            onAddCircuit={handleAddCircuit}
+            onEditCourse={handleEditCourse}
+            onDeleteCourse={handleDeleteCourse}
+            onViewCircuit={handleViewCircuit} // Passer la fonction de redirection
           />
         )}
       </div>

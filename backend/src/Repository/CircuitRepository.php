@@ -16,28 +16,16 @@ class CircuitRepository extends ServiceEntityRepository
         parent::__construct($registry, Circuit::class);
     }
 
-//    /**
-//     * @return Circuit[] Returns an array of Circuit objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Circuit
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Trouver tous les circuits associés à un cours spécifique
+     */
+    public function findByCoursId(int $coursId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('App\Entity\CircuitCours', 'cc', 'WITH', 'cc.circuit = c.id')
+            ->where('cc.cours = :coursId')
+            ->setParameter('coursId', $coursId)
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -193,9 +193,9 @@ class MoniteurController extends AbstractController
         preg_match_all('/media\/([a-f0-9\-]{36})/', $descriptionNettoyee, $matches);
         $fichiers = $matches[1] ?? [];
         
-        if (empty($fichiers)) {
-            return new JsonResponse(['error' => 'Aucun media trouvé dans la description'], JsonResponse::HTTP_BAD_REQUEST);
-        }
+        // if (empty($fichiers)) {
+        //     return new JsonResponse(['error' => 'Aucun media trouvé dans la description'], JsonResponse::HTTP_BAD_REQUEST);
+        // }
         
         foreach ($fichiers as $uuid) {
             $media = $this->entityManager->getRepository(Media::class)->findOneBy(['nom_fichier' => $uuid]);

@@ -44,6 +44,7 @@ function AppRoutes() {
         <Route path="*" element={<NotFound />} />
         <Route path="/examen/:id" element={<ExamPage />} />
         <Route path="/circuit/create" element={<CircuitCreationPage />} />
+        <Route path="/circuit/create/:coursId" element={<CircuitCreationPage />} />
         <Route path="/circuit/edit/:id" element={<CircuitEditionPage />} />
       </Routes>
     </>

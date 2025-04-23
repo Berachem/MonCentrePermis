@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { AutoComplete } from "primereact/autocomplete";
@@ -37,6 +37,7 @@ interface CircuitResponse {
 
 const CircuitCreationPage: React.FC = () => {
   const { typeUserid } = useAuth();
+  const { coursId } = useParams<{ coursId?: string }>();
   const [libelle, setLibelle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [selectedVille, setSelectedVille] = useState<Ville | null>(null);
@@ -130,6 +131,7 @@ const CircuitCreationPage: React.FC = () => {
       description,
       selectedVille,
       typeUserid,
+      coursId
     });
 
     try {
@@ -146,12 +148,42 @@ const CircuitCreationPage: React.FC = () => {
         circuitData
       );
 
-      toast.current?.show({
-        severity: "success",
-        summary: "Succès",
-        detail: "Le circuit a été créé avec succès",
-        life: 3000,
-      });
+      // Si un ID de cours est fourni, créer l'association circuit-cours
+      if (coursId) {
+        try {
+          const circuitCoursData = {
+            circuit: `/api/circuits/${response.id}`,
+            cours: `/api/cours/${coursId}`
+          };
+          
+          await postRequest(
+            "/circuit_cours",
+            circuitCoursData
+          );
+          
+          toast.current?.show({
+            severity: "success",
+            summary: "Succès",
+            detail: "Le circuit a été créé et associé au cours avec succès",
+            life: 3000,
+          });
+        } catch (error) {
+          console.error("Erreur lors de l'association circuit-cours:", error);
+          toast.current?.show({
+            severity: "error",
+            summary: "Attention",
+            detail: "Le circuit a été créé mais n'a pas pu être associé au cours",
+            life: 3000,
+          });
+        }
+      } else {
+        toast.current?.show({
+          severity: "success",
+          summary: "Succès",
+          detail: "Le circuit a été créé avec succès",
+          life: 3000,
+        });
+      }
 
       // Rediriger vers la page d'édition avec l'ID du circuit créé
       setTimeout(() => {
@@ -190,7 +222,7 @@ const CircuitCreationPage: React.FC = () => {
 
       <div className="flex justify-content-center align-items-center flex-grow-1 p-3">
         <Card
-          title="Création d'un nouveau circuit"
+          title={coursId ? "Création d'un circuit pour un cours" : "Création d'un nouveau circuit"}
           className="w-full max-w-30rem shadow-5"
         >
           <form onSubmit={handleSubmit} className="p-fluid">
