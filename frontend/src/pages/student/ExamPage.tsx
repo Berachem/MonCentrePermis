@@ -297,8 +297,12 @@ const ExamPage: React.FC = () => {
 
   const { typeUserid } = useAuth();
   
+  // Nouvel état pour le slider mobile
+  const [coursesSliderVisible, setCoursesSliderVisible] = useState<boolean>(false);
+
   // Définir la largeur du panneau de cours
-  const COURSES_PANEL_WIDTH = isMobile ? "85%" : "500px";  // Augmenté à 500px (avant 400px)
+  const COURSES_PANEL_WIDTH = isMobile ? "85%" : "400px";
+  const COURSES_PANEL_WIDTH_COLLAPSED = "60px";
 
   // Récupérer le centre d'examen depuis location.state
   useEffect(() => {
@@ -516,7 +520,7 @@ const ExamPage: React.FC = () => {
       position: "absolute" as const,
       top: 0,
       left: 0,
-      width: `calc(100% - ${COURSES_PANEL_WIDTH})`, // Toujours ajusté pour le panneau
+      width: isMobile ? "100%" : `calc(100% - ${COURSES_PANEL_WIDTH})`,
       height: "100%",
       zIndex: 1,
       transition: "width 0.3s ease-in-out",
@@ -524,36 +528,49 @@ const ExamPage: React.FC = () => {
     chipContainer: {
       position: "absolute" as const,
       top: "2%",
-      left: "40%", // Déplacé vers la gauche (avant 50%)
+      left: isMobile ? "50%" : "40%", 
       transform: "translateX(-50%)",
       zIndex: 1000,
       display: "flex",
       justifyContent: "center",
-      width: "80%", // Réduit pour éviter les chevauchements
-    },
-    circuitSelectorButton: {
-      position: "fixed" as const,
-      bottom: "30px",
-      left: "30px",
-      zIndex: 1000,
-    },
-    legendButton: {
-      position: "fixed" as const,
-      left: "30px",
-      top: window.innerWidth <= 768 ? "220px" : "100px",
-      zIndex: 1000,
+      width: "80%",
     },
     coursesPanel: {
       position: "fixed" as const,
       top: 0,
       right: 0,
       height: "100vh",
-      width: COURSES_PANEL_WIDTH,
+      width: isMobile ? (coursesSliderVisible ? COURSES_PANEL_WIDTH : "0px") : COURSES_PANEL_WIDTH,
       backgroundColor: "white",
       boxShadow: "-2px 0 10px rgba(0, 0, 0, 0.1)",
       zIndex: 1000,
-      padding: "20px",
+      padding: isMobile ? (coursesSliderVisible ? "20px" : "0px") : "20px",
       overflowY: "auto" as const,
+      transition: "all 0.3s ease-in-out",
+    },
+    coursesToggleButton: {
+      position: "fixed" as const,
+      top: "50%",
+      right: isMobile ? "0" : "auto",
+      right: isMobile ? (coursesSliderVisible ? COURSES_PANEL_WIDTH : "0") : "auto",
+      transform: "translateY(-50%)",
+      zIndex: 1001,
+      height: "50px",
+      width: "30px",
+      backgroundColor: "var(--primary-color)",
+      borderRadius: "5px 0 0 5px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
+      cursor: "pointer",
+      transition: "right 0.3s ease-in-out",
+    },
+    legendButton: {
+      position: "fixed" as const,
+      left: "30px",
+      top: window.innerWidth <= 768 ? "220px" : "100px",
+      zIndex: 1000,
     },
     legendContainer: {
       position: "fixed" as const,
@@ -686,85 +703,106 @@ const ExamPage: React.FC = () => {
         />
       </div>
 
-      {/* Panneau latéral pour les cours - maintenant toujours visible */}
-      <div style={styles.coursesPanel}>
-        <div className="flex justify-content-between align-items-center mb-4">
-          <h2 className="text-xl font-bold">Cours associés</h2>
+      {/* Bouton de toggle pour les cours sur mobile */}
+      {isMobile && (
+        <div 
+          style={styles.coursesToggleButton}
+          onClick={() => setCoursesSliderVisible(!coursesSliderVisible)}
+        >
+          <i className={`pi ${coursesSliderVisible ? "pi-chevron-right" : "pi-chevron-left"} text-white`}></i>
         </div>
+      )}
 
-        {loadingCourses ? (
-          <div className="flex flex-column align-items-center justify-content-center p-5 h-full">
-            <i className="pi pi-spin pi-spinner text-primary" style={{ fontSize: '2rem' }}></i>
-            <p className="mt-3">Chargement des cours...</p>
-          </div>
-        ) : associatedCourses.length === 0 ? (
-          <div className="flex flex-column align-items-center justify-content-center p-5">
-            <i className="pi pi-book text-500" style={{ fontSize: '2rem' }}></i>
-            <p className="mt-3 text-center">Aucun cours n'est associé à ce circuit.</p>
-            {userRole === UserType.Teacher && currentCircuit && (
-              <Button
-                icon="pi pi-plus"
-                label="Ajouter un cours"
-                className="p-button-outlined mt-4"
-                onClick={() => alert("TODO - Ajouter un cours")}
-              />
-            )}
-            <div className="mt-5 border-top-1 border-200 pt-4 w-full">
-              <h3 className="text-lg font-semibold text-primary">Comment utiliser ce circuit?</h3>
-              <ul className="list-none p-0 mt-3">
-                <li className="flex align-items-center mb-2">
-                  <i className="pi pi-map text-primary mr-2"></i>
-                  <span>Explorez les points d'intérêt sur la carte</span>
-                </li>
-                <li className="flex align-items-center mb-2">
-                  <i className="pi pi-info-circle text-primary mr-2"></i>
-                  <span>Cliquez sur les marqueurs pour plus d'informations</span>
-                </li>
-                <li className="flex align-items-center mb-2">
-                  <i className="pi pi-car text-primary mr-2"></i>
-                  <span>Suivez les instructions du moniteur</span>
-                </li>
-                <li className="flex align-items-center mb-2">
-                  <i className="pi pi-check-circle text-primary mr-2"></i>
-                  <span>Préparez-vous pour l'examen avec ce parcours</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        ) : (
+      {/* Panneau latéral pour les cours - adapté pour mobile */}
+      <div style={styles.coursesPanel}>
+        {(!isMobile || coursesSliderVisible) && (
           <>
-            <Accordion 
-              activeIndex={expandedCourseId ? associatedCourses.findIndex(c => c.id === expandedCourseId) : null}
-              onTabChange={(e) => {
-                const courseId = e.index !== null ? associatedCourses[e.index].id : null;
-                setExpandedCourseId(courseId);
-              }}
-              className="courses-accordion"
-            >
-              {associatedCourses.map((course) => (
-                <AccordionTab
-                  key={course.id}
-                  header={
-                    <div className="flex align-items-center">
-                      <i className="pi pi-book text-primary mr-2"></i>
-                      <span>{course.libelle}</span>
-                    </div>
-                  }
-                >
-                  <div className="p-3">
-                    <CourseContent content={course.description} className="p-3 bg-gray-50 border-round" />
-                  </div>
-                </AccordionTab>
-              ))}
-            </Accordion>
-            
-            <div className="mt-4 p-3 border-round bg-primary-50 border-1 border-primary-100">
-              <h3 className="text-lg font-semibold text-primary">Conseils de révision</h3>
-              <p className="text-sm mt-2">
-                Prenez le temps d'étudier chaque cours associé à ce circuit. 
-                Ces informations sont essentielles pour réussir votre examen!
-              </p>
+            <div className="flex justify-content-between align-items-center mb-4">
+              <h2 className="text-xl font-bold">Cours associés</h2>
+              {isMobile && (
+                <Button 
+                  icon="pi pi-times" 
+                  className="p-button-rounded p-button-text bg-white" 
+                  onClick={() => setCoursesSliderVisible(false)} 
+                />
+              )}
             </div>
+
+            {loadingCourses ? (
+              <div className="flex flex-column align-items-center justify-content-center p-5 h-full">
+                <i className="pi pi-spin pi-spinner text-primary" style={{ fontSize: '2rem' }}></i>
+                <p className="mt-3">Chargement des cours...</p>
+              </div>
+            ) : associatedCourses.length === 0 ? (
+              <div className="flex flex-column align-items-center justify-content-center p-5">
+                <i className="pi pi-book text-500" style={{ fontSize: '2rem' }}></i>
+                <p className="mt-3 text-center">Aucun cours n'est associé à ce circuit.</p>
+                {userRole === UserType.Teacher && currentCircuit && (
+                  <Button
+                    icon="pi pi-plus"
+                    label="Ajouter un cours"
+                    className="p-button-outlined mt-4"
+                    onClick={() => alert("TODO - Ajouter un cours")}
+                  />
+                )}
+                <div className="mt-5 border-top-1 border-200 pt-4 w-full">
+                  <h3 className="text-lg font-semibold text-primary">Comment utiliser ce circuit?</h3>
+                  <ul className="list-none p-0 mt-3">
+                    <li className="flex align-items-center mb-2">
+                      <i className="pi pi-map text-primary mr-2"></i>
+                      <span>Explorez les points d'intérêt sur la carte</span>
+                    </li>
+                    <li className="flex align-items-center mb-2">
+                      <i className="pi pi-info-circle text-primary mr-2"></i>
+                      <span>Cliquez sur les marqueurs pour plus d'informations</span>
+                    </li>
+                    <li className="flex align-items-center mb-2">
+                      <i className="pi pi-car text-primary mr-2"></i>
+                      <span>Suivez les instructions du moniteur</span>
+                    </li>
+                    <li className="flex align-items-center mb-2">
+                      <i className="pi pi-check-circle text-primary mr-2"></i>
+                      <span>Préparez-vous pour l'examen avec ce parcours</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Accordion 
+                  activeIndex={expandedCourseId ? associatedCourses.findIndex(c => c.id === expandedCourseId) : null}
+                  onTabChange={(e) => {
+                    const courseId = e.index !== null ? associatedCourses[e.index].id : null;
+                    setExpandedCourseId(courseId);
+                  }}
+                  className="courses-accordion"
+                >
+                  {associatedCourses.map((course) => (
+                    <AccordionTab
+                      key={course.id}
+                      header={
+                        <div className="flex align-items-center">
+                          <i className="pi pi-book text-primary mr-2"></i>
+                          <span>{course.libelle}</span>
+                        </div>
+                      }
+                    >
+                      <div className="p-3">
+                        <CourseContent content={course.description} className="p-3 bg-gray-50 border-round" />
+                      </div>
+                    </AccordionTab>
+                  ))}
+                </Accordion>
+                
+                <div className="mt-4 p-3 border-round bg-primary-50 border-1 border-primary-100">
+                  <h3 className="text-lg font-semibold text-primary">Conseils de révision</h3>
+                  <p className="text-sm mt-2">
+                    Prenez le temps d'étudier chaque cours associé à ce circuit. 
+                    Ces informations sont essentielles pour réussir votre examen!
+                  </p>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
@@ -1073,6 +1111,27 @@ const ExamPage: React.FC = () => {
         
         .fade-in {
           animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        /* Styles pour le panneau mobile */
+        @media screen and (max-width: 768px) {
+          .course-slider-enter {
+            transform: translateX(100%);
+          }
+          
+          .course-slider-enter-active {
+            transform: translateX(0);
+            transition: transform 0.3s;
+          }
+          
+          .course-slider-exit {
+            transform: translateX(0);
+          }
+          
+          .course-slider-exit-active {
+            transform: translateX(100%);
+            transition: transform 0.3s;
+          }
         }
       `}</style>
     </div>
