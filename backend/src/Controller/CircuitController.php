@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use App\Entity\Circuit;
 use App\Entity\CircuitCours;
 use App\Entity\Cours;
+use App\Entity\Point;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -216,6 +217,86 @@ class CircuitController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse(
                 ['message' => 'Erreur lors de la suppression de la liaison: ' . $e->getMessage()],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
+     * Récupère un circuit par son ID avec tous ses points
+     */
+    #[Route('/details/{id}', name: 'api_get_circuit_details', methods: ['GET'])]
+    public function getCircuit(
+        int $id,
+        CircuitRepository $circuitRepository,
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        try {
+            // Récupérer le circuit avec l'ID spécifié
+            $circuit = $circuitRepository->find($id);
+
+            if (!$circuit) {
+                return new JsonResponse(['message' => 'Circuit non trouvé'], Response::HTTP_NOT_FOUND);
+            }
+
+            // Récupérer tous les points associés à ce circuit
+            $points = $entityManager->getRepository(Point::class)->findBy(['circuit' => $circuit], ['rang' => 'ASC']);
+
+            // Récupérer les informations du moniteur associé
+            $moniteur = $circuit->getIdMoniteur();
+            $moniteurData = null;
+
+            if ($moniteur) {
+                $compte = $moniteur->getCompte();
+                if ($compte) {
+                    $moniteurData = [
+                        'id' => $moniteur->getId(),
+                        'nom' => $compte->getNom(),
+                        'prenom' => $compte->getPrenom(),
+                    ];
+                }
+            }
+
+            // Formater les points pour les inclure dans la réponse
+            $pointsData = [];
+            foreach ($points as $point) {
+                $pointsData[] = [
+                    'id' => $point->getId(),
+                    'libelle' => $point->getLibelle(),
+                    'description' => $point->getDescription(),
+                    'latitude' => $point->getLatitude(),
+                    'longitude' => $point->getLongitude(),
+                    'type' => $point->getType(),
+                    'rang' => $point->getRang()
+                ];
+            }
+
+            // Formater la réponse
+            $response = [
+                'id' => $circuit->getId(),
+                'libelle' => $circuit->getLibelle(),
+                'description' => $circuit->getDescription(),
+                'ville_centre' => $circuit->getVilleCentre() ? [
+                    'id' => $circuit->getVilleCentre()->getId(),
+                    'libelle' => $circuit->getVilleCentre()->getLibelle(),
+                    'code_postal' => $circuit->getVilleCentre()->getCodePostal(),
+                ] : null,
+                'id_moniteur' => $moniteurData,
+                // Inclure les données complètes des points directement
+                'points_details' => $pointsData,
+                // Conserver les IRIs des points pour la compatibilité API Platform
+                'points' => array_map(function ($point) {
+                    return '/api/points/' . $point->getId();
+                }, $points),
+                'created_at' => $circuit->getCreatedAt() ? $circuit->getCreatedAt()->format('c') : null,
+                'updated_at' => $circuit->getUpdatedAt() ? $circuit->getUpdatedAt()->format('c') : null,
+            ];
+
+            return new JsonResponse($response, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(
+                ['message' => 'Erreur lors de la récupération du circuit: ' . $e->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

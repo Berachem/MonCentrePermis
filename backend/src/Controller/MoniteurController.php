@@ -18,9 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Mime\MimeTypes;
-use Psr\Log\LoggerInterface; 
-
-
+use Psr\Log\LoggerInterface;
 
 #[Route('/api/moniteurs')]
 class MoniteurController extends AbstractController
@@ -31,33 +29,58 @@ class MoniteurController extends AbstractController
         EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
-    } 
+    }
 
     #[Route('/mycourses', name: 'moniteur_courses', methods: ['POST'])]
     public function getMyCourses(Request $request): JsonResponse
     {
-        // Récupérer l'utilisateur connecté
-        $compte = $this->getUser();
+        // Récupérer le contenu de la requête
+        $data = json_decode($request->getContent(), true);
+        $requestedUserId = $data['userId'] ?? null;
+        $viewMode = $data['viewMode'] ?? 'owner';
 
-        // Vérifier si l'utilisateur est authentifié
-        if (!$compte) {
-            return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+        // Si aucun ID n'a été fourni, utiliser celui de l'utilisateur connecté
+        if (!$requestedUserId) {
+            // Récupérer l'utilisateur connecté
+            $compte = $this->getUser();
+
+            if (!$compte) {
+                return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+            }
+
+            $requestedUserId = $compte->getId();
+        } else {
+            // Vérifier si l'utilisateur connecté a le droit de consulter ces cours
+            $compte = $this->getUser();
+
+            // Si ce n'est pas l'utilisateur lui-même et que le mode est 'owner' (pas lecture seule)
+            if ($compte && $compte->getId() != $requestedUserId && $viewMode === 'owner') {
+                // Vérifier si l'utilisateur connecté a un rôle qui lui permet de voir les cours d'un autre utilisateur
+                $roles = $compte->getRoles();
+            }
         }
 
-        // Récupérer le moniteur associé à l'utilisateur
-        $moniteur = $compte->getMoniteur();
+        // Trouver le compte correspondant à l'ID demandé
+        $compteRepository = $this->entityManager->getRepository(Compte::class);
+        $requestedCompte = $compteRepository->find($requestedUserId);
 
-        // Vérifier si le moniteur existe
+        if (!$requestedCompte) {
+            return new JsonResponse(['error' => 'Compte non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Récupérer le moniteur associé au compte demandé
+        $moniteur = $requestedCompte->getMoniteur();
+
         if (!$moniteur) {
             return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         // Récupérer la liste des cours du moniteur
         $coursList = $moniteur->getCours();
-        
+
         // Si aucun cours n'est trouvé, retourner une réponse vide
         if (empty($coursList)) {
-            return new JsonResponse(['message' => 'Aucun cours trouvé'], JsonResponse::HTTP_OK);
+            return new JsonResponse([], JsonResponse::HTTP_OK);
         }
 
         // Structurer les données des cours
@@ -85,6 +108,9 @@ class MoniteurController extends AbstractController
 
         $compte = $moniteur->getCompte();
 
+        // Récupérer le nombre de circuits
+        $circuitsCount = count($moniteur->getCircuits());
+
         $moniteurInfo = [
             // Infos
             'nom' => $compte->getNom(),
@@ -97,7 +123,8 @@ class MoniteurController extends AbstractController
             'status' => $moniteur->getStatusActivite(),
 
             // Stats (à adapter selon la logique métier que tu mettras plus tard)
-            'coursesCount' => '0',
+            'coursesCount' => (string)count($moniteur->getCours()),
+            'circuitsCount' => (string)$circuitsCount,
             'studentCount' => '0',
             'viewCount' => '0',
             'rating' => '0.0',
@@ -154,119 +181,119 @@ class MoniteurController extends AbstractController
     public function postMyCourses(Request $request): JsonResponse
     {
         $compte = $this->getUser();
-       
+
         if (!$compte) {
             return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
         }
-       
+
         $moniteur = $compte->getMoniteur();
-       
+
         if (!$moniteur) {
             return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
         }
-       
+
         $data = json_decode($request->getContent(), true);
-       
+
         if (!isset($data['libelle']) || empty($data['libelle'])) {
             return new JsonResponse(['error' => 'Libellé du cours manquant'], JsonResponse::HTTP_BAD_REQUEST);
         }
-       
+
         $description = $data['description'] ?? '';
-       
+
         // Créer le cours
         $cours = new Cours();
         $cours->setLibelle($data['libelle']);
-        
+
         // Nettoyer la description pour enlever les tokens dans les URLs des images
         $pattern = '/<img src="http:\/\/localhost:8000\/media\/([a-f0-9\-]+)\?token=[^"]+">/';
         $replacement = '<img src="http://localhost:8000/media/$1">';
-    
+
         // Remplacer l'URL avec token par celle sans token
         $descriptionNettoyee = preg_replace($pattern, $replacement, $description);
-        
+
         // Sauvegarder la description nettoyée
         $cours->setDescription($descriptionNettoyee);
-       
+
         $cours->setMoniteur($moniteur);
-        
+
         // Recherche et association des médias
         preg_match_all('/media\/([a-f0-9\-]{36})/', $descriptionNettoyee, $matches);
         $fichiers = $matches[1] ?? [];
-        
+
         // if (empty($fichiers)) {
         //     return new JsonResponse(['error' => 'Aucun media trouvé dans la description'], JsonResponse::HTTP_BAD_REQUEST);
         // }
-        
+
         foreach ($fichiers as $uuid) {
             $media = $this->entityManager->getRepository(Media::class)->findOneBy(['nom_fichier' => $uuid]);
             if ($media) {
                 dump("Media trouvé pour UUID: " . $uuid); // Debug
-                $media->setCours($cours); 
+                $media->setCours($cours);
                 dump("Media ajouté au cours: " . $cours->getMedias()); // Debug
             } else {
                 // Ajouter un log ou une erreur ici si nécessaire
                 // log('Media introuvable pour UUID: ' . $uuid);
             }
         }
-        
+
         // Persister et flusher le cours
         $this->entityManager->persist($cours);
         $this->entityManager->flush();
-        
+
         return new JsonResponse(['success' => true, 'message' => 'Cours ajouté avec succès'], JsonResponse::HTTP_CREATED);
     }
-    
+
 
     #[Route('/addMycourses/upload', name: 'moniteur_upload_file', methods: ['POST'])]
     public function uploadCourseFile(Request $request): JsonResponse
     {
         // Vérifie si le fichier a été envoyé
         $file = $request->files->get('file');
-        
+
         if (!$file) {
             return new JsonResponse(['error' => 'Aucun fichier fourni'], JsonResponse::HTTP_BAD_REQUEST);
         }
-    
+
         // Générer un UUID unique pour le fichier
         $uuid = Uuid::v4()->toRfc4122();  // Correction du UUID pour utiliser Symfony's Uuid
-        
+
         // Récupérer le type MIME et l'extension du fichier
         $mimeType = $file->getMimeType();
         $extension = $file->getClientOriginalExtension();
-        
+
         // Créer une nouvelle entité Media et remplir les informations
         $media = new Media();
         $media->setNomFichier($uuid);  // Enregistrer l'UUID du fichier
         $media->setExtension($extension);
         $media->setType($mimeType);
         $media->setTitre($file->getClientOriginalName());  // Utiliser le nom original du fichier
-    
+
         // Récupérer l'utilisateur connecté (Moniteur)
         $compte = $this->getUser();
-    
+
         if (!$compte) {
             return new JsonResponse(['error' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
         }
-    
+
         $moniteur = $compte->getMoniteur();
-    
+
         if (!$moniteur) {
             return new JsonResponse(['error' => 'Moniteur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
         }
-    
+
         // Associer le media au moniteur
         $media->setMoniteur($moniteur);
-    
+
         // Déplacer le fichier vers le répertoire 'uploads'
         try {
             $uploadDirectory = $this->getParameter('upload_directory');
             $filePath = $uploadDirectory . '/' . $uuid . '.' . $extension;
             $file->move($uploadDirectory, $filePath);
-    
+
             // Enregistrer l'entité Media dans la base de données
             $this->entityManager->persist($media);
             $this->entityManager->flush();
-    
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Fichier téléchargé et ajouté à la base de données avec succès',
@@ -276,6 +303,4 @@ class MoniteurController extends AbstractController
             return new JsonResponse(['error' => 'Erreur lors du déplacement du fichier: ' . $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-
 }

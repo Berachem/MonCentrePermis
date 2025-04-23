@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import useAuth from "../hooks/useAuth";
 import { Button } from "primereact/button";
+import { useModal } from "../contexts/ModalContext";
 
 const UserIndicator = () => {
-  const { isAuthenticated, prenom, userRole, logout } = useAuth();
+  const { isAuthenticated, prenom, userRole, logout, userId } = useAuth();
+  const { openModal } = useModal();
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth > 768);
   const [showLogoutButton, setShowLogoutButton] = useState(false);
   const userIndicatorRef = useRef<HTMLDivElement>(null);
@@ -36,6 +38,12 @@ const UserIndicator = () => {
 
   const toggleLogoutButton = () => {
     setShowLogoutButton(!showLogoutButton);
+  };
+
+  const handleProfileClick = () => {
+    // Ouvrir le modal au lieu de naviguer vers une page
+    openModal("profile", { idRequested: userId });
+    setShowLogoutButton(false);
   };
 
   if (!isLargeScreen) return null;
@@ -118,11 +126,22 @@ const UserIndicator = () => {
               style={{
                 position: "absolute",
                 top: "100%",
-                right: 15,
+                right: 0,
                 marginTop: "5px",
                 zIndex: 1001,
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
+                width: "140px",
               }}
             >
+              <Button
+                label="Mon profil"
+                icon="pi pi-user"
+                className="p-button-primary p-button-sm"
+                onClick={handleProfileClick}
+                style={{ fontSize: "0.8rem", padding: "0.3rem 0.6rem" }}
+              />
               <Button
                 label="Déconnexion"
                 icon="pi pi-sign-out"

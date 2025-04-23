@@ -93,7 +93,7 @@ export default function Settings() {
           <h2 className="text-primary">Paramètres</h2>
           <Divider />
           {/* Langue */}
-          <div className="field mb-4">
+          {/*  <div className="field mb-4">
             <label htmlFor="language" className="text-900 font-bold">
               Langue
             </label>
@@ -105,9 +105,9 @@ export default function Settings() {
               placeholder="Sélectionner la langue"
               className="w-full"
             />
-          </div>
+          </div> */}
           {/* Thème */}
-          <div className="field mb-4">
+          {/*  <div className="field mb-4">
             <label htmlFor="theme" className="text-900 font-bold">
               Thème
             </label>
@@ -119,7 +119,7 @@ export default function Settings() {
               placeholder="Sélectionner le thème"
               className="w-full"
             />
-          </div>
+          </div> */}
           {/* Fond de Plan de la Carte */}
           <div className="field">
             <label htmlFor="mapBackground" className="text-900 font-bold">

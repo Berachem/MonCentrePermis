@@ -240,7 +240,7 @@ const CircuitEditionPage: React.FC = () => {
         setIsLoading(true);
 
         // Récupérer les données du circuit
-        const circuitData = await getRequest<any>(`/circuits/${id}`);
+        const circuitData = await getRequest<any>(`/circuits/details/${id}`);
 
         setCircuit({
           id: circuitData.id,
@@ -248,6 +248,7 @@ const CircuitEditionPage: React.FC = () => {
           description: circuitData.description,
           ville_centre: circuitData.ville_centre,
         });
+        console.log("Circuit chargé:", circuitData);
 
         // Récupérer les points associés si disponibles
         if (circuitData.points && circuitData.points.length > 0) {
@@ -397,7 +398,6 @@ const CircuitEditionPage: React.FC = () => {
     });
   };
 
-
   // Supprimer un point du circuit
   const deletePoint = (position: number) => {
     confirmDialog({
@@ -423,9 +423,9 @@ const CircuitEditionPage: React.FC = () => {
             // Si le rang du point actuel est supérieur au rang du point supprimé, le décrémenter
             rang:
               pointToDelete &&
-                p.rang &&
-                pointToDelete.rang &&
-                p.rang > pointToDelete.rang
+              p.rang &&
+              pointToDelete.rang &&
+              p.rang > pointToDelete.rang
                 ? p.rang - 1
                 : p.rang,
             libelle: p.libelle.startsWith("Point ")
@@ -558,8 +558,6 @@ const CircuitEditionPage: React.FC = () => {
     }
   };
 
-
-
   // Templates pour les actions de la barre d'outils
   const leftToolbarTemplate = () => {
     return (
@@ -575,12 +573,13 @@ const CircuitEditionPage: React.FC = () => {
             window.innerWidth < 768
               ? ""
               : isDraggingEnabled
-                ? "Désactiver le déplacement"
-                : "Activer le déplacement des points"
+              ? "Désactiver le déplacement"
+              : "Activer le déplacement des points"
           }
           icon={isDraggingEnabled ? "pi pi-lock" : "pi pi-window-minimize"}
-          className={`p-button-outlined bg-white ${isDraggingEnabled ? "p-button-warning" : "p-button-help"
-            }`}
+          className={`p-button-outlined bg-white ${
+            isDraggingEnabled ? "p-button-warning" : "p-button-help"
+          }`}
           onClick={() => setIsDraggingEnabled(!isDraggingEnabled)}
           tooltip={
             window.innerWidth < 768
@@ -665,10 +664,10 @@ const CircuitEditionPage: React.FC = () => {
                         const updatedPoints = points.map((p) =>
                           p.position === point.position
                             ? {
-                              ...p,
-                              latitude: position.lat,
-                              longitude: position.lng,
-                            }
+                                ...p,
+                                latitude: position.lat,
+                                longitude: position.lng,
+                              }
                             : p
                         );
                         setPoints(updatedPoints);
@@ -753,14 +752,14 @@ const CircuitEditionPage: React.FC = () => {
                                 point.type === "depart"
                                   ? "pi pi-flag"
                                   : point.type === "stop"
-                                    ? "pi pi-stop"
-                                    : point.type === "attention"
-                                      ? "pi pi-exclamation-triangle"
-                                      : point.type === "tournant"
-                                        ? "pi pi-arrow-right"
-                                        : point.type === "arrivee"
-                                          ? "pi pi-check-circle"
-                                          : "pi pi-info-circle"
+                                  ? "pi pi-stop"
+                                  : point.type === "attention"
+                                  ? "pi pi-exclamation-triangle"
+                                  : point.type === "tournant"
+                                  ? "pi pi-arrow-right"
+                                  : point.type === "arrivee"
+                                  ? "pi pi-check-circle"
+                                  : "pi pi-info-circle"
                               }
                             ></i>
                           </div>
@@ -769,7 +768,7 @@ const CircuitEditionPage: React.FC = () => {
                             <div className="text-xs text-500">
                               {point.description
                                 ? point.description.slice(0, 30) +
-                                (point.description.length > 30 ? "..." : "")
+                                  (point.description.length > 30 ? "..." : "")
                                 : "Pas de description"}
                             </div>
                           </div>
@@ -898,14 +897,14 @@ const CircuitEditionPage: React.FC = () => {
                         option.value === "depart"
                           ? "pi pi-flag"
                           : option.value === "stop"
-                            ? "pi pi-stop"
-                            : option.value === "attention"
-                              ? "pi pi-exclamation-triangle"
-                              : option.value === "tournant"
-                                ? "pi pi-arrow-right"
-                                : option.value === "arrivee"
-                                  ? "pi pi-check-circle"
-                                  : "pi pi-info-circle"
+                          ? "pi pi-stop"
+                          : option.value === "attention"
+                          ? "pi pi-exclamation-triangle"
+                          : option.value === "tournant"
+                          ? "pi pi-arrow-right"
+                          : option.value === "arrivee"
+                          ? "pi pi-check-circle"
+                          : "pi pi-info-circle"
                       }
                     ></i>
                   </div>
@@ -913,12 +912,13 @@ const CircuitEditionPage: React.FC = () => {
                 </div>
               )}
               valueTemplate={(option) => {
-                const selectedOption = typeof option === 'string' 
-                  ? pointTypes.find(pt => pt.value === option) 
-                  : option;
-                
+                const selectedOption =
+                  typeof option === "string"
+                    ? pointTypes.find((pt) => pt.value === option)
+                    : option;
+
                 if (!selectedOption) return <span>Sélectionnez un type</span>;
-                
+
                 return (
                   <div className="flex align-items-center">
                     <div
@@ -939,14 +939,14 @@ const CircuitEditionPage: React.FC = () => {
                           selectedOption.value === "depart"
                             ? "pi pi-flag"
                             : selectedOption.value === "stop"
-                              ? "pi pi-stop"
-                              : selectedOption.value === "attention"
-                                ? "pi pi-exclamation-triangle"
-                                : selectedOption.value === "tournant"
-                                  ? "pi pi-arrow-right"
-                                  : selectedOption.value === "arrivee"
-                                    ? "pi pi-check-circle"
-                                    : "pi pi-info-circle"
+                            ? "pi pi-stop"
+                            : selectedOption.value === "attention"
+                            ? "pi pi-exclamation-triangle"
+                            : selectedOption.value === "tournant"
+                            ? "pi pi-arrow-right"
+                            : selectedOption.value === "arrivee"
+                            ? "pi pi-check-circle"
+                            : "pi pi-info-circle"
                         }
                       ></i>
                     </div>
@@ -1064,14 +1064,14 @@ const CircuitEditionPage: React.FC = () => {
                         option.value === "depart"
                           ? "pi pi-flag"
                           : option.value === "stop"
-                            ? "pi pi-stop"
-                            : option.value === "attention"
-                              ? "pi pi-exclamation-triangle"
-                              : option.value === "tournant"
-                                ? "pi pi-arrow-right"
-                                : option.value === "arrivee"
-                                  ? "pi pi-check-circle"
-                                  : "pi pi-info-circle"
+                          ? "pi pi-stop"
+                          : option.value === "attention"
+                          ? "pi pi-exclamation-triangle"
+                          : option.value === "tournant"
+                          ? "pi pi-arrow-right"
+                          : option.value === "arrivee"
+                          ? "pi pi-check-circle"
+                          : "pi pi-info-circle"
                       }
                     ></i>
                   </div>
@@ -1101,14 +1101,14 @@ const CircuitEditionPage: React.FC = () => {
                           option.value === "depart"
                             ? "pi pi-flag"
                             : option.value === "stop"
-                              ? "pi pi-stop"
-                              : option.value === "attention"
-                                ? "pi pi-exclamation-triangle"
-                                : option.value === "tournant"
-                                  ? "pi pi-arrow-right"
-                                  : option.value === "arrivee"
-                                    ? "pi pi-check-circle"
-                                    : "pi pi-info-circle"
+                            ? "pi pi-stop"
+                            : option.value === "attention"
+                            ? "pi pi-exclamation-triangle"
+                            : option.value === "tournant"
+                            ? "pi pi-arrow-right"
+                            : option.value === "arrivee"
+                            ? "pi pi-check-circle"
+                            : "pi pi-info-circle"
                         }
                       ></i>
                     </div>

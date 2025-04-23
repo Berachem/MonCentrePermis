@@ -36,8 +36,7 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
   onAddCircuit,
   onEditCourse,
   onDeleteCourse,
-  onViewCircuit = (circuitId) =>
-    alert(`Redirection vers le circuit ${circuitId}`),
+  onViewCircuit,
   onRemoveCircuit,
 }) => {
   const [courseCircuits, setCourseCircuits] = useState<{
@@ -196,6 +195,16 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
     setConfirmDialogVisible(true);
   };
 
+  // Fonction de redirection vers la page de visualisation de circuit
+  const handleViewCircuit = (circuitId: number) => {
+    if (onViewCircuit) {
+      onViewCircuit(circuitId);
+    } else {
+      //navigate(`/circuit/view/${circuitId}`);
+      window.location.href = `/circuit/view/${circuitId}`;
+    }
+  };
+
   return (
     <div className="card w-full">
       <Toast ref={toast} />
@@ -212,18 +221,17 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
               <h2 className="text-xl font-semibold">Circuits associés : </h2>
               <div className="flex flex-wrap gap-2">
                 {loadingCircuits[course.id] && (
-                  <div className="text-center p-2">
+                  <div className="text-center p-2  mt-2">
                     <i
                       className="pi pi-spin pi-spinner"
                       style={{ fontSize: "1.5rem" }}
                     ></i>
-                    <div>Chargement des circuits...</div>
                   </div>
                 )}
 
                 {!loadingCircuits[course.id] &&
                   courseCircuits[course.id]?.length === 0 && (
-                    <div className="text-gray-500 italic p-2">
+                    <div className="text-gray-500 italic p-2 mt-2">
                       Aucun circuit associé à ce cours
                     </div>
                   )}
@@ -239,7 +247,7 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
                         tooltip={
                           circuit.description || "Aucune description disponible"
                         }
-                        onClick={() => onViewCircuit(circuit.id)}
+                        onClick={() => handleViewCircuit(circuit.id)}
                       />
 
                       {!readOnly && (
