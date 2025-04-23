@@ -566,7 +566,7 @@ const CircuitEditionPage: React.FC = () => {
           label={"Retour"}
           icon="pi pi-arrow-left"
           className="p-button-outlined"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/`)}
         />
         <Button
           label={
