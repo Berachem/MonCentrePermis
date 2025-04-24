@@ -137,16 +137,15 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
             className="mb-3"
           />
         )}
-
+        <Button
+          label="Lier le circuit"
+          disabled={!selected}
+          onClick={linkCircuit}
+          className="p-button-success"
+          icon="pi pi-link"
+        />
+        <Divider />
         <div className="flex justify-content-between mt-3">
-          <Button
-            label="Lier le circuit"
-            disabled={!selected}
-            onClick={linkCircuit}
-            className="p-button-success"
-            icon="pi pi-link"
-          />
-
           <Button
             label="Créer un nouveau"
             className="p-button-primary"

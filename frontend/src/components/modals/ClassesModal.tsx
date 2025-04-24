@@ -13,6 +13,9 @@ import ScrollableCourses, {
   Course as ScrollCourse,
 } from "../../components/utils/ScrollableCourses";
 import CircuitLinker from "../../components/utils/CircuitLinker";
+import EditCourseModal from "./EditCourseModal";
+import ConfirmationDialog from "../utils/ConfirmationDialog";
+import { Toast } from "primereact/toast";
 
 interface ClassesModalProps {
   visible: boolean;
@@ -42,6 +45,11 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkCourseId, setLinkCourseId] = useState<string>("");
   const [instructorName, setInstructorName] = useState<string>("");
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editCourseId, setEditCourseId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+  const toast = React.useRef<Toast>(null);
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -98,14 +106,46 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
   };
 
   const handleEditCourse = (courseId: string) => {
-    alert(`Modifier le cours ${courseId}`);
+    console.log(`Edition du cours ${courseId}`);
+    setEditCourseId(courseId);
+    setShowEditDialog(true);
   };
 
   const handleDeleteCourse = (courseId: string) => {
-    alert(`Supprimer le cours ${courseId}`);
+    setCourseToDelete(courseId);
+    setShowDeleteConfirm(true);
   };
 
-  // Gestionnaire pour la redirection vers la page d'édition de circuit
+  const confirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
+
+    setLoading(true);
+    try {
+      await postRequest(`/moniteurs/course/${courseToDelete}/delete`, {});
+
+      // Afficher un message de succès
+      toast.current?.show({
+        severity: "success",
+        summary: "Cours supprimé",
+        detail: "Le cours a été supprimé avec succès",
+      });
+
+      // Rafraîchir la liste des cours
+      fetchCourses();
+    } catch (error) {
+      console.error("Erreur lors de la suppression du cours:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erreur",
+        detail: "Impossible de supprimer ce cours",
+      });
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirm(false);
+      setCourseToDelete(null);
+    }
+  };
+
   const handleViewCircuit = (circuitId: number) => {
     console.log(`Redirection vers la page d'édition du circuit ${circuitId}`);
     // Fermer d'abord le modal
@@ -159,6 +199,8 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
         className="p-4 pt-12 overflow-auto"
         style={{ maxHeight: "calc(90vh - 60px)" }}
       >
+        <Toast ref={toast} />
+
         <h2 className="text-center mb-4">
           <FontAwesomeIcon
             icon={faChalkboardTeacher}
@@ -265,6 +307,31 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
             fetchCourses(); // Refresh courses after linking a circuit
             setShowLinkDialog(false);
           }}
+        />
+
+        {/* Modal pour éditer un cours */}
+        <EditCourseModal
+          visible={showEditDialog}
+          courseId={editCourseId}
+          onHide={() => {
+            setShowEditDialog(false);
+            setEditCourseId(null);
+          }}
+          onCourseUpdated={() => {
+            fetchCourses(); // Rafraichir la liste des cours après modification
+          }}
+        />
+
+        {/* Dialogue de confirmation pour la suppression */}
+        <ConfirmationDialog
+          visible={showDeleteConfirm}
+          onHide={() => setShowDeleteConfirm(false)}
+          onConfirm={confirmDeleteCourse}
+          title="Confirmer la suppression"
+          message="Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible et supprimera également toutes les associations avec les circuits."
+          confirmLabel="Supprimer"
+          confirmIcon="pi pi-trash"
+          severity="danger"
         />
       </div>
     </Dialog>

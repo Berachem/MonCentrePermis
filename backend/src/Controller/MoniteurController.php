@@ -90,6 +90,7 @@ class MoniteurController extends AbstractController
                 'id' => $cours->getId(),
                 'libelle' => $cours->getLibelle(),
                 'description' => $cours->getDescription(),
+                'updatedAt' => $cours->getUpdatedAt() ? $cours->getUpdatedAt()->format('Y-m-d H:i:s') : null,
             ];
         }
 
@@ -174,9 +175,6 @@ class MoniteurController extends AbstractController
         return new JsonResponse(['success' => true, 'message' => 'Informations mises à jour avec succès'], JsonResponse::HTTP_OK);
     }
 
-
-
-
     #[Route('/addMycourses', name: 'moniteur_add_courses', methods: ['POST'])]
     public function postMyCourses(Request $request): JsonResponse
     {
@@ -220,19 +218,10 @@ class MoniteurController extends AbstractController
         preg_match_all('/media\/([a-f0-9\-]{36})/', $descriptionNettoyee, $matches);
         $fichiers = $matches[1] ?? [];
 
-        // if (empty($fichiers)) {
-        //     return new JsonResponse(['error' => 'Aucun media trouvé dans la description'], JsonResponse::HTTP_BAD_REQUEST);
-        // }
-
         foreach ($fichiers as $uuid) {
             $media = $this->entityManager->getRepository(Media::class)->findOneBy(['nom_fichier' => $uuid]);
             if ($media) {
-                dump("Media trouvé pour UUID: " . $uuid); // Debug
                 $media->setCours($cours);
-                dump("Media ajouté au cours: " . $cours->getMedias()); // Debug
-            } else {
-                // Ajouter un log ou une erreur ici si nécessaire
-                // log('Media introuvable pour UUID: ' . $uuid);
             }
         }
 
@@ -242,7 +231,6 @@ class MoniteurController extends AbstractController
 
         return new JsonResponse(['success' => true, 'message' => 'Cours ajouté avec succès'], JsonResponse::HTTP_CREATED);
     }
-
 
     #[Route('/addMycourses/upload', name: 'moniteur_upload_file', methods: ['POST'])]
     public function uploadCourseFile(Request $request): JsonResponse
@@ -255,7 +243,7 @@ class MoniteurController extends AbstractController
         }
 
         // Générer un UUID unique pour le fichier
-        $uuid = Uuid::v4()->toRfc4122();  // Correction du UUID pour utiliser Symfony's Uuid
+        $uuid = Uuid::v4()->toRfc4122();
 
         // Récupérer le type MIME et l'extension du fichier
         $mimeType = $file->getMimeType();
@@ -263,10 +251,10 @@ class MoniteurController extends AbstractController
 
         // Créer une nouvelle entité Media et remplir les informations
         $media = new Media();
-        $media->setNomFichier($uuid);  // Enregistrer l'UUID du fichier
+        $media->setNomFichier($uuid);
         $media->setExtension($extension);
         $media->setType($mimeType);
-        $media->setTitre($file->getClientOriginalName());  // Utiliser le nom original du fichier
+        $media->setTitre($file->getClientOriginalName());
 
         // Récupérer l'utilisateur connecté (Moniteur)
         $compte = $this->getUser();
@@ -302,5 +290,112 @@ class MoniteurController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'Erreur lors du déplacement du fichier: ' . $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    #[Route('/course/{id}', name: 'get_course', methods: ['GET'])]
+    public function getCourse(string $id): JsonResponse
+    {
+        $cours = $this->entityManager->getRepository(Cours::class)->find($id);
+
+        if (!$cours) {
+            return new JsonResponse(['error' => 'Cours non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Vérifier l'accès (si l'utilisateur est le propriétaire du cours ou un admin)
+        $compte = $this->getUser();
+        if (!$compte || ($compte->getMoniteur() !== $cours->getMoniteur() && !in_array('ROLE_ADMIN', $compte->getRoles()))) {
+            return new JsonResponse(['error' => 'Accès non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $courseData = [
+            'id' => $cours->getId(),
+            'libelle' => $cours->getLibelle(),
+            'description' => $cours->getDescription(),
+            'updatedAt' => $cours->getUpdatedAt() ? $cours->getUpdatedAt()->format('Y-m-d H:i:s') : null,
+        ];
+
+        return new JsonResponse($courseData, JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/course/{id}/update', name: 'update_course', methods: ['PUT', 'POST'])]
+    public function updateCourse(Request $request, string $id): JsonResponse
+    {
+        $cours = $this->entityManager->getRepository(Cours::class)->find($id);
+
+        if (!$cours) {
+            return new JsonResponse(['error' => 'Cours non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Vérifier l'accès (si l'utilisateur est le propriétaire du cours ou un admin)
+        $compte = $this->getUser();
+        if (!$compte || ($compte->getMoniteur() !== $cours->getMoniteur() && !in_array('ROLE_ADMIN', $compte->getRoles()))) {
+            return new JsonResponse(['error' => 'Accès non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['libelle']) && !empty($data['libelle'])) {
+            $cours->setLibelle($data['libelle']);
+        }
+
+        if (isset($data['description'])) {
+            // Nettoyer la description pour enlever les tokens dans les URLs des images
+            $pattern = '/<img src="http:\/\/localhost:8000\/media\/([a-f0-9\-]+)\?token=[^"]+">/';
+            $replacement = '<img src="http://localhost:8000/media/$1">';
+
+            // Remplacer l'URL avec token par celle sans token
+            $descriptionNettoyee = preg_replace($pattern, $replacement, $data['description']);
+
+            $cours->setDescription($descriptionNettoyee);
+
+            // Mise à jour de la date de modification
+            //$cours->setUpdatedAt(new \DateTime());
+
+            // Recherche et association des nouveaux médias
+            preg_match_all('/media\/([a-f0-9\-]{36})/', $descriptionNettoyee, $matches);
+            $fichiers = $matches[1] ?? [];
+
+            foreach ($fichiers as $uuid) {
+                $media = $this->entityManager->getRepository(Media::class)->findOneBy(['nom_fichier' => $uuid]);
+                if ($media && $media->getCours() === null) {
+                    $media->setCours($cours);
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Cours mis à jour avec succès',
+            'updatedAt' => $cours->getUpdatedAt()->format('Y-m-d H:i:s')
+        ], JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/course/{id}/delete', name: 'delete_course', methods: ['DELETE', 'POST'])]
+    public function deleteCourse(string $id): JsonResponse
+    {
+        $cours = $this->entityManager->getRepository(Cours::class)->find($id);
+
+        if (!$cours) {
+            return new JsonResponse(['error' => 'Cours non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Vérifier l'accès (si l'utilisateur est le propriétaire du cours ou un admin)
+        $compte = $this->getUser();
+        if (!$compte || ($compte->getMoniteur() !== $cours->getMoniteur() && !in_array('ROLE_ADMIN', $compte->getRoles()))) {
+            return new JsonResponse(['error' => 'Accès non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        // Gestion des médias associés
+        foreach ($cours->getMedias() as $media) {
+            $media->setCours(null); // Dissocier le média du cours plutôt que de le supprimer
+        }
+
+        // Supprimer le cours
+        $this->entityManager->remove($cours);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Cours supprimé avec succès'], JsonResponse::HTTP_OK);
     }
 }

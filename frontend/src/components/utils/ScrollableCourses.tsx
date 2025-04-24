@@ -6,11 +6,14 @@ import { Circuit } from "../../interfaces/circuit.interface";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { Toast } from "primereact/toast";
+import { Tag } from "primereact/tag";
+import moment from "moment";
 
 export interface Course {
   id: string;
   libelle: string;
   description: string;
+  updatedAt?: string; // Ajout de la date de mise à jour
 }
 
 interface AssociatedCircuit {
@@ -205,6 +208,12 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
     }
   };
 
+  // Fonction pour formater la date de mise à jour
+  const formatUpdatedDate = (dateString?: string) => {
+    if (!dateString) return "Date inconnue";
+    return moment(dateString).format("DD/MM/YYYY à HH:mm");
+  };
+
   return (
     <div className="card w-full">
       <Toast ref={toast} />
@@ -277,6 +286,18 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
               content={course.description}
               className="p-4 bg-gray-100 rounded-lg shadow-md w-full"
             />
+            {/* Affichage de la date de dernière mise à jour */}
+            {course.updatedAt && (
+              <div className="my-2">
+                <Tag
+                  icon="pi pi-clock"
+                  severity="contrast"
+                  value={`Dernière modification: ${formatUpdatedDate(
+                    course.updatedAt
+                  )}`}
+                />
+              </div>
+            )}
             {!readOnly && (
               <div className="flex justify-between items-center mb-4 mt-4">
                 <Button
