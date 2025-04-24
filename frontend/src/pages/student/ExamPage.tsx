@@ -511,6 +511,12 @@ const ExamPage: React.FC = () => {
 
   // Styles
   const styles = {
+    circuitSelectorButton: {
+      position: "fixed" as const,
+      bottom: "30px",
+      left: "30px",
+      zIndex: 1000,
+    },
     mapContainer: {
       position: "relative" as const,
       height: "100vh",
