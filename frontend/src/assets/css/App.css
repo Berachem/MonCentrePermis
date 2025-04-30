@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* Style global pour harmoniser les polices */
 body, h1, p {
     font-family: 'Roboto', sans-serif;
