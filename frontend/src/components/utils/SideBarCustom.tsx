@@ -43,17 +43,6 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Styles pour le conteneur du bouton de menu
-  const buttonContainerStyle: React.CSSProperties = {
-    position: "fixed",
-    top: "20px",
-    left: "20px",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
   // Routes communes à tous les utilisateurs connectés
   const commonAuthenticatedRoutes = [
     { title: "Accueil", route: "/", icon: faHome },
@@ -90,12 +79,11 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
     : inviteRoutes;
 
   return (
-    <div style={buttonContainerStyle}>
-      {/* Bouton hamburger pour ouvrir le sidebar */}
+    <div className="flex items-center">
+      {/* Bouton hamburger pour ouvrir le sidebar - ombre renforcée */}
       <Button
         icon="pi pi-bars"
-        className={"button-text mr-2 " + (isOnMap ? "shadow-8" : "shadow-3")}
-        rounded
+        className={`rounded-full shadow-xl bg-green-800 text-white w-11 h-11 flex items-center justify-center p-0 aspect-square border-none hover:bg-green-700`}
         onClick={toggleSidebar}
       />
 
@@ -103,14 +91,13 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
       <Sidebar
         visible={isSidebarOpen}
         onHide={toggleSidebar}
-        className="p-sidebar-md"
-        style={{ width: "280px" }}
+        className="w-72"
       >
-        <div className="flex flex-column h-full">
+        <div className="flex flex-col h-full">
           {/* Logo et Bouton de fermeture */}
-          <div className="flex align-items-center justify-content-between px-4 pt-3">
-            <span className="inline-flex align-items-center gap-2 font-semibold text-2xl text-primary">
-              <img src={LogoApp} alt="logo" className="w-13rem -ml-3" />
+          <div className="flex items-center justify-between px-4 pt-3">
+            <span className="inline-flex items-center gap-2 font-semibold text-2xl text-indigo-500">
+              <img src={LogoApp} alt="logo" className="w-52 -ml-3" />
             </span>
           </div>
 
@@ -128,8 +115,9 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
                       toggleSidebar();
                     }
                   }}
+                  className="cursor-pointer"
                 >
-                  <a className="p-ripple flex align-items-center cursor-pointer p-3 text-700 hover:surface-100 transition-duration-150 transition-colors w-full">
+                  <a className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150 w-full">
                     <FontAwesomeIcon icon={item.icon} className="mr-2" />
                     <span className="font-medium">{item.title}</span>
                     <Ripple />
@@ -144,8 +132,9 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
                     openModal("profile", { idRequested: "4" });
                     toggleSidebar();
                   }}
+                  className="cursor-pointer"
                 >
-                  <a className="p-ripple flex align-items-center cursor-pointer p-3 text-700 hover:surface-100 transition-duration-150 transition-colors w-full">
+                  <a className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150 w-full">
                     <FontAwesomeIcon icon={faUserGroup} className="mr-2" />
                     <span className="font-medium">Voir profil test (ID 9)</span>
                     <Ripple />
@@ -157,52 +146,53 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
 
           {/* Profil en bas */}
           <div className="mt-auto">
-            <hr className="mb-3 mx-3 border-top-1 surface-border" />
+            <hr className="my-3 mx-3 border-t border-gray-200" />
             {isAuthenticated ? (
               <>
-                <a
-                  className="m-3 flex align-items-center p-3 gap-2 cursor-pointer border-round text-700 hover:surface-100 transition-duration-150 transition-colors"
-                  onClick={() => {
-                    openModal("profile", { idRequested: userId });
-                    toggleSidebar();
-                  }}
-                >
-                  {userRole === "eleve" ? (
-                    <img
-                      src="https://amelesarcades.bleep.fr/wp-content/uploads/2017/06/permisb.png"
-                      alt="eleve"
-                      style={{
-                        width: "25px",
-                        height: "25px",
-                        borderRadius: "50%",
-                        verticalAlign: "middle",
-                        display: "inline-block",
-                      }}
-                    />
-                  ) : (
-                    "🕵️"
-                  )}
-                  <span className="font-bold">{prenom}</span>
-                </a>
-                <div className="text-center mt-2">
+                <div className="m-3">
                   <a
-                    className="text-red-500 cursor-pointer text-sm"
+                    className="flex items-center gap-2 cursor-pointer bg-green-800 hover:bg-green-700 text-white rounded-lg px-4 py-2 transition-colors duration-150"
                     onClick={() => {
-                      logout();
+                      openModal("profile", { idRequested: userId });
                       toggleSidebar();
-                      navigate(`/login`);
                     }}
                   >
-                    Déconnexion
+                    <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white">
+                      {userRole === "eleve" ? (
+                        <img
+                          src="https://amelesarcades.bleep.fr/wp-content/uploads/2017/06/permisb.png"
+                          alt="eleve"
+                          className="w-5 h-5 rounded-full"
+                        />
+                      ) : (
+                        <span className="text-sm text-green-800">🕵️</span>
+                      )}
+                    </span>
+                    <span className="font-medium">{prenom}</span>
                   </a>
+
+                  <div className="text-center mt-2">
+                    <a
+                      className="text-red-500 cursor-pointer text-sm"
+                      onClick={() => {
+                        logout();
+                        toggleSidebar();
+                        navigate(`/login`);
+                      }}
+                    >
+                      Déconnexion
+                    </a>
+                  </div>
                 </div>
               </>
             ) : (
-              <Button
-                label="S'identifier"
-                onClick={() => navigate("/login")}
-                className="m-3"
-              />
+              <div className="m-3">
+                <Button
+                  label="S'identifier"
+                  onClick={() => navigate("/login")}
+                  className="bg-green-800 hover:bg-green-700 text-white border-none rounded-lg py-2 px-4 w-full"
+                />
+              </div>
             )}
           </div>
         </div>
