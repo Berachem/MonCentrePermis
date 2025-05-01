@@ -263,8 +263,8 @@ export function HomePageMap({
           <ZoomListener onZoomChange={handleZoomChange} />
 
           {userLocated && (
-            <Marker position={position} icon={userIcon} ref={markerRef}>
-              <Popup autoPan={false}>Vous📍</Popup>
+            <Marker position={position} icon={userIcon} ref={markerRef} >
+              <Popup closeButton={false} >Vous📍</Popup>
             </Marker>
           )}
 

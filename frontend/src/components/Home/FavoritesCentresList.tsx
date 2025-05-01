@@ -71,7 +71,7 @@ const FavoritesCentresList = ({
             </span>
             <Button
               icon="pi pi-times"
-              className="p-0 w-8 h-8 rounded-full bg-green-700 hover:bg-green-600 flex items-center justify-center shadow-md text-white border-none"
+              className="p-0 w-1 h-6 rounded-full bg-green-700 hover:bg-green-600 flex items-center justify-center shadow-md text-white border-none"
               onClick={toggleVisibility}
               aria-label="Fermer les favoris"
             />
@@ -107,7 +107,7 @@ const FavoritesCentresList = ({
                   {/* Bouton voir */}
                   <Button
                     icon="pi pi-eye"
-                    className="p-0 w-9 h-9 ml-1 rounded-full bg-white hover:bg-gray-100 text-green-800 flex items-center justify-center shadow-md border border-gray-200"
+                    className="p-0 w-2 ml-1 rounded-full bg-white hover:bg-gray-100 text-green-800 flex items-center justify-center shadow-md border border-gray-200"
                     onClick={() => onCentreClick(centre)}
                     onKeyDown={(e) => handleKeyDown(e, centre)}
                     tabIndex={0}
@@ -117,7 +117,7 @@ const FavoritesCentresList = ({
                   {/* Bouton supprimer */}
                   <Button
                     icon="pi pi-times"
-                    className="p-0 w-9 h-9 ml-1 rounded-full bg-white hover:bg-gray-100 text-red-500 flex items-center justify-center shadow-md border border-gray-200"
+                    className="p-0 w-2  ml-1 rounded-full bg-white hover:bg-gray-100 text-red-500 flex items-center justify-center shadow-md border border-gray-200"
                     onClick={() => onRemoveFavorite(centre.id)}
                     onKeyDown={(e) => handleRemoveKeyDown(e, centre.id)}
                     tabIndex={0}

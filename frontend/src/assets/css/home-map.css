@@ -229,3 +229,26 @@
 .remove-favorite:hover {
   color: #ff4d4f;
 }
+
+/* Styles existants */
+
+/* Style personnalisé pour le popup de localisation utilisateur */
+.leaflet-popup-content-wrapper {
+  background-color: #166534; /* green-800 */
+  border-radius: 12px;
+  border: 2px solid #166534;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  width: 100px;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.leaflet-popup-tip {
+  background-color: #166534;
+}
