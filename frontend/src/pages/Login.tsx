@@ -8,7 +8,7 @@ import { FloatLabel } from "primereact/floatlabel";
 import { Link, useNavigate } from "react-router-dom";
 import logoApp from "../assets/images/branding/logo_moncentrepermis.png";
 import loginStory from "../assets/images/stories/login-storie.svg";
-import SideBarCustom from "../components/utils/SideBarCustom";
+import SideBarCustom from "../components/Home/SideBarCustom";
 import { ApiResponse } from "../interfaces/interfaces";
 import { postRequest } from "../interfaces/utils/api";
 

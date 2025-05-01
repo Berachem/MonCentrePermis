@@ -13,14 +13,15 @@ import ModalContainer from './components/modals/ModalContainer';
 
 function App() {
   return (
-    <AuthProvider> {/* Encapsuler l'application avec AuthProvider */}
-      <ModalProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-        <ModalContainer />
-      </ModalProvider>
-    </AuthProvider>
+
+      <AuthProvider>
+        <ModalProvider>
+          <Router>
+            <AppRoutes />
+          </Router> 
+          <ModalContainer/>
+        </ModalProvider>
+      </AuthProvider>
   );
 }
 

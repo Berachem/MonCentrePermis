@@ -6,7 +6,7 @@ import { MapContainer, TileLayer } from "react-leaflet";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import "leaflet/dist/leaflet.css";
-import SideBarCustom from "../components/utils/SideBarCustom";
+import SideBarCustom from "../components/Home/SideBarCustom";
 import logoApp from "../assets/images/branding/logo_moncentrepermis.png";
 import "../assets/css/settings.css";
 

@@ -10,7 +10,7 @@ import TeacherForm from "../components/RegisterForms/TeacherForm";
 import SchoolForm from "../components/RegisterForms/SchoolForm";
 
 import logoApp from "../assets/images/branding/logo_moncentrepermis.png";
-import SideBarCustom from "../components/utils/SideBarCustom";
+import SideBarCustom from "../components/Home/SideBarCustom";
 
 function Register() {
   const toastRef = useRef<Toast>(null);

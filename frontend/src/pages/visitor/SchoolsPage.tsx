@@ -7,7 +7,7 @@ import { Chip } from "primereact/chip";
 import { getRequest } from "../../interfaces/utils/api";
 import { Toast } from "primereact/toast";
 import { AutoEcole } from "../../interfaces/interfaces";
-import SideBarCustom from "../../components/utils/SideBarCustom";
+import SideBarCustom from "../../components/Home/SideBarCustom";
 import logoApp from "../../assets/images/branding/logo_moncentrepermis.png";
 import Loader from "../../components/utils/Loader";
 import { Divider } from "primereact/divider";

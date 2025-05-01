@@ -1,14 +1,14 @@
 // src/components/TopBar.tsx
 
 import { InputText } from "primereact/inputtext";
-import SideBarCustom from "./SideBarCustom";
+import SideBarCustom from "../Home/SideBarCustom";
 
 function HomePageTopBar() {
   return (
     <div className="absolute top-0 left-0 right-0 flex items-center px-2 md:px-4 z-[1000]">
       <div className="flex items-center justify-start w-full mt-5">
         {/* SideBarCustom maintenant aligné avec la barre de recherche */}
-        <SideBarCustom isOnMap={true} />
+        <SideBarCustom/>
         <div className="ml-3">
           <div className="relative">
             <InputText

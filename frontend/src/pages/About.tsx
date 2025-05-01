@@ -7,7 +7,7 @@ import { Chip } from "primereact/chip";
 import { useNavigate } from "react-router-dom";
 
 import Logo_MCP from "../assets/images/branding/logo_moncentrepermis.png";
-import SideBarCustom from "../components/utils/SideBarCustom";
+import SideBarCustom from "../components/Home/SideBarCustom";
 
 const About: React.FC = () => {
   const navigate = useNavigate();

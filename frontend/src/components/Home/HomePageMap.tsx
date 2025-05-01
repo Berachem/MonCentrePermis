@@ -11,7 +11,7 @@ import "leaflet/dist/leaflet.css";
 import "../../assets/css/home-map.css";
 import { CentreExamen } from "../../interfaces/interfaces";
 import { getRequest } from "../../interfaces/utils/api";
-import Loader from "./Loader";
+import Loader from "../utils/Loader";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocation } from "@fortawesome/free-solid-svg-icons";
@@ -177,7 +177,7 @@ export function HomePageMap({
 }: HomePageMapProps) {
   const markerRef = useRef(null);
   const fetchedRef = useRef(false);
-  const [tileLayerUrl, setTileLayerUrl] = useState(
+  const [tileLayerUrl] = useState(
     localStorage.getItem("tileLayerUrl") ||
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   );
@@ -231,88 +231,90 @@ export function HomePageMap({
   }, [onCentresDataUpdate]);
 
   return (
-    <div className="w-full h-full">
-      <MapContainer
-        center={position}
-        zoom={13}
-        className="w-full h-full"
-        zoomControl={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url={tileLayerUrl}
-        />
-        
-        {userLocated && (
-          <RecenterMap
-            position={position}
-            shouldRecenter={shouldRecenterToUser}
-            onRecenterComplete={onRecenterComplete}
+    <div className="absolute inset-0">
+      <div className="w-full h-full">
+        <MapContainer
+          center={position}
+          zoom={13}
+          className="w-full h-full"
+          zoomControl={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url={tileLayerUrl}
           />
-        )}
-        
-        {centerPosition && (
-          <RecenterMap
-            position={centerPosition}
-            shouldRecenter={shouldRecenterToCenter}
-            onRecenterComplete={onRecenterToCenter}
-          />
-        )}
-
-        <ZoomListener onZoomChange={handleZoomChange} />
-
-        {userLocated && (
-          <Marker position={position} icon={userIcon} ref={markerRef}>
-            <Popup autoPan={false}>Vous📍</Popup>
-          </Marker>
-        )}
-
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center z-[1000] bg-white bg-opacity-70">
-            <Loader />
-          </div>
-        )}
-        
-        {centresData &&
-          centresData.map((centre) => {
-            if (centre.latitude === null || centre.longitude === null)
-              return null;
-            const pos = [
-              parseFloat(centre.latitude),
-              parseFloat(centre.longitude),
-            ];
-            const icon = createExamCenterIcon(centre, showLabels);
-            return (
-              <Marker
-                key={centre.id}
-                position={pos}
-                icon={icon}
-                title={centre.libelle}
-                alt={centre.libelle}
-                eventHandlers={{
-                  click: () => onMarkerClick(centre),
-                  mouseover: (e) => {
-                    e.target.setIcon(
-                      new L.Icon({
-                        iconUrl: icon.options.iconUrl,
-                        iconSize: [36, 37], // agrandi
-                        iconAnchor: [18, 37],
-                        popupAnchor: [1, -34],
-                        shadowUrl: icon.options.shadowUrl,
-                        shadowSize: icon.options.shadowSize,
-                      })
-                    );
-                  },
-                  mouseout: (e) => {
-                    e.target.setIcon(icon);
-                  },
-                }}
-              />
-            );
-          })}
           
-        <MapControls onRecenterClick={onManualRecenter} />
-      </MapContainer>
+          {userLocated && (
+            <RecenterMap
+              position={position}
+              shouldRecenter={shouldRecenterToUser}
+              onRecenterComplete={onRecenterComplete}
+            />
+          )}
+          
+          {centerPosition && (
+            <RecenterMap
+              position={centerPosition}
+              shouldRecenter={shouldRecenterToCenter}
+              onRecenterComplete={onRecenterToCenter}
+            />
+          )}
+
+          <ZoomListener onZoomChange={handleZoomChange} />
+
+          {userLocated && (
+            <Marker position={position} icon={userIcon} ref={markerRef}>
+              <Popup autoPan={false}>Vous📍</Popup>
+            </Marker>
+          )}
+
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center z-[1000] bg-white bg-opacity-70">
+              <Loader />
+            </div>
+          )}
+          
+          {centresData &&
+            centresData.map((centre) => {
+              if (centre.latitude === null || centre.longitude === null)
+                return null;
+              const pos: L.LatLngTuple = [
+                parseFloat(centre.latitude),
+                parseFloat(centre.longitude),
+              ];
+              const icon = createExamCenterIcon(centre, showLabels);
+              return (
+                <Marker
+                  key={centre.id}
+                  position={pos}
+                  icon={icon}
+                  title={centre.libelle}
+                  alt={centre.libelle}
+                  eventHandlers={{
+                    click: () => onMarkerClick(centre),
+                    mouseover: (e) => {
+                      e.target.setIcon(
+                        new L.Icon({
+                          iconUrl: icon.options.iconUrl,
+                          iconSize: [36, 37], // agrandi
+                          iconAnchor: [18, 37],
+                          popupAnchor: [1, -34],
+                          shadowUrl: icon.options.shadowUrl,
+                          shadowSize: icon.options.shadowSize,
+                        })
+                      );
+                    },
+                    mouseout: (e) => {
+                      e.target.setIcon(icon);
+                    },
+                  }}
+                />
+              );
+            })}
+            
+          <MapControls onRecenterClick={onManualRecenter} />
+        </MapContainer>
+      </div>
     </div>
   );
 }
