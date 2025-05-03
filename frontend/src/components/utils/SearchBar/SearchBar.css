@@ -1,0 +1,148 @@
+/* SearchBar.css */
+
+.search-bar-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.search-input-group {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 30px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.search-input-group:focus-within {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.search-input-group .p-inputtext {
+  border-radius: 30px 0 0 30px;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-right: none;
+}
+
+.search-input-group .p-button {
+  border-radius: 0 30px 30px 0;
+}
+
+.search-filters-panel .p-overlaypanel-content {
+  padding: 1rem;
+}
+
+.active-filters {
+  animation: fadeIn 0.3s ease;
+}
+
+.p-chip-sm {
+  height: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.p-chip-danger {
+  background-color: #ffeeee;
+  color: #ff5757;
+}
+
+.p-chip-danger .p-chip-remove-icon {
+  color: #ff5757;
+}
+
+/* Animation pour les filtres qui apparaissent */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Style pour quand il y a des filtres actifs */
+.p-button-warning {
+  background-color: #ffca28;
+  border-color: #ffca28;
+  color: #212121;
+}
+
+/* Style pour la version mobile */
+@media screen and (max-width: 768px) {
+  .search-input-group {
+    border-radius: 20px;
+  }
+
+  .search-input-group .p-inputtext,
+  .search-input-group .p-button {
+    padding: 0.5rem;
+  }
+}
+
+.search-results-panel .p-overlaypanel-content {
+  padding: 0;
+}
+
+.search-results-container {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.search-results-container .p-skeleton {
+  border-radius: 4px;
+}
+
+.search-results-container .result-item {
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.search-results-container .result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.search-results-container .pi {
+  width: 1.5rem;
+  text-align: center;
+}
+
+/* Type-specific colors */
+.result-type-exam_centers .pi {
+  color: #3B82F6; /* Blue for exam centers */
+}
+
+.result-type-monitors .pi {
+  color: #10B981; /* Green for moniteurs */
+}
+
+.result-type-courses .pi {
+  color: #F59E0B; /* Orange for courses */
+}
+
+.result-type-circuits .pi {
+  color: #EC4899; /* Pink for circuits */
+}
+
+/* Animation quand les résultats apparaissent */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-results-panel {
+  animation: fadeInDown 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+/* Style pour l'élément actif (hover) */
+.search-results-container .flex:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Style pour la section "Voir tous les résultats" */
+.search-results-container .p-button-text:hover {
+  background-color: rgba(0, 123, 255, 0.08);
+}

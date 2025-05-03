@@ -43,17 +43,6 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Styles pour le conteneur du bouton de menu
-  const buttonContainerStyle: React.CSSProperties = {
-    position: "fixed",
-    top: "20px",
-    left: "20px",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
   // Routes communes à tous les utilisateurs connectés
   const commonAuthenticatedRoutes = [
     { title: "Accueil", route: "/", icon: faHome },
@@ -90,11 +79,11 @@ function SideBarCustom({ isOnMap }: { isOnMap?: boolean }) {
     : inviteRoutes;
 
   return (
-    <div style={buttonContainerStyle}>
+    <div className="flex align-items-center">
       {/* Bouton hamburger pour ouvrir le sidebar */}
       <Button
         icon="pi pi-bars"
-        className={"button-text mr-2 " + (isOnMap ? "shadow-8" : "shadow-3")}
+        className={"button-text " + (isOnMap ? "shadow-8" : "shadow-3")}
         rounded
         onClick={toggleSidebar}
       />

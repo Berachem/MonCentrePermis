@@ -41,6 +41,7 @@ security:
     - { path: ^/api/custom/centre_examens, roles: PUBLIC_ACCESS }
     - { path: ^/api/compte/create-compte, roles: PUBLIC_ACCESS }
     - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
+    - { path: ^/api/search, roles: PUBLIC_ACCESS }
     - { path: ^/api/moniteurs/mycourses, roles: IS_AUTHENTICATED_FULLY } # Permet l'accès à tous les utilisateurs authentifiés
     - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

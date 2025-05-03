@@ -612,11 +612,33 @@ export function HomePageMap() {
     setShouldRecenterToUser(true);
   };
 
+  // Ajoutez cette fonction dans le composant HomePageMap
+  const handleCentreSelect = (centreId: number) => {
+    // Rechercher le centre dans les données déjà chargées
+    const centre = centresData.find(c => c.id === centreId);
+    
+    if (centre && centre.latitude && centre.longitude) {
+      // Si le centre est trouvé et a des coordonnées valides
+      setCenterPosition([parseFloat(centre.latitude), parseFloat(centre.longitude)]);
+      setShouldRecenterToCenter(true);
+      setSelectedCentre(centre);
+      setVisible(true); // Pour ouvrir le modal de détails
+    } else {
+      // Si le centre n'est pas trouvé ou n'a pas de coordonnées valides
+      toast.current?.show({
+        severity: "warn",
+        summary: "Centre introuvable",
+        detail: "Impossible de localiser ce centre sur la carte",
+        life: 3000,
+      });
+    }
+  };
+
   return (
     <>
       <Toast ref={toast} />
       <div className="map-wrapper">
-        <HomePageTopBar />
+        <HomePageTopBar onCentreSelect={handleCentreSelect} />
 
         {/* 
         Si connecté -> NOM PRENOM image de profil
