@@ -4,13 +4,12 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
-import { FloatLabel } from "primereact/floatlabel";
 import { Link, useNavigate } from "react-router-dom";
-import logoApp from "../assets/images/branding/logo_moncentrepermis.png";
-import loginStory from "../assets/images/stories/login-storie.svg";
-import SideBarCustom from "../components/Home/SideBarCustom";
+import loginStory from "../assets/images/stories/login-storie-green.svg";
 import { ApiResponse } from "../interfaces/interfaces";
 import { postRequest } from "../interfaces/utils/api";
+import LogoApp from "../assets/images/branding/logo_moncentrepermis_green.png";
+import Loader from "../components/utils/Loader";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -18,9 +17,8 @@ function Login() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const toastRef = React.createRef<Toast>();
-
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,13 +41,13 @@ function Login() {
     setLoginError("");
 
     if (!hasError) {
+      setIsLoading(true);
       const formData = { username: email, password };
 
-      // console.log(formData)
       try {
         const response: ApiResponse = await postRequest("login", formData);
 
-        console.log(response);
+        // Vérification de la réponse
         if (response === "") {
           toastRef.current?.show({
             severity: "success",
@@ -58,94 +56,125 @@ function Login() {
             life: 3000,
           });
           window.location.assign("/");
-          // navigate('/');
         } else {
-          throw new Error("Identifiants incorrects");
+          // Erreurs d'authentification gérées ici
+          setLoginError("Identifiants incorrects");
+          toastRef.current?.show({
+            severity: "error",
+            summary: "Erreur de connexion",
+            detail: "Vérifiez vos identifiants.",
+            life: 3000,
+          });
         }
-      } catch (error) {
-        setLoginError("Identifiants incorrect");
+      } catch (error: any) {
+        // Gestion plus précise des erreurs
+        console.error("Erreur lors de la connexion:", error);
+        
+        if (error.statusCode === 401) {
+          setLoginError("Identifiants incorrects");
+        } else {
+          setLoginError("Problème de connexion au serveur");
+        }
+        
         toastRef.current?.show({
           severity: "error",
           summary: "Erreur de connexion",
-          detail: "Vérifiez vos identifiants.",
+          detail: error.message || "Vérifiez vos identifiants.",
           life: 3000,
         });
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
   return (
-    <>
+    <div className="flex flex-col h-screen overflow-hidden">
       <Toast ref={toastRef} />
 
-      <div className="flex align-items-center justify-content-center col-12 mt-4">
-        <SideBarCustom />
-        <img src={logoApp} alt="logo" className="mx-auto md:w-2 w-13rem" />
+      <Link to="/" className="fixed top-4 left-4 z-50">
+        <div className="flex items-center justify-center w-14 h-11 rounded-full bg-green-800 hover:bg-green-700 shadow-lg transition-colors">
+          <i className="pi pi-home text-white text-xl"></i>
+        </div>
+      </Link>
+
+      <div className="flex justify-center mb-4 mt-4">
+        <Link to="/">
+          <img 
+            src={LogoApp} 
+            alt="Mon Centre Permis" 
+            className="h-8 w-auto object-contain cursor-pointer"
+          />
+        </Link>
       </div>
 
-      <div className="align-items-center justify-content-center flex md:flex-row flex-column ">
-        <div className="flex justify-content-center col-16 md:col-6">
-          <Card className="p-4">
-            <form onSubmit={handleLogin} className="flex flex-column gap-4">
-              <div>
-                <FloatLabel>
-                  <label htmlFor="email">Email</label>
-                  <InputText
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={`inputtext-sm d-block ${loginError ? 'p-invalid' : ''}`}
-                  />
-                </FloatLabel>
-                <small className="p-error">{emailError}</small>
+      <div className="flex-grow flex items-center justify-center md:justify-start relative" 
+           style={{ 
+             backgroundImage: `url(${loginStory})`, 
+             backgroundPosition: '65% center',
+             backgroundRepeat: 'no-repeat',
+             backgroundSize: 'contain'
+           }}>
+       
+        <div className="relative z-10 px-4 md:ml-32">
+          <Card className="p-6 shadow-xl/30 min-h-[400px] w-[350px] relative">
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 rounded-lg">
+                <Loader />
               </div>
-
-              <div>
-                <FloatLabel>
-                  <label htmlFor="password">Mot de passe</label>
-                  <InputText
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`inputtext-sm d-block ${loginError ? 'p-invalid' : ''}`}
-                  />
-                </FloatLabel>
-                <small className="p-error">{passwordError}</small>
-              </div>
-
-              {loginError && (
-                <div style={{ textAlign: "center", marginTop: "1rem" }}>
-                  <small className="p-error">{loginError}</small>
-                </div>
-              )}
-
-              <Button
-                label="Se connecter"
-                type="submit"
-                icon="pi pi-sign-in"
-                className="mt-2"
-              />
-              <Link to="/register" style={{ textAlign: "center" }}>
-                <Button
-                  label="S'inscrire"
-                  className="button-text p-button-text"
+            )}
+            <form onSubmit={handleLogin} className="flex flex-col gap-4 h-full">
+              <div className="relative">
+                <label htmlFor="email" className="text-green-800 font-medium text-lg block">Email</label>
+                <InputText
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`w-full ${loginError ? 'p-invalid' : ''} rounded-lg py-2 px-4 border border-gray-300 focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                 />
-              </Link>
+                <div className="h-4">
+                  {emailError && <small className="text-red-500 block text-xs">{emailError}</small>}
+                </div>
+              </div>
+
+              <div className="relative">
+                <label htmlFor="password" className="text-green-800 font-medium text-lg block">Mot de passe</label>
+                <InputText
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`w-full ${loginError ? 'p-invalid' : ''} rounded-lg py-2 px-4 border border-gray-300 focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
+                />
+                <div className="h-4">
+                  {passwordError && <small className="text-red-500 block text-xs">{passwordError}</small>}
+                </div>
+              </div>
+
+              <div className="h-4 text-center">
+                {loginError && <small className="text-red-500 text-xs">{loginError}</small>}
+              </div>
+
+              <div className="mt-auto">
+                <Button
+                  label="Se connecter"
+                  type="submit"
+                  icon="pi pi-sign-in"
+                  className="bg-green-800 hover:bg-green-700 text-white border-none rounded-lg py-2 px-4 w-full"
+                />
+                <Link to="/register" className="text-center mt-2 block">
+                  <Button
+                    label="S'inscrire"
+                    className="p-button-text text-green-800"
+                  />
+                </Link>
+              </div>
             </form>
           </Card>
         </div>
-
-        <div className="flex justify-content-center col-12 md:col-6">
-          <img
-            src={loginStory}
-            alt="Illustration de connexion"
-            className="mx-auto w-10 animated"
-          />
-        </div>
       </div>
-    </>
+    </div>
   );
 }
 
