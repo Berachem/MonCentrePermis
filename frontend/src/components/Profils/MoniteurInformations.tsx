@@ -3,13 +3,10 @@ import { Divider } from "primereact/divider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartBar,
-  faQuestionCircle,
   faUser,
   faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
-import { Tooltip } from "primereact/tooltip";
 import { Button } from "primereact/button";
-import { useNavigate } from "react-router-dom";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
@@ -46,7 +43,7 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
   userId,
   readOnly = false,
 }) => {
-  const { logout, userId: currentUserId, typeUserid } = useAuth();
+  const { logout, userId: currentUserId } = useAuth();
   const [moniteurInfo, setMoniteurInfo] = useState<moniteurInformations | null>(
     null
   );
@@ -274,222 +271,149 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
     <>
       <Toast ref={toastRef} />
 
-      {/* SECTION STATISTIQUES - Modifiée pour n'inclure que les cours et circuits */}
-      <h2 className="text-center mb-4">
-        <FontAwesomeIcon icon={faChartBar} className="mr-2 text-indigo-600" />
+      {/* SECTION STATISTIQUES */}
+      <h2 className="text-center mb-4 text-xl font-bold text-gray-800">
+        <FontAwesomeIcon icon={faChartBar} className="mr-2 text-green-700" />
         Statistiques
       </h2>
 
-      <div className="flex flex-column md:flex-row gap-4 mt-2 md:mx-2 mb-5 justify-content-center">
+      <div className="flex flex-col md:flex-row gap-6 mt-3 mb-6 justify-center">
         {/* Carte pour les cours */}
-        <div className="relative w-full md:w-5">
-          <div className="w-full p-4 bg-white shadow-sm rounded-md relative overflow-hidden">
-            <i
-              className={`pi pi-book text-indigo-200 text-8xl absolute top-0 right-0 m-3 pointer-events-none`}
-            ></i>
+        <div className="w-full md:w-1/2">
+          <div className="bg-white shadow-md rounded-lg p-4 relative overflow-hidden">
+            <i className="pi pi-book text-green-200 text-8xl absolute top-0 right-0 m-3 pointer-events-none"></i>
 
-            <div className="flex flex-column">
-              <span className="text-indigo-600 text-6xl my-2">
+            <div className="flex flex-col">
+              <span className="text-green-700 text-5xl font-bold my-2">
                 {moniteurInfo.coursesCount || "0"}
               </span>
-              <span className="text-xl ml-2">cours créés</span>
+              <span className="text-xl text-gray-600 ml-2">cours créés</span>
               <Button
                 label={isOwnProfile ? "Voir mes cours" : "Voir les cours"}
-                className="button-text text-sm mr-auto mt-2 md:mt-3"
+                className="bg-green-800 hover:bg-green-700 text-white border-none rounded-lg py-1 px-3 mt-3 self-start"
                 onClick={handleOpenClassesModal}
               />
             </div>
           </div>
         </div>
 
-        <Divider layout="vertical" />
-
         {/* Carte pour les circuits */}
-        <div className="relative w-full md:w-5">
-          <div className="w-full p-4 bg-white shadow-sm rounded-md relative overflow-hidden">
-            <i
-              className={`pi pi-map text-red-200 text-8xl absolute top-0 right-0 m-3 pointer-events-none`}
-            ></i>
+        <div className="w-full md:w-1/2">
+          <div className="bg-white shadow-md rounded-lg p-4 relative overflow-hidden">
+            <i className="pi pi-map text-green-200 text-8xl absolute top-0 right-0 m-3 pointer-events-none"></i>
 
-            <div className="flex flex-column">
-              <span className="text-red-600 text-6xl my-2">
+            <div className="flex flex-col">
+              <span className="text-green-700 text-5xl font-bold my-2">
                 {moniteurInfo.circuitsCount || "0"}
               </span>
-              <span className="text-xl ml-2">circuits créés</span>
+              <span className="text-xl text-gray-600 ml-2">circuits créés</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Autres statistiques commentées mais conservées pour référence future */}
-      {/* 
-      <div className="hidden md:block">
-        <Divider layout="vertical" />
-      </div>
+      <Divider className="my-6 bg-gray-200" />
 
-      <div className="relative w-full md:w-6">
-        <div className="relative">
-          <div className="p-3 bg-white shadow-sm rounded-md">
-            <Tooltip target=".eleve-tooltip" />
-            <FontAwesomeIcon
-              icon={faQuestionCircle}
-              className="eleve-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
-              data-pr-tooltip="Nombre d'élèves inscrits a vos cours"
-            />
-            <div className="flex flex-column align-items-start relative">
-              <i className="pi pi-users text-indigo-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-              <span className="text-indigo-600 text-4xl my-2">
-                {moniteurInfo.studentCount}
-              </span>
-              <span className="text-xl text-gray-500">Élèves</span>
-            </div>
-          </div>
-        </div>
-
-        <Divider className="my-2" />
-
-        <div className="relative">
-          <div className="p-3 bg-white shadow-sm rounded-md">
-            <Tooltip target=".vues-tooltip" />
-            <FontAwesomeIcon
-              icon={faQuestionCircle}
-              className="vues-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
-              data-pr-tooltip="Nombre de fois que vos cours on été consultés"
-            />
-            <div className="flex flex-column align-items-start relative">
-              <i className="pi pi-eye text-green-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-              <span className="text-green-600 text-4xl my-2">
-                {moniteurInfo.viewCount}
-              </span>
-              <span className="text-xl text-gray-500">Vues</span>
-            </div>
-          </div>
-        </div>
-
-        <Divider className="my-2" />
-
-        <div className="relative">
-          <div className="p-3 bg-white shadow-sm rounded-md">
-            <Tooltip target=".note-tooltip" />
-            <FontAwesomeIcon
-              icon={faQuestionCircle}
-              className="note-tooltip text-right text-sm cursor-pointer absolute top-0 right-0 m-2"
-              data-pr-tooltip="Note moyenne par rapport a toutes les évaluations laissées par vos élèves"
-            />
-            <div className="flex flex-column align-items-start relative">
-              <i className="pi pi-star text-yellow-200 text-7xl absolute top-0 right-0 m-2 pointer-events-none"></i>
-              <span className="text-yellow-500 text-4xl my-2">
-                {moniteurInfo.rating} / 5
-              </span>
-              <span className="text-xl text-gray-500">Note</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      */}
-
-      <Divider className="my-4" />
-
-      {/* SECTION INFORMATIONS - Maintenant en second dans un Accordion */}
-      <h2 className="text-center mb-3">
-        <FontAwesomeIcon icon={faIdCard} className="mr-2 text-indigo-600" />
+      {/* SECTION INFORMATIONS */}
+      <h2 className="text-center mb-6 text-xl font-bold text-gray-800">
+        <FontAwesomeIcon icon={faIdCard} className="mr-2 text-green-700" />
         Détails du profil
       </h2>
 
-      <Accordion className="w-full">
+      <Accordion className="w-full border border-green-100 rounded-lg overflow-hidden shadow-sm">
         <AccordionTab
           header={
-            <div className="flex align-items-center">
-              <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-500" />
-              <span>Informations personnelles</span>
+            <div className="flex items-center py-3 px-4">
+              <FontAwesomeIcon icon={faUser} className="mr-3 text-green-600 text-lg" />
+              <span className="font-medium text-lg text-green-800">Informations personnelles</span>
             </div>
           }
+          headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
+          contentClassName="bg-white p-3"
         >
-          <div className="grid p-fluid">
-            <div className="col-12 md:col-6 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Nom */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Nom :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Nom :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${nomError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.nom || ""}
                     onChange={(e) => handleInputChange("nom", e.target.value)}
-                    invalid={nomError !== ""}
                   />
                   {nomError && (
-                    <small className="p-error block">{nomError}</small>
+                    <small className="text-red-500 mt-1 block">{nomError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Nom :</strong>{" "}
-                  {moniteurInfo.nom}
+                  <span className="text-green-800 font-medium block mb-1">Nom :</span>
+                  <span className="text-gray-700">{moniteurInfo.nom}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Prénom */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Prénom :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Prénom :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${prenomError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.prenom || ""}
-                    onChange={(e) =>
-                      handleInputChange("prenom", e.target.value)
-                    }
-                    invalid={prenomError !== ""}
+                    onChange={(e) => handleInputChange("prenom", e.target.value)}
                   />
                   {prenomError && (
-                    <small className="p-error block">{prenomError}</small>
+                    <small className="text-red-500 mt-1 block">{prenomError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Prénom :</strong>{" "}
-                  {moniteurInfo.prenom}
+                  <span className="text-green-800 font-medium block mb-1">Prénom :</span>
+                  <span className="text-gray-700">{moniteurInfo.prenom}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 mt-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Genre */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Genre :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Genre :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.genre || ""}
                     onChange={(e) => handleInputChange("genre", e.target.value)}
                   />
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Genre :</strong> {moniteurInfo.genre}
+                  <span className="text-green-800 font-medium block mb-1">Genre :</span>
+                  <span className="text-gray-700">{moniteurInfo.genre}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Date de naissance */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Naissance :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Naissance :</label>
                   <Calendar
-                    className="p-inputtext-sm"
                     dateFormat="dd/mm/yy"
                     value={editedInfo?.dateNaissance || null}
-                    onChange={(e) =>
-                      handleInputChange("dateNaissance", e.target.value as Date)
-                    }
+                    onChange={(e) => handleInputChange("dateNaissance", e.target.value as Date)}
+                    className="w-full"
+                    inputClassName="w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                   />
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Naissance :</strong>{" "}
-                  {new Date(moniteurInfo.dateNaissance).toLocaleDateString()}
+                  <span className="text-green-800 font-medium block mb-1">Naissance :</span>
+                  <span className="text-gray-700">{new Date(moniteurInfo.dateNaissance).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
@@ -498,56 +422,56 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
 
         <AccordionTab
           header={
-            <div className="flex align-items-center">
-              <i className="pi pi-envelope mr-2 text-indigo-500" />
-              <span>Informations de contact</span>
+            <div className="flex items-center py-3 px-4">
+              <i className="pi pi-envelope mr-3 text-green-600 text-lg" />
+              <span className="font-medium text-lg text-green-800">Informations de contact</span>
             </div>
           }
+          headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
+          contentClassName="bg-white p-3"
         >
-          <div className="grid p-fluid">
-            <div className="col-12 md:col-6 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Email */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Email :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Email :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.email || ""}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    invalid={emailError !== ""}
                   />
                   {emailError && (
-                    <small className="p-error block">{emailError}</small>
+                    <small className="text-red-500 mt-1 block">{emailError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Email :</strong> {moniteurInfo.email}
+                  <span className="text-green-800 font-medium block mb-1">Email :</span>
+                  <span className="text-gray-700">{moniteurInfo.email}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Téléphone */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Téléphone :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Téléphone :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${telephoneError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.telephone || ""}
-                    onChange={(e) =>
-                      handleInputChange("telephone", e.target.value)
-                    }
-                    invalid={telephoneError !== ""}
+                    onChange={(e) => handleInputChange("telephone", e.target.value)}
                   />
                   {telephoneError && (
-                    <small className="p-error block">{telephoneError}</small>
+                    <small className="text-red-500 mt-1 block">{telephoneError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Téléphone :</strong> {moniteurInfo.telephone}
+                  <span className="text-green-800 font-medium block mb-1">Téléphone :</span>
+                  <span className="text-gray-700">{moniteurInfo.telephone}</span>
                 </div>
               )}
             </div>
@@ -556,63 +480,58 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
 
         <AccordionTab
           header={
-            <div className="flex align-items-center">
-              <i className="pi pi-briefcase mr-2 text-indigo-500" />
-              <span>Informations professionnelles</span>
+            <div className="flex items-center py-3 px-4">
+              <i className="pi pi-briefcase mr-3 text-green-600 text-lg" />
+              <span className="font-medium text-lg text-green-800">Informations professionnelles</span>
             </div>
           }
+          headerClassName="bg-green-50 hover:bg-green-100"
+          contentClassName="bg-white p-3"
         >
-          <div className="grid p-fluid">
-            <div className="col-12 md:col-6 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Début de carrière */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Début de carrière :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Début de carrière :</label>
                   <Calendar
-                    className="p-inputtext-sm"
                     dateFormat="dd/mm/yy"
                     value={editedInfo?.dateDebutCarriere || null}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "dateDebutCarriere",
-                        e.target.value as Date
-                      )
-                    }
+                    onChange={(e) => handleInputChange("dateDebutCarriere", e.target.value as Date)}
+                    className="w-full"
+                    inputClassName="w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                   />
                   {dateDebutCarriereError && (
-                    <small className="p-error block">
-                      {dateDebutCarriereError}
-                    </small>
+                    <small className="text-red-500 mt-1 block">{dateDebutCarriereError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Début de carrière :</strong>{" "}
-                  {moniteurInfo.dateDebutCarriere
-                    ? new Date(
-                        moniteurInfo.dateDebutCarriere
-                      ).toLocaleDateString("fr-FR")
-                    : "Non renseignée"}
+                  <span className="text-green-800 font-medium block mb-1">Début de carrière :</span>
+                  <span className="text-gray-700">
+                    {moniteurInfo.dateDebutCarriere
+                      ? new Date(moniteurInfo.dateDebutCarriere).toLocaleDateString("fr-FR")
+                      : "Non renseignée"}
+                  </span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* Status */}
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Status :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Status :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
-                    placeholder={moniteurInfo.status}
-                    onChange={(e) =>
-                      handleInputChange("status", e.target.value)
-                    }
+                    className={`w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
+                    value={editedInfo?.status || ""}
+                    onChange={(e) => handleInputChange("status", e.target.value)}
                   />
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Status :</strong> {moniteurInfo.status}
+                  <span className="text-green-800 font-medium block mb-1">Status :</span>
+                  <span className="text-gray-700">{moniteurInfo.status}</span>
                 </div>
               )}
             </div>
@@ -620,13 +539,14 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
         </AccordionTab>
       </Accordion>
 
-      <div className="flex w-full mt-4">
+      {/* Boutons d'action */}
+      <div className="flex w-full mt-8">
         {isEditing ? (
           <Button
             label="Sauvegarder"
             icon="pi pi-check"
             onClick={handleSaveClick}
-            className="button-text text-sm ml-auto"
+            className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-5 py-2 rounded-lg text-base font-medium"
           />
         ) : (
           !readOnly &&
@@ -635,21 +555,21 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
               label="Modifier"
               icon="pi pi-pencil"
               onClick={handleEditClick}
-              className="button-text text-sm ml-auto"
+              className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-5 py-2 rounded-lg text-base font-medium gap-2"
             />
           )
         )}
       </div>
 
       {!readOnly && isOwnProfile && (
-        <div className="flex w-full mt-4">
+        <div className="flex w-full mt-6">
           <Button
             label="Se déconnecter"
             icon="pi pi-sign-out"
             onClick={() => {
               logout();
             }}
-            className="p-button-danger text-sm m-auto"
+            className="mx-auto bg-red-600 hover:bg-red-700 border-none text-white px-4 py-2 rounded-lg gap-2"
           />
         </div>
       )}

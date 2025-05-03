@@ -168,8 +168,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     >
       {/* Bannière d'information */}
       {!isOwnProfile && (
-        <div className="bg-blue-100 p-2 text-center text-sm font-semibold">
-          <i className="pi pi-info-circle mr-2"></i>
+        <div className="bg-green-100 p-2 text-center text-sm font-semibold">
+          <i className="pi pi-info-circle mr-2 text-green-800"></i>
           Vous consultez le profil d'un autre utilisateur
         </div>
       )}
@@ -179,72 +179,78 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         <Button
           icon="pi pi-times"
           onClick={onHide}
-          className="text-white p-button-text p-button-rounded p-button-plain ml-auto"
+          className="text-white bg-green-800 rounded-full ml-auto hover:bg-green-400 h-11"
           aria-label="Close"
         />
       </div>
 
-      <div className="justify-center items-center min-h-full p-2">
-        <div className="p-2 mb-2">
-          <div className="m-auto w-fit">
+      <div className="flex flex-col justify-center items-center min-h-full p-4">
+        <div className="w-full max-w-md mb-4">
+          <div className="flex flex-col items-center">
             {userInfo ? (
               <>
-                <div className="m-auto w-fit">
-                  <Avatar
-                    label={userInfo.prenom.charAt(0)}
-                    size="xlarge"
-                    shape="circle"
-                  />
-                </div>
-                <p className="text-center text-lg">
-                  <b>{userInfo.nom + " " + userInfo.prenom}</b>
-                </p>
+                <Avatar
+                  label={userInfo.prenom.charAt(0)}
+                  size="xlarge"
+                  shape="circle"
+                  className="bg-green-700 text-white mb-2"
+                />
+                <h2 className="text-center text-xl font-bold text-gray-800">
+                  {userInfo.nom + " " + userInfo.prenom}
+                </h2>
               </>
             ) : (
-              <p className="text-center"></p>
+              <div className="w-16 h-16 rounded-full bg-gray-200 animate-pulse"></div>
             )}
           </div>
-          <div className="flex justify-between items-center">
+          
+          <div className="mt-4">
             {isEditing ? (
-              <input
-                type="text"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="p-inputtext p-component w-full mt-2"
-              />
-            ) : (
-              <p className="text-center text-gray-700 mx-auto">
-                <i>{description || "Chargement de la description..."}</i>
-                {isOwnProfile && (
-                  <FontAwesomeIcon
-                    icon={faEdit}
-                    onClick={handleEditClick}
-                    className="ml-2 text-blue-500 hover:text-blue-600 cursor-pointer"
+              <div className="flex flex-col w-full">
+                <input
+                  type="text"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+                  placeholder="Votre description..."
+                />
+                <div className="flex justify-end mt-2">
+                  <Button
+                    label="Enregistrer"
+                    icon="pi pi-check"
+                    onClick={handleSaveClick}
+                    className="bg-green-800 hover:bg-green-700 border-none text-white px-4 py-2 rounded-lg"
                   />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <p className="text-center text-gray-600 italic">
+                  {description || "Chargement de la description..."}
+                </p>
+                {isOwnProfile && (
+                  <button 
+                    onClick={handleEditClick}
+                    className="ml-2 text-green-700 hover:text-green-600 focus:outline-none"
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </button>
                 )}
-              </p>
+              </div>
             )}
           </div>
-          {isEditing && (
-            <div className="flex w-full mt-2">
-              <Button
-                label="Enregistrer"
-                icon="pi pi-check"
-                onClick={handleSaveClick}
-                className="button-text text-sm ml-auto"
-              />
-            </div>
-          )}
         </div>
 
-        <Divider className="my-2" />
+        <Divider />
 
-        {displayUserType === UserType.Teacher ? (
-          <MoniteurInformations userId={idRequested} readOnly={!isOwnProfile} />
-        ) : (
-          <StudentInformations userId={idRequested} readOnly={!isOwnProfile} />
-        )}
+        <div className="w-full">
+          {displayUserType === UserType.Teacher ? (
+            <MoniteurInformations userId={idRequested} readOnly={!isOwnProfile} />
+          ) : (
+            <StudentInformations userId={idRequested} readOnly={!isOwnProfile} />
+          )}
+        </div>
       </div>
     </Dialog>
   );

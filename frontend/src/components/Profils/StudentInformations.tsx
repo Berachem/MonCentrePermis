@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Divider } from "primereact/divider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faIdCard,
-  faGraduationCap,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -42,7 +40,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
   const [editedInfo, setEditedInfo] = useState<studentInformations | null>(
     null
   );
-  const [activeIndex, setActiveIndex] = useState<number | null>(0);
+  const [activeIndex] = useState<number | null>(0);
 
   // États pour gérer les erreurs de validation
   const [nomError, setNomError] = useState("");
@@ -256,106 +254,102 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
     <>
       <Toast ref={toastRef} />
 
-      <h2 className="text-center mb-3">
-        <FontAwesomeIcon icon={faIdCard} className="mr-2 text-indigo-600" />
+      <h2 className="text-center mb-6 text-xl font-bold text-gray-800">
+        <FontAwesomeIcon icon={faIdCard} className="mr-2 text-green-700" />
         Informations personnelles
       </h2>
 
-      <Accordion className="w-full" activeIndex={activeIndex}>
+      <Accordion className="w-full border border-green-100 rounded-lg overflow-hidden shadow-sm" activeIndex={activeIndex}>
         {/* Onglet Informations personnelles */}
         <AccordionTab
           header={
-            <div className="flex align-items-center">
-              <FontAwesomeIcon icon={faUser} className="mr-2 text-indigo-500" />
-              <span>Identité</span>
+            <div className="flex items-center py-3 px-4">
+              <FontAwesomeIcon icon={faUser} className="mr-3 text-green-600 text-lg" />
+              <span className="font-medium text-lg text-green-800">Identité</span>
             </div>
           }
+          headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
+          contentClassName="bg-white p-3"
         >
-          <div className="grid p-fluid">
-            <div className="col-12 md:col-6 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Nom :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Nom :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${nomError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.nom || ""}
                     onChange={(e) => handleInputChange("nom", e.target.value)}
-                    invalid={nomError !== ""}
                   />
                   {nomError && (
-                    <small className="p-error block">{nomError}</small>
+                    <small className="text-red-500 mt-1 block">{nomError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Nom :</strong>{" "}
-                  {studentInfo.nom}
+                  <span className="text-green-800 font-medium block mb-1">Nom :</span>
+                  <span className="text-gray-700">{studentInfo.nom}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Prénom :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Prénom :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${prenomError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.prenom || ""}
-                    onChange={(e) =>
-                      handleInputChange("prenom", e.target.value)
-                    }
-                    invalid={prenomError !== ""}
+                    onChange={(e) => handleInputChange("prenom", e.target.value)}
                   />
                   {prenomError && (
-                    <small className="p-error block">{prenomError}</small>
+                    <small className="text-red-500 mt-1 block">{prenomError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong style={{ fontSize: "1rem" }}>Prénom :</strong>{" "}
-                  {studentInfo.prenom}
+                  <span className="text-green-800 font-medium block mb-1">Prénom :</span>
+                  <span className="text-gray-700">{studentInfo.prenom}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 mt-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Genre :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Genre :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${nomError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.genre || ""}
                     onChange={(e) => handleInputChange("genre", e.target.value)}
                   />
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Genre :</strong> {studentInfo.genre}
+                  <span className="text-green-800 font-medium block mb-1">Genre :</span>
+                  <span className="text-gray-700">{studentInfo.genre}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Naissance :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Naissance :</label>
                   <Calendar
-                    className="p-inputtext-sm"
                     dateFormat="dd/mm/yy"
                     value={editedInfo?.dateNaissance || null}
-                    onChange={(e) =>
-                      handleInputChange("dateNaissance", e.target.value as Date)
-                    }
+                    onChange={(e) => handleInputChange("dateNaissance", e.target.value as Date)}
+                    className="w-full"
+                    inputClassName="w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                   />
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Naissance :</strong>{" "}
-                  {new Date(studentInfo.dateNaissance).toLocaleDateString()}
+                  <span className="text-green-800 font-medium block mb-1">Naissance :</span>
+                  <span className="text-gray-700">{new Date(studentInfo.dateNaissance).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
@@ -365,56 +359,54 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
         {/* Onglet Informations de contact */}
         <AccordionTab
           header={
-            <div className="flex align-items-center">
-              <i className="pi pi-envelope mr-2 text-indigo-500" />
-              <span>Contact</span>
+            <div className="flex items-center py-3 px-4">
+              <i className="pi pi-envelope mr-3 text-green-600 text-lg" />
+              <span className="font-medium text-lg text-green-800">Contact</span>
             </div>
           }
+          headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
+          contentClassName="bg-white p-3"
         >
-          <div className="grid p-fluid">
-            <div className="col-12 md:col-6 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+            <div className="p-2">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Email :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Email :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.email || ""}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    invalid={emailError !== ""}
                   />
                   {emailError && (
-                    <small className="p-error block">{emailError}</small>
+                    <small className="text-red-500 mt-1 block">{emailError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Email :</strong> {studentInfo.email}
+                  <span className="text-green-800 font-medium block mb-1">Email :</span>
+                  <span className="text-gray-700">{studentInfo.email}</span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-2">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Téléphone :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Téléphone :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border ${telephoneError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.telephone || ""}
-                    onChange={(e) =>
-                      handleInputChange("telephone", e.target.value)
-                    }
-                    invalid={telephoneError !== ""}
+                    onChange={(e) => handleInputChange("telephone", e.target.value)}
                   />
                   {telephoneError && (
-                    <small className="p-error block">{telephoneError}</small>
+                    <small className="text-red-500 mt-1 block">{telephoneError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Téléphone :</strong> {studentInfo.telephone}
+                  <span className="text-green-800 font-medium block mb-1">Téléphone :</span>
+                  <span className="text-gray-700">{studentInfo.telephone}</span>
                 </div>
               )}
             </div>
@@ -424,57 +416,56 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
         {/* Onglet Formation */}
         <AccordionTab
           header={
-            <div className="flex align-items-center">
-              <i className="pi pi-car mr-2 text-indigo-500" />
-              <span>Formation permis</span>
+            <div className="flex items-center py-3 px-4">
+              <i className="pi pi-car mr-3 text-green-600 text-lg" />
+              <span className="font-medium text-lg text-green-800">Formation permis</span>
             </div>
           }
+          headerClassName="bg-green-50 hover:bg-green-100"
+          contentClassName="bg-white p-3"
         >
-          <div className="grid p-fluid">
-            <div className="col-12 md:col-6 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+            <div className="p-2">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Date d'examen :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Date d'examen :</label>
                   <Calendar
-                    className="p-inputtext-sm"
                     dateFormat="dd/mm/yy"
                     value={editedInfo?.dateExamen || null}
-                    onChange={(e) =>
-                      handleInputChange("dateExamen", e.target.value as Date)
-                    }
+                    onChange={(e) => handleInputChange("dateExamen", e.target.value as Date)}
+                    className="w-full"
+                    inputClassName="w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                   />
                   {dateExamenError && (
-                    <small className="p-error block">{dateExamenError}</small>
+                    <small className="text-red-500 mt-1 block">{dateExamenError}</small>
                   )}
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Date d'examen :</strong>{" "}
-                  {studentInfo.dateExamen
-                    ? new Date(studentInfo.dateExamen).toLocaleDateString()
-                    : "Non définie"}
+                  <span className="text-green-800 font-medium block mb-1">Date d'examen :</span>
+                  <span className="text-gray-700">
+                    {studentInfo.dateExamen
+                      ? new Date(studentInfo.dateExamen).toLocaleDateString()
+                      : "Non définie"}
+                  </span>
                 </div>
               )}
             </div>
-            <div className="col-12 md:col-6 p-2">
+            <div className="p-2">
               {isEditing ? (
                 <div className="mb-1">
-                  <strong>Auto-école :</strong>
-                  <br />
+                  <label className="block text-green-800 font-medium mb-1">Auto-école :</label>
                   <InputText
                     type="text"
-                    className="p-inputtext-sm"
+                    className={`w-full p-2 border border-gray-300 rounded-lg focus:border-green-800 focus:ring focus:ring-green-200 focus:ring-opacity-50`}
                     value={editedInfo?.autoEcole || ""}
-                    onChange={(e) =>
-                      handleInputChange("autoEcole", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("autoEcole", e.target.value)}
                   />
                 </div>
               ) : (
                 <div className="mb-1">
-                  <strong>Auto-école :</strong>{" "}
-                  {studentInfo.autoEcole || "Non renseignée"}
+                  <span className="text-green-800 font-medium block mb-1">Auto-école :</span>
+                  <span className="text-gray-700">{studentInfo.autoEcole || "Non renseignée"}</span>
                 </div>
               )}
             </div>
@@ -482,13 +473,13 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
         </AccordionTab>
       </Accordion>
 
-      <div className="flex w-full mt-4">
+      <div className="flex w-full mt-6">
         {isEditing ? (
           <Button
             label="Sauvegarder"
             icon="pi pi-check"
             onClick={handleSaveClick}
-            className="button-text text-sm ml-auto"
+            className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-4 py-2 rounded-lg"
           />
         ) : (
           !readOnly &&
@@ -497,21 +488,21 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
               label="Modifier"
               icon="pi pi-pencil"
               onClick={handleEditClick}
-              className="button-text text-sm ml-auto"
+              className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-4 py-2 rounded-lg gap-2"
             />
           )
         )}
       </div>
 
       {!readOnly && isOwnProfile && (
-        <div className="flex w-full mt-4">
+        <div className="flex w-full mt-6">
           <Button
             label="Se déconnecter"
             icon="pi pi-sign-out"
             onClick={() => {
               logout();
             }}
-            className="p-button-danger text-sm m-auto"
+            className="mx-auto bg-red-600 hover:bg-red-700 border-none text-white px-4 py-2 rounded-lg gap-2"
           />
         </div>
       )}
