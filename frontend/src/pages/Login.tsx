@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import loginStory from "../assets/images/stories/login-storie-green.svg";
 import { ApiResponse } from "../interfaces/interfaces";
 import { postRequest } from "../interfaces/utils/api";
