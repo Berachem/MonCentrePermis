@@ -11,8 +11,8 @@ import { postRequest, getRequest } from "../../interfaces/utils/api";
 import CourseContent from "../../components/utils/CourseContent";
 import ScrollableCourses, {
   Course as ScrollCourse,
-} from "../../components/utils/ScrollableCourses";
-import CircuitLinker from "../../components/utils/CircuitLinker";
+} from "../Classes/ScrollableCourses";
+import CircuitLinker from "../Classes/CircuitLinker";
 import EditCourseModal from "./EditCourseModal";
 import ConfirmationDialog from "../utils/ConfirmationDialog";
 import { Toast } from "primereact/toast";
@@ -61,7 +61,12 @@ const ClassesModal: React.FC<ClassesModalProps> = ({
       // Si userId est défini, récupérer les informations du moniteur
       if (userId) {
         try {
-          const instructorInfo = await getRequest(`/moniteurs/${userId}/info`);
+          interface InstructorInfo {
+            nom: string;
+            prenom: string;
+          }
+
+          const instructorInfo = await getRequest<InstructorInfo>(`/moniteurs/${userId}/info`);
           if (instructorInfo && instructorInfo.nom && instructorInfo.prenom) {
             setInstructorName(`${instructorInfo.prenom} ${instructorInfo.nom}`);
           }

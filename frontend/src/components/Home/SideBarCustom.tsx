@@ -15,13 +15,11 @@ import { useNavigate } from "react-router-dom";
 import LogoApp from "../../assets/images/branding/logo_moncentrepermis_green.png";
 import useAuth from "../../hooks/useAuth";
 import { useModal } from "../../contexts/ModalContext";
-import ClassesModal from "../modals/ClassesModal";
 
 function SideBarCustom() {
   // État pour gérer l'ouverture de la sidebar et la détection du type d'appareil
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [showClassesModal, setShowClassesModal] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, prenom, logout, userId, userRole } = useAuth();
   const { openModal } = useModal();
@@ -58,11 +56,6 @@ function SideBarCustom() {
     { title: "A propos", route: "/about", icon: faInfoCircle },
   ];
 
-  const handleOpenCoursesModal = () => {
-    setShowClassesModal(true);
-    setIsSidebarOpen(false); // Fermer la sidebar pour afficher la modale
-  };
-
   // Fonction pour basculer l'affichage du sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -77,7 +70,7 @@ function SideBarCustom() {
   const moniteurSpecificRoutes = [
     {
       title: "Mes cours",
-      action: handleOpenCoursesModal,
+      route: "/courses", // ⚠️ Changement: route vers la nouvelle page au lieu d'une action
       icon: faChalkboardTeacher,
     },
   ];
@@ -145,7 +138,7 @@ function SideBarCustom() {
                 <li
                   key={index}
                   onClick={() => {
-                    if ('action' in item && item.action) {
+                    if ('action' in item && typeof item.action === 'function') {
                       item.action();
                     } else if ('route' in item) {
                       navigate(item.route);
@@ -234,14 +227,6 @@ function SideBarCustom() {
           </div>
         </div>
       </Sidebar>
-
-      {/* Modal des cours - s'affichera quand showClassesModal est true */}
-      <ClassesModal
-        visible={showClassesModal}
-        onHide={() => setShowClassesModal(false)}
-        userId={userId}
-        readOnly={false}
-      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import useAuth from "../hooks/useAuth";
 import CircuitCreationPage from "../pages/admin/CircuitCreationPage";
 import CircuitEditionPage from "../pages/admin/CircuitEditionPage";
 import CircuitViewPage from "../pages/circuit/CircuitViewPage";
+import Classes from "../pages/Classes";
 
 function AppRoutes() {
   const { userRole, isAuthenticated } = useAuth();
@@ -30,6 +31,8 @@ function AppRoutes() {
       <Route path="/circuit/create/:coursId" element={<CircuitCreationPage />} />
       <Route path="/circuit/edit/:id" element={<CircuitEditionPage />} />
       <Route path="/circuit/view/:id" element={<CircuitViewPage />} />
+      <Route path="/courses" element={<Classes />} />
+      <Route path="/courses/:userId" element={<Classes />} />
     </Routes>
   );
 }

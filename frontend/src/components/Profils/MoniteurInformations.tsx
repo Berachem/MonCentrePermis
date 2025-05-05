@@ -12,8 +12,8 @@ import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import useAuth from "../../hooks/useAuth";
-import ClassesModal from "../modals/ClassesModal";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
+import { useNavigate } from "react-router-dom";
 
 interface moniteurInformations {
   //infos
@@ -51,9 +51,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
   const [editedInfo, setEditedInfo] = useState<moniteurInformations | null>(
     null
   );
-  // Nouvel état pour contrôler la visibilité de la modale des cours
-  const [classesModalVisible, setClassesModalVisible] = useState(false);
-
+  const navigate = useNavigate();
+  
   // États pour gérer les erreurs de validation
   const [nomError, setNomError] = useState("");
   const [prenomError, setPrenomError] = useState("");
@@ -251,7 +250,12 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
 
   // Fonction pour ouvrir la modale des cours
   const handleOpenClassesModal = () => {
-    setClassesModalVisible(true);
+    // Rediriger vers la page des cours avec l'ID du moniteur
+    if (userId) {
+      navigate(`/courses/${userId}`);
+    } else {
+      navigate('/courses');
+    }
   };
 
   if (!moniteurInfo) {
@@ -564,14 +568,6 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
           />
         </div>
       )}
-
-      {/* Modale des cours */}
-      <ClassesModal
-        visible={classesModalVisible}
-        onHide={() => setClassesModalVisible(false)}
-        userId={userId}
-        readOnly={!isOwnProfile}
-      />
     </>
   );
 };
