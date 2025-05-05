@@ -329,7 +329,7 @@ const EditClasseModal: React.FC<EditClasseModalProps> = ({
   };
 
   return (
-    <div className="p-4 bg-white">
+    <div>
       <Toast ref={toastRef} position="top-right" />
       <Dialog
         header={<div className="text-green-800 font-bold text-2xl p-4 border-b-2 border-green-200">Modifier le cours</div>}

@@ -248,13 +248,15 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
     }
   };
 
-  // Fonction pour ouvrir la modale des cours
+  // Fonction pour ouvrir la page des cours
   const handleOpenClassesModal = () => {
-    // Rediriger vers la page des cours avec l'ID du moniteur
-    if (userId) {
-      navigate(`/courses/${userId}`);
-    } else {
+    // Rediriger vers la page des cours
+    // Si c'est notre propre profil, naviguer sans ID
+    if (isOwnProfile) {
       navigate('/courses');
+    } else {
+      // Si c'est un autre moniteur, inclure son ID
+      navigate(`/courses/${userId}`);
     }
   };
 

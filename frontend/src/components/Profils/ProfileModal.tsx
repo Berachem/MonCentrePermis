@@ -6,8 +6,8 @@ import { Divider } from "primereact/divider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
-import StudentInformations from "../Profils/StudentInformations";
-import MoniteurInformations from "../Profils/MoniteurInformations";
+import StudentInformations from "./StudentInformations";
+import MoniteurInformations from "./MoniteurInformations";
 import { UserType } from "../../enum/user";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
 
@@ -55,6 +55,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
   // Détermine si on affiche son propre profil ou celui d'un autre utilisateur
   const isOwnProfile = !idRequested || idRequested === userId;
+
+  // Remove the navigateToCourses function as it's now handled in MoniteurInformations
 
   // Fonction pour mettre à jour la description de l'utilisateur
   const updateUserDescription = async (newDesc: string) => {
@@ -244,6 +246,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
         <Divider />
 
+        
         <div className="w-full">
           {displayUserType === UserType.Teacher ? (
             <MoniteurInformations userId={idRequested} readOnly={!isOwnProfile} />

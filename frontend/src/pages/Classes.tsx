@@ -27,9 +27,14 @@ const Classes: React.FC = () => {
   const { userId: currentUserId } = useAuth();
   const navigate = useNavigate();
   
-  // Utiliser l'ID de l'URL si fourni, sinon l'ID de l'utilisateur connecté
+  // Fix: Properly check if we're viewing our own courses or someone else's
+  const isOwnCourses = !userIdParam || userIdParam === currentUserId;
+  
+  // Use the URL parameter if provided, otherwise use current user's ID
   const userId = userIdParam || currentUserId;
-  const readOnly = Boolean(userIdParam) && userIdParam !== currentUserId;
+  
+  // Only set readOnly if we're viewing someone else's courses
+  const readOnly = !isOwnCourses;
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,7 +82,16 @@ const Classes: React.FC = () => {
   };
 
   useEffect(() => {
+    // When userId changes, refresh courses
     fetchCourses();
+    
+    // Debug information to help diagnose issues
+    console.log({
+      userIdParam,
+      currentUserId,
+      isOwnCourses,
+      readOnly
+    });
   }, [userId]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,20 +174,18 @@ const Classes: React.FC = () => {
             icon={faChalkboardTeacher}
             className="mr-3 text-green-800"
           />
-          {instructorName && (
-            <span className="font-semibold ">
+          {instructorName && !isOwnCourses && (
+            <span className="font-semibold">
               Cours de{" "}
-              <span className="font-bold text-green-800  decoration-2 underline-offset-4">
+              <span className="font-bold text-green-800 decoration-2 underline-offset-4">
                 {instructorName}
               </span>{" "}
-              {readOnly && (
-                <span className="text-sm font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">
-                  (Lecture seule)
-                </span>
-              )}
+              <span className="text-sm font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">
+                (Lecture seule)
+              </span>
             </span>
           )}
-          {!instructorName && (
+          {isOwnCourses && (
             <span className="font-semibold text-green-800">Mes cours</span>
           )}
         </h2>

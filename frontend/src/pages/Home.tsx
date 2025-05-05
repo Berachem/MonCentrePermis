@@ -203,7 +203,7 @@ const Home = () => {
       {/* Barre de recherche positionnée en haut */}
       <SearchBar />
       
-      {/* Menu latéral */}
+      {/* Menu latéral - now handles its own profile modal */}
       <SideBarCustom />
       
       {/* Carte en arrière-plan - prend toute la hauteur et largeur */}
