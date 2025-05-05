@@ -6,13 +6,10 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
-import { Card } from "primereact/card";
-import { Tag } from "primereact/tag";
 import {
-  getRequest,
   postRequest,
-  getProtectedBlob,
 } from "../../interfaces/utils/api";
+import Loader from "../utils/Loader";
 
 // Template par défaut pour le contenu du cours
 const DEFAULT_TEMPLATE = `<h2>🎯 Introduction</h2>
@@ -53,6 +50,7 @@ const AddCourses: React.FC<AddCoursesProps> = ({
   const [editorMounted, setEditorMounted] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
   const [recentUploads, setRecentUploads] = useState<
     { url: string; type: string; name: string }[]
   >([]);
@@ -107,7 +105,7 @@ const AddCourses: React.FC<AddCoursesProps> = ({
       const data = await postRequest(
         "/moniteurs/addMycourses/upload",
         formData
-      );
+      ) as { url: string }; // Explicitly type the response
       clearInterval(progressInterval);
       setUploadProgress(100);
 
@@ -179,16 +177,10 @@ const AddCourses: React.FC<AddCoursesProps> = ({
     const tag = file.type.startsWith("video") ? "video" : "image";
 
     try {
-      // Créer l'URL directe que Quill utilisera
-      const directUrl = `http://localhost:8000/media/${url}`;
-
-      // Si vous avez besoin d'inclure un token dans l'URL pour que l'image soit accessible
-      const token = localStorage.getItem("jwtToken"); // ou autre source de token
-      const urlWithToken = `${directUrl}?token=${token}`;
 
       // Insérer l'image avec l'URL directe + token
       quill.insertEmbed(range.index, tag, `http://localhost:8000/media/${url}`);
-      quill.setSelection(range.index + 1);
+      quill.setSelection({ index: range.index + 1, length: 0 });
       quill.update();
     } catch (err) {
       showToast(
@@ -247,7 +239,8 @@ const AddCourses: React.FC<AddCoursesProps> = ({
         return;
       }
 
-      const response = await postRequest("/moniteurs/addMycourses", {
+      setIsSaving(true);
+      await postRequest("/moniteurs/addMycourses", {
         libelle,
         description,
       });
@@ -261,11 +254,13 @@ const AddCourses: React.FC<AddCoursesProps> = ({
       onHide();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du cours:", error);
-      /*  showToast(
+      showToast(
         "error",
         "Erreur",
         "Une erreur est survenue lors de l'enregistrement du cours"
-      ); */
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -280,86 +275,98 @@ const AddCourses: React.FC<AddCoursesProps> = ({
       item.type === "image" ? "image" : "video",
       `http://localhost:8000/media/${item.url}`
     );
-    quill.setSelection(range.index + 1);
+    quill.setSelection({ index: range.index + 1, length: 0 });
   };
 
   const renderQuillEditor = () => {
     if (!visible || !editorMounted) {
-      return <div style={{ height: "400px", border: "1px solid #ddd" }}></div>;
+      return <div className="h-96 border border-gray-300 rounded-md"></div>;
     }
 
     return (
-      <ReactQuill
-        theme="snow"
-        value={description}
-        onChange={handleDescriptionChange}
-        modules={modules}
-        placeholder="Décrivez votre cours ici..."
-        ref={quillRef}
-        style={{ height: "500px" }}
-        preserveWhitespace={true}
-      />
+      <div className="h-[500px] w-full">
+        <ReactQuill
+          theme="snow"
+          value={description}
+          onChange={handleDescriptionChange}
+          modules={modules}
+          placeholder="Décrivez votre cours ici..."
+          ref={quillRef}
+          className="h-full"
+          preserveWhitespace={true}
+        />
+      </div>
     );
   };
 
   const renderFooter = () => {
     return (
-      <div className="flex justify-content-end">
+      <div className="flex justify-end gap-3 p-4">
         <Button
           label="Annuler"
           icon="pi pi-times"
-          className="p-button-text mr-2"
+          className="bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg"
           onClick={onHide}
-          disabled={isUploading}
+          disabled={isUploading || isSaving}
         />
         <Button
           label="Enregistrer"
           icon="pi pi-save"
-          className="p-button-success"
+          className="bg-green-600 hover:bg-green-700 text-white border-0 px-4 py-2 rounded-lg"
           onClick={handleSave}
-          disabled={isUploading}
+          disabled={isUploading || isSaving}
         />
       </div>
     );
   };
 
   return (
-    <>
+    <div>
       <Toast ref={toastRef} position="top-right" />
       <Dialog
-        header="Ajouter un nouveau cours"
+        header={<div className="text-green-800 font-bold text-2xl p-4 border-b-2 border-green-200">Ajouter un nouveau cours</div>}
         visible={visible}
-        onHide={isUploading ? undefined : onHide}
-        style={{ width: "80vw", minWidth: "350px" }}
+        onHide={(isUploading || isSaving) ? () => {} : onHide}
+        className="w-[80vw] min-w-[350px] max-w-7xl rounded-xl overflow-hidden relative"
         modal
-        dismissableMask={!isUploading}
-        closable={!isUploading}
-        breakpoints={{ "960px": "90vw", "640px": "95vw" }}
-        className="add-courses-dialog"
+        dismissableMask={!isUploading && !isSaving}
+        closable={!isUploading && !isSaving}
         footer={renderFooter()}
       >
-        <div className="p-fluid" ref={dialogRef}>
-          <div className="mb-3">
-            <label htmlFor="libelle" className="block mb-2 font-semibold">
+        {isSaving && (
+          <div className="absolute inset-0 bg-white/70 z-50 flex items-center justify-center">
+            <Loader />
+          </div>
+        )}
+        
+        <div className="p-4" ref={dialogRef}>
+          <div className="mb-6">
+            <label htmlFor="libelle" className="block mb-2 text-lg font-bold text-green-800 border-l-4 border-green-500 pl-2">
               Titre du cours
             </label>
-            <InputText
-              id="libelle"
-              className="w-full"
-              value={libelle}
-              onChange={(e) => setLibelle(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <InputText
+                id="libelle"
+                className="w-full border-2 border-green-200 rounded-lg px-4 py-2.5 focus:border-green-500 focus:ring-green-500 focus:outline-none transition-colors shadow-sm"
+                value={libelle}
+                onChange={(e) => setLibelle(e.target.value)}
+                placeholder="Entrez le titre du cours"
+                required
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <i className="pi pi-book text-green-600"></i>
+              </div>
+            </div>
           </div>
 
           {/* Barre d'outils supplémentaire pour faciliter l'insertion de médias */}
-          <div className="mb-2 flex align-items-center justify-content-between">
+          <div className="mb-4 flex flex-wrap items-center justify-between">
             <div>
               <Button
                 type="button"
                 icon="pi pi-image"
                 label="Ajouter une image/vidéo"
-                className="p-button-outlined p-button-secondary mr-2"
+                className="bg-green-600 hover:bg-green-700 text-white border-0 px-4 py-2 rounded-lg"
                 onClick={handleFileSelect}
                 disabled={isUploading}
               />
@@ -367,18 +374,18 @@ const AddCourses: React.FC<AddCoursesProps> = ({
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: "none" }}
+                className="hidden"
                 accept="image/jpeg, image/png, image/gif, video/mp4, video/webm, video/ogg"
                 onChange={handleFileChange}
               />
             </div>
             {isUploading && (
-              <div className="flex align-items-center">
+              <div className="flex items-center mt-2 sm:mt-0">
                 <ProgressSpinner
-                  style={{ width: "30px", height: "30px" }}
+                  className="w-8 h-8 text-green-600"
                   strokeWidth="4"
                 />
-                <span className="ml-2">
+                <span className="ml-2 text-gray-700">
                   Upload en cours ({Math.round(uploadProgress)}%)
                 </span>
               </div>
@@ -387,113 +394,84 @@ const AddCourses: React.FC<AddCoursesProps> = ({
 
           {/* Section des uploads récents */}
           {recentUploads.length > 0 && (
-            <div className="mb-3">
-              <label className="block mb-2 font-semibold">
+            <div className="mb-6">
+              <label className="block mb-2 text-lg font-bold text-green-800 border-l-4 border-green-500 pl-2">
                 Fichiers récents
               </label>
               <div className="flex flex-wrap gap-2">
                 {recentUploads.map((item, index) => (
-                  <Tag
+                  <div
                     key={index}
-                    value={
-                      item.name.length > 15
-                        ? item.name.substring(0, 12) + "..."
-                        : item.name
-                    }
-                    icon={item.type === "image" ? "pi pi-image" : "pi pi-video"}
-                    className="p-tag-info cursor-pointer"
+                    className="inline-flex items-center bg-green-100 text-green-800 py-1 px-3 rounded-full text-sm cursor-pointer hover:bg-green-200 transition-colors"
                     onClick={() => insertRecentMedia(item)}
-                  />
+                  >
+                    <i className={`pi ${item.type === "image" ? "pi-image" : "pi-video"} mr-2`}></i>
+                    {item.name.length > 15 ? item.name.substring(0, 12) + "..." : item.name}
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="mb-4">
-            <label className="block mb-2 font-semibold">Contenu</label>
-            <Card className="editor-card">
-              <div
-                className="quill-container"
-                style={{ marginBottom: "20px", height: "500px" }}
-              >
+          <div className="mb-6">
+            <label className="block mb-2 text-lg font-bold text-green-800 border-l-4 border-green-500 pl-2">Contenu</label>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+              <div className="quill-wrapper">
                 {renderQuillEditor()}
               </div>
-            </Card>
+            </div>
+            <style>{`
+              .quill-wrapper :global(.ql-container) {
+                flex: 1;
+                overflow-y: auto;
+                font-size: 16px;
+                border-bottom-left-radius: 0.375rem;
+                border-bottom-right-radius: 0.375rem;
+              }
+              
+              .quill-wrapper :global(.ql-toolbar) {
+                background-color: #f8f9fa;
+                padding: 8px;
+                border-top-left-radius: 0.375rem;
+                border-top-right-radius: 0.375rem;
+              }
+              
+              .quill-wrapper :global(.ql-editor) {
+                min-height: 400px;
+                padding: 1rem;
+                font-family: system-ui, -apple-system, sans-serif;
+                line-height: 1.6;
+                background-color: white;
+              }
+              
+              .quill-wrapper :global(.ql-editor img) {
+                max-width: 90%;
+                max-height: 400px;
+                object-fit: contain;
+                margin: 0 auto;
+                display: block;
+              }
+              
+              .quill-wrapper :global(.ql-editor .ql-video) {
+                max-width: 90%;
+                max-height: 400px;
+                margin: 0 auto;
+                display: block;
+              }
+
+              @media screen and (max-width: 768px) {
+                .quill-wrapper :global(.quill) {
+                  height: 300px;
+                }
+                .quill-wrapper :global(.ql-editor) {
+                  min-height: 200px;
+                }
+              }
+            `}</style>
           </div>
         </div>
       </Dialog>
-      <style jsx>{`
-        .add-courses-dialog .quill-container {
-          height: 550px;
-        }
-
-        .add-courses-dialog .quill {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          border-radius: 4px;
-        }
-
-        .add-courses-dialog .ql-container {
-          flex: 1;
-          overflow-y: auto;
-          font-size: 16px;
-          border-bottom-left-radius: 4px;
-          border-bottom-right-radius: 4px;
-        }
-
-        .add-courses-dialog .ql-toolbar {
-          border-top-left-radius: 4px;
-          border-top-right-radius: 4px;
-          background-color: #f8f9fa;
-          padding: 8px;
-        }
-
-        .add-courses-dialog .ql-editor {
-          min-height: 500px;
-          padding: 16px;
-          font-family: "Arial", sans-serif;
-          line-height: 1.6;
-          background-color: white;
-        }
-
-        /* Limitation de la taille des images */
-        .add-courses-dialog .ql-editor img {
-          max-width: 90%;
-          max-height: 400px;
-          object-fit: contain;
-          margin: 0 auto;
-          display: block;
-        }
-
-        /* Limitation de la taille des vidéos */
-        .add-courses-dialog .ql-editor .ql-video {
-          max-width: 90%;
-          max-height: 400px;
-          margin: 0 auto;
-          display: block;
-        }
-
-        .editor-card {
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .editor-card .p-card-body {
-          padding: 0;
-        }
-
-        .editor-card .p-card-content {
-          padding: 0;
-        }
-
-        /* Amélioration responsive */
-        @media screen and (max-width: 768px) {
-          .add-courses-dialog .quill-container {
-            height: 300px;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

@@ -3,7 +3,7 @@ import { TabView, TabPanel } from "primereact/tabview";
 import CourseContent from "../utils/CourseContent";
 import { Button } from "primereact/button";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
-import ConfirmationDialog from "../utils/ConfirmationDialog";
+import ConfirmationDialog from "./ConfirmationDialog";
 import { Toast } from "primereact/toast";
 import moment from "moment";
 
@@ -21,7 +21,7 @@ interface AssociatedCircuit {
   ville_centre?: string;
 }
 
-interface ScrollableCoursesProps {
+interface ScrollableClassesProps {
   courses: Course[];
   readOnly?: boolean;
   onAddCircuit?: (courseId: string) => void;
@@ -31,7 +31,7 @@ interface ScrollableCoursesProps {
   onRemoveCircuit?: (circuitId: number, courseId: string) => void;
 }
 
-const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
+const ScrollableClasses: React.FC<ScrollableClassesProps> = ({
   courses,
   readOnly = true,
   onAddCircuit,
@@ -222,23 +222,26 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
         onTabChange={handleTabChange}
         activeIndex={activeTabIndex}
       >
-        {courses.map((course) => (
+        {courses.map((course, index) => (
           <TabPanel 
             key={course.id} 
             headerTemplate={() => (
-              <div className={`
-                px-4 py-2 font-medium text-sm transition-colors duration-200
-                ${activeTabIndex === courses.findIndex(c => c.id === course.id) 
-                  ? 'text-green-800 border-b-2 border-green-600 bg-green-50'
-                  : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}
-              `}>
+              <div 
+                className={`
+                  px-4 py-2 font-medium text-sm transition-colors duration-200 cursor-pointer
+                  ${activeTabIndex === courses.findIndex(c => c.id === course.id) 
+                    ? 'text-green-800 border-b-2 border-green-600 bg-green-50'
+                    : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}
+                `}
+                onClick={() => handleTabChange({ index })}
+              >
                 {course.libelle}
               </div>
             )}
           >
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 mt-4">
               <h2 className="text-xl font-semibold text-green-800 mb-3 md:mb-0">Circuits associés : </h2>
-              <div className="flex flex-wrap gap-2 items-center">
+              <div className="flex flex-wrap gap-2 items-center justify-center w-full md:w-auto">
                 {loadingCircuits[course.id] && (
                   <div className="text-center p-2 mt-2">
                     <i className="pi pi-spin pi-spinner text-2xl text-green-700"></i>
@@ -282,7 +285,7 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
                 <Button
                   icon="pi pi-plus"
                   label="Ajouter un circuit"
-                  className="bg-green-700 hover:bg-green-800 text-white border-0 rounded-lg ml-4 py-2 px-4"
+                  className="bg-green-700 hover:bg-green-800 text-white border-0 rounded-lg mx-4 py-2 px-4 mt-4 md:mt-0 gap-2"
                   onClick={() => onAddCircuit(course.id)}
                 />
               )}
@@ -308,7 +311,7 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
                 <Button
                   icon="pi pi-pencil"
                   label="Modifier"
-                  className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-lg py-2 px-4"
+                  className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-lg py-2 px-4 gap-2"
                   onClick={() =>
                     onEditCourse
                       ? onEditCourse(course.id)
@@ -318,7 +321,7 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
                 <Button
                   icon="pi pi-trash"
                   label="Supprimer"
-                  className="bg-red-600 hover:bg-red-700 text-white border-0 rounded-lg py-2 px-4"
+                  className="bg-red-600 hover:bg-red-700 text-white border-0 rounded-lg py-2 px-4 gap-2"
                   onClick={() =>
                     onDeleteCourse
                       ? onDeleteCourse(course.id)
@@ -352,4 +355,4 @@ const ScrollableCourses: React.FC<ScrollableCoursesProps> = ({
   );
 };
 
-export default ScrollableCourses;
+export default ScrollableClasses;

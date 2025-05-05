@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { ListBox } from "primereact/listbox";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
 import { Toast } from "primereact/toast";
-import { Divider } from "primereact/divider";
+import Loader  from "../utils/Loader";
 
 interface Circuit {
   id: number;
@@ -33,6 +33,7 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
   const [selected, setSelected] = useState<Circuit | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingLinked, setLoadingLinked] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
   const toast = React.useRef<Toast>(null);
 
   // Fetch already linked circuits
@@ -79,6 +80,8 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
 
   const linkCircuit = async () => {
     if (!selected) return;
+    
+    setIsLinking(true);
     try {
       await postRequest("/circuits/link-circuit-cours", {
         circuit: selected.id,
@@ -94,66 +97,110 @@ const CircuitLinker: React.FC<CircuitLinkerProps> = ({
         summary: "Échec du lien",
         detail: "Impossible de lier le circuit au cours.",
       });
+    } finally {
+      setIsLinking(false);
     }
   };
 
   return (
     <Dialog
-      header="Lier ou créer un circuit"
+      header={<div className="text-green-800 font-bold text-xl p-2">Lier ou créer un circuit</div>}
       visible={visible}
-      onHide={onHide}
+      onHide={isLinking ? () => {} : onHide}
       modal
+      className=" border border-green-100 shadow-lg max-w-lg w-full mx-auto relative"
+      closable={!isLinking}
     >
       <Toast ref={toast} />
-      <div className="p-fluid">
-        <h4>Choisir un circuit existant :</h4>
+      
+      {isLinking && (
+        <div className="absolute inset-0 bg-gray-50/70 z-10 flex items-center justify-center">
+          <Loader />
+        </div>
+      )}
+      
+      <div className="p-4">
+        <h4 className="text-lg font-semibold text-green-700 mb-3 border-l-4 border-green-500 pl-3">Choisir un circuit existant :</h4>
 
         {loadingLinked || loading ? (
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-spin pi-spinner"
-              style={{ fontSize: "2rem" }}
-            ></i>
-            <span className="ml-2">Chargement des circuits...</span>
+          <div className="flex items-center justify-center py-6 bg-green-50 rounded-lg">
+            <i className="pi pi-spin pi-spinner text-4xl text-green-600"></i>
+            <span className="ml-3 text-green-800">Chargement des circuits...</span>
           </div>
         ) : availableCircuits.length === 0 ? (
-          <div className="p-message p-message-info">
-            <div className="p-message-icon">
-              <i className="pi pi-info-circle"></i>
-            </div>
-            <div className="p-message-text">
-              Tous vos circuits sont déjà liés à ce cours ou vous n'avez pas
-              encore créé de circuits.
+          <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border-l-4 border-blue-500 mb-4">
+            <div className="flex items-start">
+              <i className="pi pi-info-circle text-xl text-blue-500 mr-3 mt-0.5"></i>
+              <div>
+                Tous vos circuits sont déjà liés à ce cours ou vous n'avez pas
+                encore créé de circuits.
+              </div>
             </div>
           </div>
         ) : (
-          <ListBox
-            options={availableCircuits}
-            optionLabel="libelle"
-            value={selected}
-            onChange={(e) => setSelected(e.value)}
-            filter
-            emptyMessage="Aucun circuit disponible"
-            className="mb-3"
-          />
+          <div className="mb-4 border border-green-200 rounded-lg overflow-hidden">
+            <style>{`
+              .custom-listbox .p-listbox-header .p-listbox-filter {
+                height: 3rem !important;
+                font-size: 1rem !important;
+              }
+              
+              .custom-listbox .p-listbox-header {
+                padding: 0.5rem !important;
+              }
+            `}</style>
+            
+            <ListBox
+              options={availableCircuits}
+              optionLabel="libelle"
+              value={selected}
+              onChange={(e) => setSelected(e.value)}
+              filter
+              filterPlaceholder="Rechercher un circuit..."
+              emptyMessage="Aucun circuit disponible"
+              className="w-full custom-listbox"
+              listClassName="py-0"
+              itemTemplate={(option) => (
+                <div className="p-3 hover:bg-green-50 cursor-pointer border-b border-green-100 last:border-b-0">
+                  <div className="flex items-center">
+                    <i className="pi pi-map mr-2 text-green-600"></i>
+                    <span>{option.libelle}</span>
+                  </div>
+                </div>
+              )}
+            />
+          </div>
         )}
+        
         <Button
           label="Lier le circuit"
-          disabled={!selected}
+          disabled={!selected || isLinking || loading || loadingLinked}
           onClick={linkCircuit}
-          className="p-button-success"
+          className="bg-green-600 hover:bg-green-700 text-white border-0 px-4 py-2 rounded-lg w-full mb-4"
           icon="pi pi-link"
         />
-        <Divider />
-        <div className="flex justify-content-between mt-3">
+        
+        <div className="my-4 border-t border-2 border-gray-300"></div>
+        
+        <div className="flex justify-between mt-4">
+          <Button
+            label="Annuler"
+            className="bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg gap-2"
+            icon="pi pi-times"
+            onClick={onHide}
+            disabled={isLinking}
+          />
+
+
           <Button
             label="Créer un nouveau"
-            className="p-button-primary"
+            className="bg-green-600 hover:bg-green-700 text-white border-0 px-4 py-2 rounded-lg gap-2"
             icon="pi pi-plus"
             onClick={() => {
               onHide();
               onCreateNew();
             }}
+            disabled={isLinking}
           />
         </div>
       </div>

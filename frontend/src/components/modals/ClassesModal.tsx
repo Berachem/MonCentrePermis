@@ -11,10 +11,10 @@ import { postRequest, getRequest } from "../../interfaces/utils/api";
 import CourseContent from "../../components/utils/CourseContent";
 import ScrollableCourses, {
   Course as ScrollCourse,
-} from "../Classes/ScrollableCourses";
+} from "../Classes/ScrollableClasses";
 import CircuitLinker from "../Classes/CircuitLinker";
-import EditCourseModal from "./EditCourseModal";
-import ConfirmationDialog from "../utils/ConfirmationDialog";
+import EditCourseModal from "../Classes/EditClasseModal";
+import ConfirmationDialog from "../Classes/ConfirmationDialog";
 import { Toast } from "primereact/toast";
 
 interface ClassesModalProps {

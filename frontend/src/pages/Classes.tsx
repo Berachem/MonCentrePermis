@@ -5,12 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChalkboardTeacher } from "@fortawesome/free-solid-svg-icons";
 import AddCourses from "../components/Classes/AddClasses";
 import { postRequest, getRequest } from "../interfaces/utils/api";
-import ScrollableCourses, {
+import ScrollableClasses, {
   Course as ScrollCourse,
-} from "../components/Classes/ScrollableCourses";
+} from "../components/Classes/ScrollableClasses";
 import CircuitLinker from "../components/Classes/CircuitLinker";
-import EditCourseModal from "../components/modals/EditCourseModal";
-import ConfirmationDialog from "../components/utils/ConfirmationDialog";
+import EditClasseModal from "../components/Classes/EditClasseModal";
+import ConfirmationDialog from "../components/Classes/ConfirmationDialog";
 import { Toast } from "primereact/toast";
 import { useParams, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
@@ -149,12 +149,12 @@ const Classes: React.FC = () => {
   );
 
   return (
-    <div className="container mx-auto p-4 pt-24 bg-gray-50 min-h-screen">
+    <div className="container mx-auto p-1 md:p-4 pt-24 bg-gray-50 min-h-screen">
       <Toast ref={toast} />
 
       <SideBarCustom />
 
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md md:p-6">
         <h2 className="text-center mb-8 text-2xl font-bold">
           <FontAwesomeIcon
             icon={faChalkboardTeacher}
@@ -194,7 +194,7 @@ const Classes: React.FC = () => {
           <Button
             icon="pi pi-plus"
             label="Ajouter un cours"
-            className="mb-6 text-base w-full bg-green-800 hover:bg-green-700 border-green-900 px-4 py-2 h-auto text-white rounded-lg"
+            className="mb-3 text-base w-full bg-green-800 hover:bg-green-700 border-green-900 px-4 py-2 h-auto text-white rounded-lg"
             onClick={() => setShowAddDialog(true)}
           />
         )}
@@ -241,8 +241,8 @@ const Classes: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="border border-gray-100 rounded-lg overflow-hidden  p-4">
-            <ScrollableCourses
+          <div className="border border-gray-100 rounded-lg overflow-hidden  md:p-4">
+            <ScrollableClasses
               courses={filteredCourses as ScrollCourse[]}
               readOnly={readOnly}
               onAddCircuit={handleAddCircuit}
@@ -271,7 +271,7 @@ const Classes: React.FC = () => {
       />
 
       {/* Modal pour éditer un cours */}
-      <EditCourseModal
+      <EditClasseModal
         visible={showEditDialog}
         courseId={editCourseId}
         onHide={() => {
