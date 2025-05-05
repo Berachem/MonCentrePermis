@@ -12,14 +12,14 @@ import {
 } from "../../interfaces/utils/api";
 import Loader from "../utils/Loader";
 
-interface EditCourseModalProps {
+interface EditClasseModalProps {
   visible: boolean;
   onHide: () => void;
   onCourseUpdated: () => void;
   courseId: string | null;
 }
 
-const EditCourseModal: React.FC<EditCourseModalProps> = ({
+const EditClasseModal: React.FC<EditClasseModalProps> = ({
   visible,
   onHide,
   onCourseUpdated,
@@ -491,4 +491,4 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
   );
 };
 
-export default EditCourseModal;
+export default EditClasseModal;
