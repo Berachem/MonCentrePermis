@@ -320,7 +320,7 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
         Détails du profil
       </h2>
 
-      <Accordion className="w-full border border-green-100 rounded-lg overflow-hidden shadow-sm">
+      <Accordion className="w-full border border-green-100 rounded-lg overflow-hidden" activeIndex={0}>
         <AccordionTab
           header={
             <div className="flex items-center py-3 px-4">
@@ -331,9 +331,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
           headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
           contentClassName="bg-white p-3"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Nom */}
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Nom :</label>
@@ -349,13 +348,12 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Nom :</span>
-                  <span className="text-gray-700">{moniteurInfo.nom}</span>
+                  <span className="block text-green-800 font-medium mb-1">Nom :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{moniteurInfo.nom}</span>
                 </div>
               )}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Prénom */}
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Prénom :</label>
@@ -371,15 +369,14 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Prénom :</span>
-                  <span className="text-gray-700">{moniteurInfo.prenom}</span>
+                  <span className="block text-green-800 font-medium mb-1">Prénom :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{moniteurInfo.prenom}</span>
                 </div>
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 mt-2">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Genre */}
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4 mt-2">
+            <div className="p-2 md:w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Genre :</label>
@@ -392,13 +389,12 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Genre :</span>
-                  <span className="text-gray-700">{moniteurInfo.genre}</span>
+                  <span className="block text-green-800 font-medium mb-1">Genre :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{moniteurInfo.genre}</span>
                 </div>
               )}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Date de naissance */}
+            <div className="p-2 md:w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Naissance :</label>
@@ -412,8 +408,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Naissance :</span>
-                  <span className="text-gray-700">{new Date(moniteurInfo.dateNaissance).toLocaleDateString()}</span>
+                  <span className="block text-green-800 font-medium mb-1">Naissance :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{new Date(moniteurInfo.dateNaissance).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
@@ -430,9 +426,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
           headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
           contentClassName="bg-white p-3"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Email */}
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Email :</label>
@@ -448,13 +443,12 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Email :</span>
-                  <span className="text-gray-700">{moniteurInfo.email}</span>
+                  <span className="block text-green-800 font-medium mb-1">Email :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{moniteurInfo.email}</span>
                 </div>
               )}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Téléphone */}
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Téléphone :</label>
@@ -470,8 +464,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Téléphone :</span>
-                  <span className="text-gray-700">{moniteurInfo.telephone}</span>
+                  <span className="block text-green-800 font-medium mb-1">Téléphone :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{moniteurInfo.telephone}</span>
                 </div>
               )}
             </div>
@@ -488,9 +482,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
           headerClassName="bg-green-50 hover:bg-green-100"
           contentClassName="bg-white p-3"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Début de carrière */}
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Début de carrière :</label>
@@ -507,8 +500,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Début de carrière :</span>
-                  <span className="text-gray-700">
+                  <span className="block text-green-800 font-medium mb-1">Début de carrière :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
                     {moniteurInfo.dateDebutCarriere
                       ? new Date(moniteurInfo.dateDebutCarriere).toLocaleDateString("fr-FR")
                       : "Non renseignée"}
@@ -516,8 +509,7 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               )}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              {/* Status */}
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Status :</label>
@@ -530,8 +522,8 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Status :</span>
-                  <span className="text-gray-700">{moniteurInfo.status}</span>
+                  <span className="block text-green-800 font-medium mb-1">Status :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{moniteurInfo.status}</span>
                 </div>
               )}
             </div>
@@ -539,14 +531,13 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
         </AccordionTab>
       </Accordion>
 
-      {/* Boutons d'action */}
-      <div className="flex w-full mt-8">
+      <div className="flex w-full mt-6">
         {isEditing ? (
           <Button
             label="Sauvegarder"
             icon="pi pi-check"
             onClick={handleSaveClick}
-            className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-5 py-2 rounded-lg text-base font-medium"
+            className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-4 py-2 rounded-lg"
           />
         ) : (
           !readOnly &&
@@ -555,7 +546,7 @@ const MoniteurInformations: React.FC<MoniteurInformationsProps> = ({
               label="Modifier"
               icon="pi pi-pencil"
               onClick={handleEditClick}
-              className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-5 py-2 rounded-lg text-base font-medium gap-2"
+              className="ml-auto bg-green-800 hover:bg-green-700 border-none text-white px-4 py-2 rounded-lg gap-2"
             />
           )
         )}

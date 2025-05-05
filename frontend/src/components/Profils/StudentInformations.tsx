@@ -259,7 +259,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
         Informations personnelles
       </h2>
 
-      <Accordion className="w-full border border-green-100 rounded-lg overflow-hidden shadow-sm" activeIndex={activeIndex}>
+      <Accordion className="w-full border border-green-100 rounded-lg overflow-hidden" activeIndex={activeIndex}>
         {/* Onglet Informations personnelles */}
         <AccordionTab
           header={
@@ -271,8 +271,8 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
           headerClassName="bg-green-50 hover:bg-green-100 border-b border-green-200"
           contentClassName="bg-white p-3"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Nom :</label>
@@ -288,12 +288,12 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Nom :</span>
-                  <span className="text-gray-700">{studentInfo.nom}</span>
+                  <span className="block text-green-800 font-medium mb-1">Nom :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{studentInfo.nom}</span>
                 </div>
               )}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Prénom :</label>
@@ -309,14 +309,14 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Prénom :</span>
-                  <span className="text-gray-700">{studentInfo.prenom}</span>
+                  <span className="block text-green-800 font-medium mb-1">Prénom :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{studentInfo.prenom}</span>
                 </div>
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 mt-2">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 p-4 mt-2">
+            <div className="p-2 md:w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Genre :</label>
@@ -329,12 +329,12 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Genre :</span>
-                  <span className="text-gray-700">{studentInfo.genre}</span>
+                  <span className="block text-green-800 font-medium mb-1">Genre :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{studentInfo.genre}</span>
                 </div>
               )}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <div className="p-2 md:w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Naissance :</label>
@@ -348,8 +348,8 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Naissance :</span>
-                  <span className="text-gray-700">{new Date(studentInfo.dateNaissance).toLocaleDateString()}</span>
+                  <span className="block text-green-800 font-medium mb-1">Naissance :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{new Date(studentInfo.dateNaissance).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
@@ -368,7 +368,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
           contentClassName="bg-white p-3"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
-            <div className="p-2">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Email :</label>
@@ -384,8 +384,8 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Email :</span>
-                  <span className="text-gray-700">{studentInfo.email}</span>
+                  <span className="block text-green-800 font-medium mb-1">Email :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{studentInfo.email}</span>
                 </div>
               )}
             </div>
@@ -405,8 +405,8 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Téléphone :</span>
-                  <span className="text-gray-700">{studentInfo.telephone}</span>
+                  <span className="block text-green-800 font-medium mb-1">Téléphone :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{studentInfo.telephone}</span>
                 </div>
               )}
             </div>
@@ -425,7 +425,7 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
           contentClassName="bg-white p-3"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
-            <div className="p-2">
+            <div className="p-2 w-1/2">
               {isEditing ? (
                 <div className="mb-1">
                   <label className="block text-green-800 font-medium mb-1">Date d'examen :</label>
@@ -442,8 +442,8 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Date d'examen :</span>
-                  <span className="text-gray-700">
+                  <span className="block text-green-800 font-medium mb-1">Date d'examen :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
                     {studentInfo.dateExamen
                       ? new Date(studentInfo.dateExamen).toLocaleDateString()
                       : "Non définie"}
@@ -464,8 +464,8 @@ const StudentInformations: React.FC<StudentInformationsProps> = ({
                 </div>
               ) : (
                 <div className="mb-1">
-                  <span className="text-green-800 font-medium block mb-1">Auto-école :</span>
-                  <span className="text-gray-700">{studentInfo.autoEcole || "Non renseignée"}</span>
+                  <span className="block text-green-800 font-medium mb-1">Auto-école :</span>
+                  <span className="block w-full p-2 min-h-[40px] bg-gray-50 border border-gray-200 rounded-lg text-gray-700">{studentInfo.autoEcole || "Non renseignée"}</span>
                 </div>
               )}
             </div>
