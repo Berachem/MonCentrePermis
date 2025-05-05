@@ -121,9 +121,9 @@ function SideBarCustom({}: SideBarCustomProps) {
     openProfileModal(userId);
   };
 
-  // Function to handle test profile click
-  const handleTestProfileClick = () => {
-    openProfileModal("4"); // Using ID 4 for test profile
+  // Function to handle viewing another user's profile with any ID
+  const handleOtherProfileClick = (id: string) => {
+    openProfileModal(id);
   };
 
   return (
@@ -191,7 +191,7 @@ function SideBarCustom({}: SideBarCustomProps) {
                 {/* Menu de développement pour tester les profils */}
                 {process.env.NODE_ENV === "development" && (
                   <li
-                    onClick={handleTestProfileClick}
+                    onClick={() => handleOtherProfileClick("4")}
                     className="cursor-pointer"
                   >
                     <a className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150 w-full">
@@ -201,6 +201,8 @@ function SideBarCustom({}: SideBarCustomProps) {
                     </a>
                   </li>
                 )}
+                
+            
               </ul>
             </div>
 
