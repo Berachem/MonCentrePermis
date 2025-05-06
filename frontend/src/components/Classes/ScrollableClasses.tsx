@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { TabView, TabPanel } from "primereact/tabview";
-import CourseContent from "../utils/CourseContent";
+import CourseContent from "../Circuits/CourseContent";
 import { Button } from "primereact/button";
 import { getRequest, postRequest } from "../../interfaces/utils/api";
 import ConfirmationDialog from "./ConfirmationDialog";

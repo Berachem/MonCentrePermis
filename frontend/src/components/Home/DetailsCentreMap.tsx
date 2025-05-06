@@ -41,7 +41,7 @@ const DetailsCentreMap: React.FC<CentreDetailsProps> = ({
 
   const handleSuccessClick = () => {
     if (userRole !== UserType.Visitor && isAuthenticated) {
-      navigate(`/examen/${centre.id}`, {
+      navigate(`/centre/${centre.id}`, {
         state: {
           centre: {
             id: centre.id,

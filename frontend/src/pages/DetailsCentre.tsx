@@ -6,16 +6,15 @@ import L from "leaflet";
 import "leaflet-routing-machine";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { Avatar } from "primereact/avatar";
 import { Toast } from "primereact/toast";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getRequest } from "../../interfaces/utils/api";
+import { getRequest } from "../interfaces/utils/api";
 import { Chip } from "primereact/chip";
-import useAuth from "../../hooks/useAuth";
-import Loader from "../../components/utils/Loader";
-import { UserType } from "../../enum/user";
+import useAuth from "../hooks/useAuth";
+import Loader from "../components/utils/Loader";
+import { UserType } from "../enum/user";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import CourseContent from "../../components/utils/CourseContent";
+import CourseContent from "../components/Circuits/CourseContent";
 
 // Interface pour un cours associé
 interface AssociatedCourse {
@@ -62,48 +61,6 @@ interface Centre {
   postalCode: string;
   latitude?: string;
   longitude?: string;
-}
-
-// Interface pour une ville
-interface Ville {
-  id: number;
-  libelle: string;
-  latitude: string;
-  longitude: string;
-}
-
-// Interface pour la réponse API d'un circuit
-interface CircuitApiResponse {
-  id: number;
-  libelle: string;
-  description: string;
-  createur?: string;
-  moniteur?: {
-    id: number;
-    nom: string;
-    prenom: string;
-  };
-  ville_centre: string;
-  points: string[];
-}
-
-// Interface pour la réponse API d'un point
-interface PointApiResponse {
-  id: number;
-  latitude: string;
-  longitude: string;
-  description: string;
-  rang: number;
-  type: string;
-}
-
-// Interface pour la réponse API de la collection de circuits
-interface CircuitsCollectionResponse {
-  "@context": string;
-  "@id": string;
-  "@type": string;
-  totalItems: number;
-  member: CircuitApiResponse[];
 }
 
 // Types de points avec icônes SVG
@@ -170,27 +127,6 @@ const pointTypes: PointType[] = [
     </svg>`,
   },
 ];
-
-// Fonction pour calculer la distance avec la formule de Haversine (en km)
-const haversineDistance = (
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number => {
-  const toRad = (value: number) => (value * Math.PI) / 180;
-  const R = 6371; // Rayon de la Terre en km
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 // Créer une icône Leaflet à partir de SVG
 const createIconFromSvg = (svgString: string): L.DivIcon => {
@@ -269,7 +205,7 @@ const MapView: React.FC<MapViewProps> = ({ center }) => {
 };
 
 // Composant ExamPage
-const ExamPage: React.FC = () => {
+const DetailsCentre: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
   const defaultPosition: [number, number] = [48.8566, 2.3522];
   const [expandedCircuits, setExpandedCircuits] = useState<string[]>([]);
@@ -299,10 +235,6 @@ const ExamPage: React.FC = () => {
   
   // Nouvel état pour le slider mobile
   const [coursesSliderVisible, setCoursesSliderVisible] = useState<boolean>(false);
-
-  // Définir la largeur du panneau de cours
-  const COURSES_PANEL_WIDTH = isMobile ? "85%" : "400px";
-  const COURSES_PANEL_WIDTH_COLLAPSED = "60px";
 
   // Récupérer le centre d'examen depuis location.state
   useEffect(() => {
@@ -509,333 +441,61 @@ const ExamPage: React.FC = () => {
     return createIconFromSvg(pointType.svgIcon);
   };
 
-  // Styles
-  const styles = {
-    circuitSelectorButton: {
-      position: "fixed" as const,
-      bottom: "30px",
-      left: "30px",
-      zIndex: 1000,
-    },
-    mapContainer: {
-      position: "relative" as const,
-      height: "100vh",
-      width: "100%",
-    },
-    map: {
-      position: "absolute" as const,
-      top: 0,
-      left: 0,
-      width: isMobile ? "100%" : `calc(100% - ${COURSES_PANEL_WIDTH})`,
-      height: "100%",
-      zIndex: 1,
-      transition: "width 0.3s ease-in-out",
-    },
-    chipContainer: {
-      position: "absolute" as const,
-      top: "2%",
-      left: isMobile ? "50%" : "40%", 
-      transform: "translateX(-50%)",
-      zIndex: 1000,
-      display: "flex",
-      justifyContent: "center",
-      width: "80%",
-    },
-    coursesPanel: {
-      position: "fixed" as const,
-      top: 0,
-      right: 0,
-      height: "100vh",
-      width: isMobile ? (coursesSliderVisible ? COURSES_PANEL_WIDTH : "0px") : COURSES_PANEL_WIDTH,
-      backgroundColor: "white",
-      boxShadow: "-2px 0 10px rgba(0, 0, 0, 0.1)",
-      zIndex: 1000,
-      padding: isMobile ? (coursesSliderVisible ? "20px" : "0px") : "20px",
-      overflowY: "auto" as const,
-      transition: "all 0.3s ease-in-out",
-    },
-    coursesToggleButton: {
-      position: "fixed" as const,
-      top: "50%",
-      right: isMobile ? "0" : "auto",
-      right: isMobile ? (coursesSliderVisible ? COURSES_PANEL_WIDTH : "0") : "auto",
-      transform: "translateY(-50%)",
-      zIndex: 1001,
-      height: "50px",
-      width: "30px",
-      backgroundColor: "var(--primary-color)",
-      borderRadius: "5px 0 0 5px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
-      cursor: "pointer",
-      transition: "right 0.3s ease-in-out",
-    },
-    legendButton: {
-      position: "fixed" as const,
-      left: "30px",
-      top: window.innerWidth <= 768 ? "220px" : "100px",
-      zIndex: 1000,
-    },
-    legendContainer: {
-      position: "fixed" as const,
-      top: window.innerWidth <= 768 ? "200px" : "160px",
-      left: "30px",
-      zIndex: 1000,
-      maxWidth: window.innerWidth <= 768 ? "240px" : "280px",
-      transition: "all 0.3s ease",
-    },
-    legendCard: {
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-      padding: window.innerWidth <= 768 ? "0.75rem" : "1rem",
-      borderRadius: "0.75rem",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-      border: "1px solid var(--surface-200)",
-    },
-    legendTitle: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "0.75rem",
-      borderBottom: "1px solid var(--surface-200)",
-      paddingBottom: "0.5rem",
-    },
-    legendItems: {
-      display: "flex",
-      flexDirection: "column" as const,
-      gap: window.innerWidth <= 768 ? "0.5rem" : "0.75rem",
-    },
-    legendItem: {
-      display: "flex",
-      alignItems: "center",
-      fontSize: window.innerWidth <= 768 ? "0.8rem" : "0.875rem",
-      padding: "0.25rem 0",
-    },
-    legendIcon: {
-      width: window.innerWidth <= 768 ? "20px" : "24px",
-      height: window.innerWidth <= 768 ? "20px" : "24px",
-      marginRight: window.innerWidth <= 768 ? "0.5rem" : "0.75rem",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    colorBox: {
-      width: "1rem",
-      height: "1rem",
-      marginRight: "0.25rem",
-      borderRadius: "50%",
-    },
-  };
-
-  const mapStyle = styles.map;
-
   return (
-    <div style={styles.mapContainer}>
+    <div className="relative h-screen w-full">
       <Toast ref={toast} />
 
       {/* Loader comme sur la homepage */}
       {isLoading && (
-        <div className="loader-container">
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
           <Loader />
         </div>
       )}
 
-      <div
-        style={styles.chipContainer}
-        className="flex gap-2 justify-content-center flex-column align-items-center"
-      >
+      {/* Remplacer chipContainer - Simplifier cette partie puisqu'on déplace les infos */}
+      <div className={`absolute top-[2%] ${isMobile ? 'left-1/2' : 'left-[40%]'} -translate-x-1/2 z-[1000] flex justify-center flex-col items-center w-4/5`}>
         <Button
           icon="pi pi-arrow-left"
-          className="p-button-rounded shadow-4"
+          className="shadow-lg bg-green-800 hover:bg-green-700 text-white rounded-lg p-2 gap-2 mb-1"
           onClick={() => navigate("/")}
-          label="Retour"
+          label="Retour à l'accueil"
           severity="secondary"
           tooltipOptions={{ position: "top" }}
         />
-        {centre && (
-          <div className="flex flex-column align-items-center gap-2 p-2 border-round-lg shadow-2 animate__animated animate__fadeIn">
-            <Chip
-              label={centre.name}
-              className="bg-primary text-white font-bold border-0 py-2"
-              icon="pi pi-map-marker"
-            />
-            {currentCircuit && (
-              <div className="flex flex-column align-items-center gap-1 w-full">
-                <div className="text-sm text-900 bg-primary-50 px-3 py-2 border-round-lg border-1 border-primary-100 w-full text-center">
-                  <div className="flex align-items-center justify-content-center gap-2">
-                    <i className="pi pi-user text-primary-700"></i>
-                    <span className="font-medium">
-                      {currentCircuit.moniteur
-                        ? `Moniteur: ${currentCircuit.moniteur.prenom} ${currentCircuit.moniteur.nom}`
-                        : "Circuit sans moniteur"}
-                    </span>
-                  </div>
-                  {currentCircuit.createur?.date && (
-                    <div className="text-xs text-600 mt-1">
-                      Créé le{" "}
-                      {new Date(
-                        currentCircuit.createur.date
-                      ).toLocaleDateString()}
-                    </div>
-                  )}
-                  {userRole === UserType.Teacher &&
-                    typeUserid.toString() ===
-                      currentCircuit.moniteur?.id?.toString() && (
-                      <div className="mt-2 flex justify-content-center">
-                        <Button
-                          icon="pi pi-pencil"
-                          label="Modifier"
-                          className="p-button-sm p-button-outlined"
-                          onClick={() =>
-                            navigate(`/circuit/edit/${currentCircuit.id}`)
-                          }
-                        />
-                      </div>
-                    )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      <div style={styles.legendButton}>
+      {/* Remplacer legendButton */}
+      <div className={`fixed left-[10px] ${isMobile ? 'top-[220px]' : 'top-[10px]'} z-[1000]`}>
         <Button
           icon={legendVisible ? "pi pi-eye-slash" : "pi pi-info-circle"}
-          className="p-button-rounded p-button-info shadow-4 border-primary"
+          className="rounded-xl text-white h-10 shadow-lg border border-green-800 bg-green-800 hover:bg-green-700"
           onClick={() => setLegendVisible(!legendVisible)}
           tooltipOptions={{ position: "right" }}
         />
       </div>
 
-      {/* Bouton de toggle pour les cours sur mobile */}
-      {isMobile && (
-        <div 
-          style={styles.coursesToggleButton}
-          onClick={() => setCoursesSliderVisible(!coursesSliderVisible)}
-        >
-          <i className={`pi ${coursesSliderVisible ? "pi-chevron-right" : "pi-chevron-left"} text-white`}></i>
-        </div>
-      )}
-
-      {/* Panneau latéral pour les cours - adapté pour mobile */}
-      <div style={styles.coursesPanel}>
-        {(!isMobile || coursesSliderVisible) && (
-          <>
-            <div className="flex justify-content-between align-items-center mb-4">
-              <h2 className="text-xl font-bold">Cours associés</h2>
-              {isMobile && (
-                <Button 
-                  icon="pi pi-times" 
-                  className="p-button-rounded p-button-text bg-white" 
-                  onClick={() => setCoursesSliderVisible(false)} 
-                />
-              )}
-            </div>
-
-            {loadingCourses ? (
-              <div className="flex flex-column align-items-center justify-content-center p-5 h-full">
-                <i className="pi pi-spin pi-spinner text-primary" style={{ fontSize: '2rem' }}></i>
-                <p className="mt-3">Chargement des cours...</p>
-              </div>
-            ) : associatedCourses.length === 0 ? (
-              <div className="flex flex-column align-items-center justify-content-center p-5">
-                <i className="pi pi-book text-500" style={{ fontSize: '2rem' }}></i>
-                <p className="mt-3 text-center">Aucun cours n'est associé à ce circuit.</p>
-                {userRole === UserType.Teacher && currentCircuit && (
-                  <Button
-                    icon="pi pi-plus"
-                    label="Ajouter un cours"
-                    className="p-button-outlined mt-4"
-                    onClick={() => alert("TODO - Ajouter un cours")}
-                  />
-                )}
-                <div className="mt-5 border-top-1 border-200 pt-4 w-full">
-                  <h3 className="text-lg font-semibold text-primary">Comment utiliser ce circuit?</h3>
-                  <ul className="list-none p-0 mt-3">
-                    <li className="flex align-items-center mb-2">
-                      <i className="pi pi-map text-primary mr-2"></i>
-                      <span>Explorez les points d'intérêt sur la carte</span>
-                    </li>
-                    <li className="flex align-items-center mb-2">
-                      <i className="pi pi-info-circle text-primary mr-2"></i>
-                      <span>Cliquez sur les marqueurs pour plus d'informations</span>
-                    </li>
-                    <li className="flex align-items-center mb-2">
-                      <i className="pi pi-car text-primary mr-2"></i>
-                      <span>Suivez les instructions du moniteur</span>
-                    </li>
-                    <li className="flex align-items-center mb-2">
-                      <i className="pi pi-check-circle text-primary mr-2"></i>
-                      <span>Préparez-vous pour l'examen avec ce parcours</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <>
-                <Accordion 
-                  activeIndex={expandedCourseId ? associatedCourses.findIndex(c => c.id === expandedCourseId) : null}
-                  onTabChange={(e) => {
-                    const courseId = e.index !== null ? associatedCourses[e.index].id : null;
-                    setExpandedCourseId(courseId);
-                  }}
-                  className="courses-accordion"
-                >
-                  {associatedCourses.map((course) => (
-                    <AccordionTab
-                      key={course.id}
-                      header={
-                        <div className="flex align-items-center">
-                          <i className="pi pi-book text-primary mr-2"></i>
-                          <span>{course.libelle}</span>
-                        </div>
-                      }
-                    >
-                      <div className="p-3">
-                        <CourseContent content={course.description} className="p-3 bg-gray-50 border-round" />
-                      </div>
-                    </AccordionTab>
-                  ))}
-                </Accordion>
-                
-                <div className="mt-4 p-3 border-round bg-primary-50 border-1 border-primary-100">
-                  <h3 className="text-lg font-semibold text-primary">Conseils de révision</h3>
-                  <p className="text-sm mt-2">
-                    Prenez le temps d'étudier chaque cours associé à ce circuit. 
-                    Ces informations sont essentielles pour réussir votre examen!
-                  </p>
-                </div>
-              </>
-            )}
-          </>
-        )}
-      </div>
-
       {/* Légende des icônes */}
       {legendVisible && (
         <div
-          style={styles.legendContainer}
-          className="animate__animated animate__fadeInLeft"
+          className={`fixed ${isMobile ? 'top-[200px]' : 'top-[10px]'} left-[10px] z-[1000] ${isMobile ? 'max-w-[240px]' : 'max-w-[280px]'} transition-all duration-300 animate__animated animate__fadeInLeft`}
         >
-          <div style={styles.legendCard}>
-            <div style={styles.legendTitle}>
-              <span className="text-lg font-medium">Légende</span>
+          <div className="bg-white bg-opacity-95 p-3 rounded-xl shadow-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-3 border-b border-gray-200 pb-2">
+              <span className="text-lg font-medium text-green-800">Légende</span>
               <Button
                 icon="pi pi-times"
-                className="p-button-text p-button-rounded p-button-sm bg-white"
+                className="p-button-text p-button-rounded p-button-sm bg-white text-green-800"
                 onClick={() => setLegendVisible(false)}
               />
             </div>
-            <div style={styles.legendItems}>
+            <div className="flex flex-col gap-2 md:gap-3">
               {pointTypes.map((type) => (
-                <div key={type.value} style={styles.legendItem}>
+                <div key={type.value} className="flex items-center text-sm md:text-base py-1">
                   <div
-                    style={styles.legendIcon}
+                    className={`w-[20px] h-[20px] md:w-[24px] md:h-[24px] mr-2 md:mr-3 flex justify-center items-center`}
                     dangerouslySetInnerHTML={{ __html: type.svgIcon }}
                   ></div>
-                  <span className="text-700">{type.label}</span>
+                  <span className="text-gray-700">{type.label}</span>
                 </div>
               ))}
             </div>
@@ -843,11 +503,10 @@ const ExamPage: React.FC = () => {
         </div>
       )}
 
-      <div style={mapStyle}>
-        <MapContainer
+      <MapContainer
           center={mapCenter}
           zoom={13}
-          style={{ height: "100%", width: "100%" }}
+          className="h-full w-full"
           zoomControl={false}
         >
           <MapView center={mapCenter} />
@@ -864,13 +523,13 @@ const ExamPage: React.FC = () => {
               position={[point.latitude, point.longitude]}
               icon={getPointIcon(point.type)}
             >
-              <Popup>
+              <Popup closeButton={false}>
                 <span className="font-medium">{point.libelle}</span>
 
                 {point.description && (
                   <>
                     <hr className="my-2" />
-                    <div className="flex align-items-center mt-2">
+                    <div className="flex items-center mt-2">
                       <span className="text-sm text-white">
                         {point.description}
                       </span>
@@ -880,14 +539,17 @@ const ExamPage: React.FC = () => {
               </Popup>
             </Marker>
           ))}
-        </MapContainer>
-      </div>
+      </MapContainer>
+      
 
-      <div style={styles.circuitSelectorButton}>
+      {/* Remplacer circuitSelectorButton */}
+      <div className="fixed bottom-[30px] left-[30px] z-[1000]">
         <Button
           icon="pi pi-flag"
           label={isMobile ? undefined : `Sélectionner un circuit`}
-          className="p-button-rounded shadow-4"
+          className = {
+            `rounded-lg shadow-lg bg-green-800 hover:bg-green-700 text-white px-4 py-2 flex items-center  ${isMobile ? '' : 'gap-2'}`
+          }
           onClick={() => setCircuitModalVisible(true)}
           tooltip={
             isMobile ? `Circuits disponibles (${circuits.length})` : undefined
@@ -895,8 +557,154 @@ const ExamPage: React.FC = () => {
           tooltipOptions={{ position: "top" }}
           disabled={circuits.length === 0}
           badge={!isMobile ? circuits.length.toString() : undefined}
-          badgeClassName="bg-info"
+          badgeClassName="bg-green-600 text-white"
         />
+      </div>
+
+      {/* Bouton de toggle pour les cours sur mobile */}
+      {isMobile && (
+        <div 
+          className={`fixed top-1/2 -translate-y-1/2 z-[1001] h-[50px] w-[30px] bg-green-800 rounded-l-md flex items-center justify-center shadow-md cursor-pointer transition-all duration-300 ${coursesSliderVisible ? 'right-[85%]' : 'right-0'}`}
+          onClick={() => setCoursesSliderVisible(!coursesSliderVisible)}
+        >
+          <i className={`pi ${coursesSliderVisible ? "pi-chevron-right" : "pi-chevron-left"} text-white`}></i>
+        </div>
+      )}
+
+      {/* Panneau latéral pour les cours - adapté pour mobile */}
+      <div className={`fixed top-0 right-0 h-screen bg-white shadow-lg z-[1000] overflow-y-auto transition-all duration-300 ${isMobile ? (coursesSliderVisible ? 'w-[85%] p-5' : 'w-0 p-0') : 'w-[300px] p-5'}`}>
+        {(!isMobile || coursesSliderVisible) && (
+          <>
+            {/* Information du centre et du circuit déplacées ici */}
+            {centre && currentCircuit && (
+              <div className="mb-2 border-b border-gray-300 pb-4">
+                <div className="flex flex-col items-center gap-2">
+                  <i className="pi pi-map-marker text-green-800 font-bold"></i>
+                  <h3 className="font-bold text-green-800 text-center">
+                    {centre.name}
+                  </h3>
+                    
+                  <div className="bg-green-50 border border-green-300 rounded-lg p-3 w-full text-center">
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                      <i className="pi pi-user text-green-700"></i>
+                      <span className="text-xs">
+                        {currentCircuit.moniteur
+                          ? `Circuit créé par: ${currentCircuit.moniteur.prenom} ${currentCircuit.moniteur.nom}`
+                          : "Circuit sans moniteur"}
+                      </span>
+                    </div>
+                    
+                    {currentCircuit.createur?.date && (
+                      <div className="text-xs text-gray-600 mt-1">
+                        le {new Date(currentCircuit.createur.date).toLocaleDateString()}
+                      </div>
+                    )}
+                    
+                    {userRole === UserType.Teacher &&
+                      typeUserid.toString() === currentCircuit.moniteur?.id?.toString() && (
+                      <div className="mt-3 flex justify-center">
+                        <Button
+                          icon="pi pi-pencil"
+                          label="Modifier"
+                          className="p-button-sm p-button-outlined bg-green-800 text-white hover:bg-green-700 gap-2 rounded-lg p-2"
+                          onClick={() => navigate(`/circuit/edit/${currentCircuit.id}`)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col justify-between items-center mb-4">
+              <i className="pi pi-book text-green-800 font-bold mb-1"></i>
+              <h3 className="font-bold text-green-800 m-auto mt-0 mb-2">Cours associés</h3>
+              {isMobile && (
+                <Button 
+                  icon="pi pi-times" 
+                  className="bg-white absolute right-3 top-3" 
+                  onClick={() => setCoursesSliderVisible(false)} 
+                />
+              )}
+            </div>
+
+            {loadingCourses ? (
+              <div className="flex flex-col items-center justify-center overflow-hidden h-full">
+                <i className="pi pi-spin pi-spinner text-green-800" style={{ fontSize: '2rem' }}></i>
+                <p className="mt-3">Chargement des cours...</p>
+              </div>
+            ) : associatedCourses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-5">
+                <i className="pi pi-book text-gray-500" style={{ fontSize: '2rem' }}></i>
+                <p className="mt-3 text-center">Aucun cours n'est associé à ce circuit.</p>
+                {userRole === UserType.Teacher && currentCircuit && (
+                  <Button
+                    icon="pi pi-plus"
+                    label="Ajouter un cours"
+                    className="p-button-outlined mt-4"
+                    onClick={() => alert("TODO - Ajouter un cours")}
+                  />
+                )}
+                <div className="mt-5 border-t border-gray-200 pt-4 w-full">
+                  <h3 className="text-lg font-semibold text-green-800">Comment utiliser ce circuit?</h3>
+                  <ul className="list-none p-0 mt-3">
+                    <li className="flex items-center mb-2">
+                      <i className="pi pi-map text-green-800 mr-2"></i>
+                      <span>Explorez les points d'intérêt sur la carte</span>
+                    </li>
+                    <li className="flex items-center mb-2">
+                      <i className="pi pi-info-circle text-green-800 mr-2"></i>
+                      <span>Cliquez sur les marqueurs pour plus d'informations</span>
+                    </li>
+                    <li className="flex items-center mb-2">
+                      <i className="pi pi-car text-green-800 mr-2"></i>
+                      <span>Suivez les instructions du moniteur</span>
+                    </li>
+                    <li className="flex items-center mb-2">
+                      <i className="pi pi-check-circle text-green-800 mr-2"></i>
+                      <span>Préparez-vous pour l'examen avec ce parcours</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Accordion 
+                  activeIndex={expandedCourseId ? associatedCourses.findIndex(c => c.id === expandedCourseId) : null}
+                  onTabChange={(e) => {
+                    const courseId = typeof e.index === "number" ? associatedCourses[e.index]?.id : null;
+                    setExpandedCourseId(courseId);
+                  }}
+                  className="w-full border border-green-100 rounded-lg overflow-hidden"
+                >
+                  {associatedCourses.map((course) => (
+                    <AccordionTab
+                      key={course.id}
+                      header={
+                        <div className="flex items-center py-3 px-4">
+                          <i className="pi pi-book text-green-600 text-lg mr-3"></i>
+                          <span className="font-medium text-lg text-green-800">{course.libelle}</span>
+                        </div>
+                      }
+                      headerClassName="bg-green-100 hover:bg-green-200 border-b border-green-200"
+                      contentClassName="bg-white"
+                    >
+                      <CourseContent content={course.description} className="p-3 bg-gray-50 rounded" />
+                    </AccordionTab>
+                  ))}
+                </Accordion>
+                
+                <div className="mt-4 p-3 rounded bg-green-50 border border-green-200">
+                  <h3 className="text-lg font-semibold text-green-800">Conseils de révision</h3>
+                  <p className="text-sm mt-2">
+                    Prenez le temps d'étudier chaque cours associé à ce circuit. 
+                    Ces informations sont essentielles pour réussir votre examen!
+                  </p>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
 
       <Dialog
@@ -907,21 +715,21 @@ const ExamPage: React.FC = () => {
         showHeader={false}
         closeOnEscape={true}
         dismissableMask={true}
-        className="border-round-top-3xl mx-auto"
+        className="rounded-t-3xl mx-auto"
         style={{ width: "95vw", maxWidth: "1200px" }}
         transitionOptions={{ timeout: 400 }}
       >
         <div className="overflow-y-auto" style={{ maxHeight: "70vh" }}>
-          <div className="flex justify-content-between align-items-center p-3 border-200">
-            <h2 className="text-xl font-bold m-0">Sélectionner un circuit</h2>
+          <div className="flex justify-between items-center p-3 border-gray-200">
+            <h2 className="text-xl font-bold m-0 text-green-800">Sélectionner un circuit</h2>
             <Button
               icon="pi pi-times"
-              className="p-button-text p-button-rounded text-white"
+              className="p-button-text bg-green-800 rounded-xl h-10 text-white"
               onClick={() => setCircuitModalVisible(false)}
             />
           </div>
 
-          <div className="p-2 bg-info-50 text-info-900 text-center border-bottom-1 p-3 border-200">
+          <div className="p-2 bg-green-100 text-green-900 text-center border-b p-3 border-gray-200">
             <i className="pi pi-info-circle mr-2"></i>
             Circuits disponibles à moins de {MAX_DISTANCE} km du centre d'examen
           </div>
@@ -929,35 +737,27 @@ const ExamPage: React.FC = () => {
           {circuits.map((circuit) => (
             <div
               key={circuit.id}
-              className={`p-3 border-bottom-1 border-200 cursor-pointer transition-colors transition-duration-300 hover:surface-hover ${
-                selectedCircuit === circuit.nom ? "bg-primary-50" : ""
+              className={`p-3 cursor-pointer transition-colors duration-300 hover:bg-gray-200 ${
+                selectedCircuit === circuit.nom ? "bg-gray-100" : ""
               }`}
               onClick={() => handleCircuitSelection(circuit.nom)}
             >
               <div className="relative">
-                <div className="flex align-items-center justify-content-between">
-                  <div className="flex align-items-center">
-                    <Avatar
-                      icon="pi pi-flag"
-                      className="mr-2"
-                      style={{
-                        backgroundColor: "var(--primary-color)",
-                        color: "#fff",
-                      }}
-                    />
-                    <div className="flex flex-column">
-                      <div className="flex align-items-center gap-1">
-                        <span className="font-medium text-900">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-gray-900 text-lg font-bold">
                           {circuit.nom}
                         </span>
-                        <span className="text-xs bg-primary-50 text-primary-700 px-2 py-1 border-round">
+                        <span className="text-xs text-green-700 px-2 py-1 bg-green-100 rounded flex items-center">
                           {circuit.points.length} points
                         </span>
                       </div>
 
-                      <div className="flex flex-column mt-1 gap-1">
+                      <div className="flex flex-col mt-1 gap-1">
                         {circuit.moniteur && (
-                          <div className="flex align-items-center text-sm text-blue-700">
+                          <div className="flex items-center text-sm text-blue-700">
                             <i className="pi pi-user mr-1"></i>
                             <span>
                               {circuit.moniteur.prenom} {circuit.moniteur.nom}
@@ -966,7 +766,7 @@ const ExamPage: React.FC = () => {
                         )}
 
                         {circuit.createur && (
-                          <div className="flex align-items-center text-xs text-500">
+                          <div className="flex items-center text-xs text-gray-500">
                             <i className="pi pi-calendar mr-1"></i>
                             <span>
                               Créé le{" "}
@@ -977,26 +777,18 @@ const ExamPage: React.FC = () => {
                           </div>
                         )}
                         {circuit.description && (
-                          <p className="text-sm text-600 mt-1 mb-1 line-height-2 border-top-1 border-200 pt-2">
+                          <p className="text-sm text-gray-600 mt-1 mb-1 leading-6 border-t border-gray-300 pt-2">
                             {circuit.description}
                           </p>
-                        )}
-
-                        {selectedCircuit === circuit.nom && (
-                          <span className="mr-2 font-medium flex align-items-center text-green-500">
-                            <span className="lg:hidden flex">
-                              appliqué
-                              <i className="pi pi-check-circle ml-1"></i>
-                            </span>
-                          </span>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex align-items-center">
+
+                  <div className="flex items-center">
                     {selectedCircuit === circuit.nom && (
-                      <span className="mr-2 font-medium flex align-items-center text-green-500">
-                        <span className="hidden lg:flex">
+                      <span className="font-medium flex text-green-500 items-center mr-3">
+                        <span className="flex items-center">
                           appliqué
                           <i className="pi pi-check-circle ml-1"></i>
                         </span>
@@ -1007,7 +799,7 @@ const ExamPage: React.FC = () => {
                         expandedCircuits.includes(circuit.nom)
                           ? "pi-chevron-up"
                           : "pi-chevron-down"
-                      } text-primary cursor-pointer p-1`}
+                      } text-green-800 cursor-pointer p-1`}
                       onClick={(e) => toggleCircuitExpansion(circuit.nom, e)}
                     ></i>
                   </div>
@@ -1019,43 +811,42 @@ const ExamPage: React.FC = () => {
                 classNames={{
                   enter: "max-h-0 opacity-0 overflow-hidden",
                   enterActive:
-                    "max-h-30rem opacity-100 transition-all transition-duration-300",
+                    "max-h-30rem opacity-100 transition-all duration-300",
                   exit: "max-h-30rem opacity-100 overflow-hidden",
                   exitActive:
-                    "max-h-0 opacity-0 transition-all transition-duration-300",
+                    "max-h-0 opacity-0 transition-all duration-300",
                 }}
                 unmountOnExit
               >
-                <div className="mt-3 pt-2 border-top-1 border-100">
+                <div className="mt-3 pt-2 border-t border-gray-300">
                   {circuit.points.length > 0 ? (
                     circuit.points
                       .sort((a, b) => a.rang - b.rang)
                       .map((point, index) => (
                         <div
                           key={point.id}
-                          className="flex align-items-center py-2 ml-2"
+                          className="flex items-center py-2 ml-2"
                         >
                           <span
-                            className="flex justify-content-center align-items-center border-circle w-2rem h-2rem mr-2 text-white text-xs font-medium"
+                            className="flex-shrink-0 flex justify-center items-center rounded-full w-6 h-6 min-w-6 max-w-6 mr-2 text-white text-xs font-medium"
                             style={{
                               backgroundColor:
                                 pointTypes.find((pt) => pt.value === point.type)
-                                  ?.color || "#9C27B0",
+                                  ?.color || "#9C27B0"
                             }}
                           >
                             {index + 1}
                           </span>
-                          <i className="pi pi-map-marker text-primary mr-2"></i>
-                          <span className="text-900">{point.libelle}</span>
+                          <i className="pi pi-map-marker text-green-800 mr-2"></i>
+                          <span className="text-white-900">{point.libelle}</span>
                           <Chip
                             label={point.description}
-                            className="ml-2 bg-primary-50 text-primary-900 font-medium"
-                            style={{ fontSize: "0.8rem" }}
+                            className="ml-2 bg-grey-100 text-grey-900 font-medium text-xs p-1"
                           />
                         </div>
                       ))
                   ) : (
-                    <div className="p-2 text-500">
+                    <div className="p-2 text-gray-500">
                       Aucun point défini pour ce circuit.
                     </div>
                   )}
@@ -1065,18 +856,18 @@ const ExamPage: React.FC = () => {
           ))}
           
           {circuits.length === 0 && userRole !== UserType.Teacher && (
-            <div className="p-4 text-center text-500">
+            <div className="p-4 text-center text-gray-500">
               Aucun circuit disponible à moins de {MAX_DISTANCE} km du centre.
             </div>
           )}
 
           {circuits.length === 0 && userRole === UserType.Teacher && (
-            <div className="p-4 text-center text-500">
+            <div className="p-4 text-center text-gray-500">
               Malheureusement, aucun circuit n'est disponible à moins de{" "}
               {MAX_DISTANCE} km du centre.
               <br />
-              <div className="text-900 font-bold mt-2 flex flex-column align-items-center mt-5">
-                <span className="text-900 font-bold">
+              <div className="text-gray-900 font-bold mt-2 flex flex-col items-center mt-5">
+                <span className="text-gray-900 font-bold">
                   Et si vous en créiez un ?
                 </span>
                 <Button
@@ -1090,58 +881,8 @@ const ExamPage: React.FC = () => {
           )}
         </div>
       </Dialog>
-
-      {/* CSS pour animations et styles */}
-      <style>{`
-        .courses-accordion .p-accordion-header-link {
-          background-color: var(--surface-0);
-          border-radius: 6px;
-          margin-bottom: 8px;
-          transition: all 0.2s;
-        }
-        
-        .courses-accordion .p-accordion-header-link:hover {
-          background-color: var(--surface-50);
-        }
-        
-        .courses-accordion .p-accordion-content {
-          background-color: var(--surface-0);
-          padding: 0;
-          border-radius: 0 0 6px 6px;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        .fade-in {
-          animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        /* Styles pour le panneau mobile */
-        @media screen and (max-width: 768px) {
-          .course-slider-enter {
-            transform: translateX(100%);
-          }
-          
-          .course-slider-enter-active {
-            transform: translateX(0);
-            transition: transform 0.3s;
-          }
-          
-          .course-slider-exit {
-            transform: translateX(0);
-          }
-          
-          .course-slider-exit-active {
-            transform: translateX(100%);
-            transition: transform 0.3s;
-          }
-        }
-      `}</style>
     </div>
   );
 };
 
-export default ExamPage;
+export default DetailsCentre;

@@ -170,8 +170,11 @@ const RoutingMachineControl = ({ points }: { points: Point[] }) => {
       routingControlRef.current = routingControl;
 
       // Cacher les instructions de l'itinéraire si elles sont affichées
-      if (routingControl && routingControl._container) {
-        routingControl._container.style.display = "none";
+      if (routingControl && routingControl.getContainer()) {
+        const container = routingControl.getContainer();
+        if (container) {
+          container.style.display = "none";
+        }
       }
     }
 
@@ -388,11 +391,11 @@ const CircuitViewPage: React.FC = () => {
               )}
             </Card>
 
-            <div className="card shadow-4 p-0" style={{ height: "60vh" }}>
+            <div className="card p-0 shadow-lg bg-white rounded-md h-[60vh]">
               <MapContainer
                 center={mapCenter}
                 zoom={15}
-                style={{ height: "100%", width: "100%" }}
+                className="h-full w-full"
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

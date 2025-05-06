@@ -6,7 +6,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import SchoolsPage from "../pages/visitor/SchoolsPage";
 import Settings from "../pages/Settings";
-import ExamPage from "../pages/student/ExamPage";
+import DetailsCentre from "../pages/DetailsCentre";
 import useAuth from "../hooks/useAuth";
 import CircuitCreationPage from "../pages/admin/CircuitCreationPage";
 import CircuitEditionPage from "../pages/admin/CircuitEditionPage";
@@ -26,7 +26,7 @@ function AppRoutes() {
       <Route path="/settings" element={<Settings />} />
       <Route path="/schools" element={<SchoolsPage />} />
       <Route path="*" element={<NotFound />} />
-      <Route path="/examen/:id" element={<ExamPage />} />
+      <Route path="/centre/:id" element={<DetailsCentre />} />
       <Route path="/circuit/create" element={<CircuitCreationPage />} />
       <Route path="/circuit/create/:coursId" element={<CircuitCreationPage />} />
       <Route path="/circuit/edit/:id" element={<CircuitEditionPage />} />
