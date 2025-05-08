@@ -1,0 +1,82 @@
+.detail-head {
+    background-color: var(--primary-color);
+}
+
+.p-dialog-content {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+}
+
+
+.p-dialog-header {
+    background-color: var(--primary-color);
+}
+
+.p-dialog-title {
+    color: var(--surface-ground);
+}
+
+.reussir {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.b-reussir {
+    background-color: var(--primary-color);
+    color: var(--surface-ground);
+}
+
+/* Style personnalisé pour la croix de fermeture de la modal */
+.p-dialog .p-dialog-header-close {
+    border: 1px solid var(--surface-ground); /* Bordure de la couleur 'surface-ground' */
+    margin-left: 0.5rem;
+  }
+  
+  .p-dialog .p-dialog-header-close > * {
+    color: var(--surface-ground); /* Couleur de l'icône de fermeture 'surface-ground' */
+  }
+
+  .address-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .favorite-icon {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    padding: 5px;
+    margin-left: 10px;
+    color: #777;
+    line-height: 1;
+  }
+  
+  .favorite-icon:hover {
+    transform: scale(1.2);
+    color: #f8c824;
+  }
+  
+  .favorite-icon.is-favorite {
+    color: #f8c824;
+    animation: pulse 0.5s;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
+  .favorite-icon.toggling {
+    opacity: 0.6;
+    pointer-events: none;
+    animation: rotate 1s infinite linear;
+  }
+  
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
