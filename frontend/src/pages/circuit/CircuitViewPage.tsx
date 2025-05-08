@@ -8,7 +8,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
-import { getRequest } from "../../interfaces/utils/api";
+import { getRequest } from "../../interfaces/api";
 import Loader from "../../components/utils/Loader";
 
 // Interface pour les types de points

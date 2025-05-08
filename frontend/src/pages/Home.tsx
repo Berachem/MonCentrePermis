@@ -6,7 +6,7 @@ import DetailsCentreMap from "../components/Home/DetailsCentreMap";
 import { CentreExamen } from "../interfaces/interfaces";
 import useAuth from "../hooks/useAuth";
 import { UserType } from "../enum/user";
-import { deleteRequest, getRequest, postRequest } from "../interfaces/utils/api";
+import { deleteRequest, getRequest, postRequest } from "../interfaces/api";
 import SearchBar from "../components/Home/SearchBar";
 import SideBarCustom from '../components/Home/SideBarCustom';
 import FavoritesCentresList from "../components/Home/FavoritesCentresList";

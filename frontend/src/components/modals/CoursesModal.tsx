@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Dialog } from 'primereact/dialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { getRequest } from "../../interfaces/utils/api";
+import { getRequest } from "../../interfaces/api";
 
 interface CoursesModalProps {
   visible: boolean;

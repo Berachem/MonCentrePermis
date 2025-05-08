@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { TabView, TabPanel } from "primereact/tabview";
-import CourseContent from "../Circuits/CourseContent";
+import ClassesContent from "./ClassesContent";
 import { Button } from "primereact/button";
-import { getRequest, postRequest } from "../../interfaces/utils/api";
-import ConfirmationDialog from "./ConfirmationDialog";
+import { getRequest, postRequest } from "../../interfaces/api";
+import ConfirmationDialog from "../utils/ConfirmationDialog";
 import { Toast } from "primereact/toast";
 import moment from "moment";
 
@@ -291,7 +291,7 @@ const ScrollableClasses: React.FC<ScrollableClassesProps> = ({
               )}
             </div>
 
-            <CourseContent
+            <ClassesContent
               content={course.description}
               className="p-5 bg-green-50 rounded-lg shadow-sm border border-green-100 w-full mb-4"
             />

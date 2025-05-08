@@ -9,7 +9,7 @@ import useAuth from "../../hooks/useAuth";
 import StudentInformations from "./StudentInformations";
 import MoniteurInformations from "./MoniteurInformations";
 import { UserType } from "../../enum/user";
-import { getRequest, postRequest } from "../../interfaces/utils/api";
+import { getRequest, postRequest } from "../../interfaces/api";
 
 interface ProfileModalProps {
   visible: boolean;

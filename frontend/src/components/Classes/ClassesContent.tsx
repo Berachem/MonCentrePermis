@@ -6,7 +6,7 @@ interface CourseContentProps {
   className?: string;
 }
 
-const CourseContent: React.FC<CourseContentProps> = ({
+const ClassesContent: React.FC<CourseContentProps> = ({
   content,
   className,
 }) => {
@@ -32,4 +32,4 @@ const CourseContent: React.FC<CourseContentProps> = ({
   return <div className={className}>{parse(content, options)}</div>;
 };
 
-export default CourseContent;
+export default ClassesContent;

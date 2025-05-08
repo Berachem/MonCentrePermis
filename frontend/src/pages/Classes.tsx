@@ -4,13 +4,13 @@ import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChalkboardTeacher } from "@fortawesome/free-solid-svg-icons";
 import AddCourses from "../components/Classes/AddClasses";
-import { postRequest, getRequest } from "../interfaces/utils/api";
+import { postRequest, getRequest } from "../interfaces/api";
 import ScrollableClasses, {
   Course as ScrollCourse,
 } from "../components/Classes/ScrollableClasses";
 import CircuitLinker from "../components/Classes/CircuitLinker";
 import EditClasseModal from "../components/Classes/EditClasseModal";
-import ConfirmationDialog from "../components/Classes/ConfirmationDialog";
+import ConfirmationDialog from "../components/utils/ConfirmationDialog";
 import { Toast } from "primereact/toast";
 import { useParams, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";

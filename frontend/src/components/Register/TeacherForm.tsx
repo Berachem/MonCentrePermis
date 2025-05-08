@@ -7,7 +7,7 @@ import { Toast } from 'primereact/toast';
 import { InputTextarea } from "primereact/inputtextarea";
 import { Genre, GenreLabels } from '../../enum/genre';
 import { ApiResponse } from "../../interfaces/interfaces";
-import { postRequest } from "../../interfaces/utils/api";
+import { postRequest } from "../../interfaces/api";
 import { Dropdown } from "primereact/dropdown";
 import { ScrollPanel } from "primereact/scrollpanel";
 

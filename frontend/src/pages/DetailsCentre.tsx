@@ -8,13 +8,13 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getRequest } from "../interfaces/utils/api";
+import { getRequest } from "../interfaces/api";
 import { Chip } from "primereact/chip";
 import useAuth from "../hooks/useAuth";
 import Loader from "../components/utils/Loader";
 import { UserType } from "../enum/user";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import CourseContent from "../components/Circuits/CourseContent";
+import CourseContent from "../components/Classes/ClassesContent";
 
 // Interface pour un cours associé
 interface AssociatedCourse {

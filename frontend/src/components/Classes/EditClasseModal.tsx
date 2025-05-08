@@ -9,7 +9,7 @@ import { Toast } from "primereact/toast";
 import {
   getRequest,
   postRequest,
-} from "../../interfaces/utils/api";
+} from "../../interfaces/api";
 import Loader from "../utils/Loader";
 
 interface EditClasseModalProps {

@@ -10,7 +10,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import "../../assets/css/home-map.css";
 import { CentreExamen } from "../../interfaces/interfaces";
-import { getRequest } from "../../interfaces/utils/api";
+import { getRequest } from "../../interfaces/api";
 import Loader from "../utils/Loader";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

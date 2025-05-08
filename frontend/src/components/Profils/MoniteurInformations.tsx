@@ -12,7 +12,7 @@ import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import useAuth from "../../hooks/useAuth";
-import { getRequest, postRequest } from "../../interfaces/utils/api";
+import { getRequest, postRequest } from "../../interfaces/api";
 import { useNavigate } from "react-router-dom";
 
 interface moniteurInformations {

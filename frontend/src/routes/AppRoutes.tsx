@@ -4,12 +4,12 @@ import About from "../pages/About";
 import NotFound from "../pages/NotFound";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import SchoolsPage from "../pages/visitor/SchoolsPage";
+import SchoolsPage from "../pages/SchoolsPage";
 import Settings from "../pages/Settings";
 import DetailsCentre from "../pages/DetailsCentre";
 import useAuth from "../hooks/useAuth";
-import CircuitCreationPage from "../pages/admin/CircuitCreationPage";
-import CircuitEditionPage from "../pages/admin/CircuitEditionPage";
+import CircuitCreationPage from "../pages/circuit/CircuitCreationPage";
+import CircuitEditionPage from "../pages/circuit/CircuitEditionPage";
 import CircuitViewPage from "../pages/circuit/CircuitViewPage";
 import Classes from "../pages/Classes";
 

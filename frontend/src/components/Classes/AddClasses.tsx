@@ -8,7 +8,7 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import {
   postRequest,
-} from "../../interfaces/utils/api";
+} from "../../interfaces/api";
 import Loader from "../utils/Loader";
 
 // Template par défaut pour le contenu du cours

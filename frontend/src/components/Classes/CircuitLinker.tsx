@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { ListBox } from "primereact/listbox";
-import { getRequest, postRequest } from "../../interfaces/utils/api";
+import { getRequest, postRequest } from "../../interfaces/api";
 import { Toast } from "primereact/toast";
 import Loader  from "../utils/Loader";
 

@@ -7,7 +7,7 @@ import { Card } from "primereact/card";
 import { Link } from "react-router-dom";
 import loginStory from "../assets/images/stories/login-storie-green.svg";
 import { ApiResponse } from "../interfaces/interfaces";
-import { postRequest } from "../interfaces/utils/api";
+import { postRequest } from "../interfaces/api";
 import LogoApp from "../assets/images/branding/logo_moncentrepermis_green.png";
 import Loader from "../components/utils/Loader";
 
