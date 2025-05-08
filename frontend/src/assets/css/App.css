@@ -26,7 +26,3 @@ body, h1, p {
   justify-content: center;
   z-index: 1000; /* Pour apparaître au-dessus des autres éléments */
 }
-
-.loader-container .loader {
-  /* Styles supplémentaires pour le composant Loader si nécessaire */
-}
