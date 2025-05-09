@@ -8,7 +8,6 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import "../../assets/css/home-map.css";
 import { CentreExamen } from "../../interfaces/interfaces";
 import { getRequest } from "../../interfaces/api";
 import Loader from "../utils/Loader";

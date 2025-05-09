@@ -1,7 +1,4 @@
-import "../../assets/css/Register.css";
-
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
-
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';

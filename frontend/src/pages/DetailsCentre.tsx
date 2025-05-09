@@ -634,12 +634,12 @@ const DetailsCentre: React.FC = () => {
 
             {loadingCourses ? (
               <div className="flex flex-col items-center justify-center overflow-hidden h-full">
-                <i className="pi pi-spin pi-spinner text-green-800" style={{ fontSize: '2rem' }}></i>
+                <i className="pi pi-spin pi-spinner text-green-800"></i>
                 <p className="mt-3">Chargement des cours...</p>
               </div>
             ) : associatedCourses.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-5">
-                <i className="pi pi-book text-gray-500" style={{ fontSize: '2rem' }}></i>
+                <i className="pi pi-book text-gray-500"></i>
                 <p className="mt-3 text-center">Aucun cours n'est associé à ce circuit.</p>
                 {userRole === UserType.Teacher && currentCircuit && (
                   <Button
@@ -719,11 +719,10 @@ const DetailsCentre: React.FC = () => {
         showHeader={false}
         closeOnEscape={true}
         dismissableMask={true}
-        className="rounded-t-3xl mx-auto"
-        style={{ width: "95vw", maxWidth: "1200px" }}
+        className="rounded-t-3xl mx-auto w-[95vw] max-w-[1200px]"
         transitionOptions={{ timeout: 400 }}
       >
-        <div className="overflow-y-auto" style={{ maxHeight: "70vh" }}>
+        <div className="overflow-y-auto max-h-[70vh]">
           <div className="flex justify-between items-center p-3 border-gray-200">
             <h2 className="text-xl font-bold m-0 text-green-800">Sélectionner un circuit</h2>
             <Button

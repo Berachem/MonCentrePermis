@@ -1,28 +1,2 @@
 @import "tailwindcss";
-
-/* Style global pour harmoniser les polices */
-body, h1, p {
-    font-family: 'Roboto', sans-serif;
-  }
   
-  html, body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-}
-
-
-
-/* loader-container.css */
-.loader-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.10); /* Fond semi-transparent */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000; /* Pour apparaître au-dessus des autres éléments */
-}

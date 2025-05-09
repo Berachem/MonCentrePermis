@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Toast } from "primereact/toast";
-import "../assets/css/Home.css";
 import { HomePageMap } from "../components/Home/HomePageMap";
 import DetailsCentreMap from "../components/Home/DetailsCentreMap";
 import { CentreExamen } from "../interfaces/interfaces";

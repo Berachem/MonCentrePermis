@@ -1,5 +1,3 @@
-import "../../assets/css/Register.css";
-
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
@@ -8,7 +6,7 @@ import { FloatLabel } from 'primereact/floatlabel';
 import { InputTextarea } from "primereact/inputtextarea";
 import { Divider } from "primereact/divider";
 
-const AutoEcoleForm = forwardRef((props, ref) => {
+const AutoEcoleForm = forwardRef((_, ref) => {
     const [raisonSociale, setRaisonSociale] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
