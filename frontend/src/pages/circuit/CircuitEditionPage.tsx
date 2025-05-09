@@ -767,12 +767,12 @@ const CircuitEditionPage: React.FC = () => {
                     >
                       <div className="flex items-center mr-3">
                         <div
-                          className="flex items-center justify-center h-6 w-8 bg-gray-200 rounded-full text-gray-700 mr-1"
+                          className="flex items-center justify-center p-2 bg-gray-200 rounded-full text-gray-700 mr-1"
                         >
                           {index + 1}
                         </div>
                         <div
-                          className="h-6 w-8 rounded-full flex items-center justify-center text-white"
+                          className="p-2 rounded-full flex items-center justify-center text-white"
                           style={{ backgroundColor: pointType.color }}
                         >
                           <i

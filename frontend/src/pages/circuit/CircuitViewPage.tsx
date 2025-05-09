@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
-import { Toolbar } from "primereact/toolbar";
-import { Card } from "primereact/card";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -200,6 +198,12 @@ const CircuitViewPage: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([
     48.8566, 2.3522,
   ]);
+  const [isPanelVisible, setIsPanelVisible] = useState<boolean>(true);
+  const mapRef = useRef<L.Map | null>(null);
+  const [tileLayerUrl] = useState(
+    localStorage.getItem("tileLayerUrl") ||
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  );
 
   // Chargement des données du circuit
   useEffect(() => {
@@ -339,132 +343,149 @@ const CircuitViewPage: React.FC = () => {
     return createIconFromSvg(pointType.svgIcon);
   };
 
-  // Templates pour les actions de la barre d'outils
-  const leftToolbarTemplate = () => {
-    return (
-      <div className="flex flex-wrap gap-2">
-        <Button
-          label="Retour"
-          icon="pi pi-arrow-left"
-          className="p-button-outlined"
-          onClick={() => navigate(-1)}
-        />
-      </div>
-    );
+  // Composant pour récupérer l'instance de la carte
+  const MapInitializer = () => {
+    const map = useMap();
+    
+    useEffect(() => {
+      mapRef.current = map;
+    }, [map]);
+    
+    return null;
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-column align-items-center justify-content-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader />
-        <div className="mt-3">Chargement du circuit...</div>
+        <div className="mt-3 text-gray-700 font-medium">Chargement du circuit...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-column min-h-screen">
-      <Toast ref={toast} />
+    <div className="relative w-full h-screen bg-gray-50">
+      <Toast ref={toast} position="top-center" className="z-50" />
 
-      <div className="p-3">
-        <Toolbar left={leftToolbarTemplate} className="mb-3" />
+      {/* Carte en arrière-plan - prend toute la hauteur et largeur */}
+      <div className="absolute inset-0 z-0">
+        <MapContainer
+          center={mapCenter}
+          zoom={15}
+          className="h-full w-full"
+          zoomControl={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url={tileLayerUrl}
+          />
 
-        <div className="grid">
-          <div className="col-12 md:col-8">
-            <Card
-              title={circuit?.libelle || "Circuit"}
-              subTitle={
-                circuit?.ville_centre
-                  ? `Ville: ${circuit.ville_centre.libelle}`
-                  : undefined
-              }
-              className="mb-3"
+          <MapInitializer />
+          <RoutingMachineControl points={points} />
+
+          {/* Marqueurs pour les points */}
+          {points.map((point) => (
+            <Marker
+              key={point.position}
+              position={[point.latitude, point.longitude]}
+              icon={getPointIcon(point.type)}
             >
-              <p className="m-0">
-                {circuit?.description || "Aucune description disponible"}
-              </p>
-              {circuit?.id_moniteur && (
-                <p className="mt-3">
-                  <strong>Moniteur: </strong>
-                  {circuit.id_moniteur.nom} {circuit.id_moniteur.prenom}
-                </p>
-              )}
-            </Card>
-
-            <div className="card p-0 shadow-lg bg-white rounded-md h-[60vh]">
-              <MapContainer
-                center={mapCenter}
-                zoom={15}
-                className="h-full w-full"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-
-                {/* Utiliser le contrôle de routage */}
-                <RoutingMachineControl points={points} />
-
-                {/* Marqueurs pour les points */}
-                {points.map((point) => (
-                  <Marker
-                    key={point.position}
-                    position={[point.latitude, point.longitude]}
-                    icon={getPointIcon(point.type)}
-                  >
-                    <Popup>
-                      <div>
-                        <h3>{point.libelle}</h3>
-                        <p>{point.description || "Aucune description"}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
-          </div>
-
-          <div className="col-12 md:col-4">
-            <Card title="Points du circuit" className="shadow-4">
-              <p className="text-sm text-500">
-                {points.length} {points.length <= 1 ? "point" : "points"}
-              </p>
-
-              {points.length === 0 ? (
-                <div className="p-3 border-1 border-dashed border-300 text-center text-500">
-                  Aucun point défini pour ce circuit.
+              <Popup>
+                <div className="p-2">
+                  <h3 className="text-lg font-bold text-white">{point.libelle}</h3>
+                  <p className="my-1 text-white text-sm">{point.description || "Pas de description"}</p>
                 </div>
-              ) : (
-                <ul className="list-none p-0 m-0">
-                  {points
-                    .sort((a, b) => (a.rang || 0) - (b.rang || 0))
-                    .map((point, index) => {
-                      const pointType =
-                        pointTypes.find((pt) => pt.value === point.type) ||
-                        pointTypes[4];
-                      return (
-                        <li
-                          key={index}
-                          className="flex align-items-center border-bottom-1 border-300 py-2"
-                        >
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+
+      {/* Barre d'outils en haut comme navigation - au dessus de la carte */}
+      <div className="absolute top-0 left-0 right-0 p-4 z-20">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            label={"Retour à l'accueil"}
+            icon="pi pi-arrow-left"
+            className="p-2 gap-2 bg-green-800 text-white rounded-lg"
+            onClick={() => navigate(`/`)}
+          />
+        </div>
+      </div>
+
+      {/* Panneau de contrôle à droite - au dessus de la carte */}
+      <div className={`absolute bot-0 right-0 z-20 w-full max-w-md p-4 h-screen flex flex-col transition-all duration-300 ${
+        isPanelVisible ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
+      }`}>
+        <div className="bg-white rounded-lg shadow-lg p-4 flex-grow overflow-hidden flex flex-col mb-16">
+          <h3 className="text-xl font-bold text-green-700 border-b pb-2 mb-4">
+            {circuit?.libelle || "Circuit sans nom"}
+          </h3>
+          
+          {circuit?.description && (
+            <div className="mb-4">
+              <p className="text-gray-700">{circuit.description}</p>
+            </div>
+          )}
+          
+          {circuit?.ville_centre && (
+            <div className="mb-4 flex items-center">
+              <i className="pi pi-map-marker text-green-600 mr-2"></i>
+              <span className="text-gray-700">
+                {circuit.ville_centre.libelle}{" "}
+                {circuit.ville_centre.code_postal && `(${circuit.ville_centre.code_postal})`}
+              </span>
+            </div>
+          )}
+          
+          {circuit?.id_moniteur && (
+            <div className="mb-4 flex items-center">
+              <i className="pi pi-user text-green-600 mr-2"></i>
+              <span className="text-gray-700">
+                Moniteur: {circuit.id_moniteur.nom} {circuit.id_moniteur.prenom}
+              </span>
+            </div>
+          )}
+
+          <div className="flex-grow overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-lg font-semibold text-gray-700">Points du circuit</h4>
+              <span className="text-sm px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                {points.length} {points.length <= 1 ? "point" : "points"}
+              </span>
+            </div>
+
+            {points.length === 0 ? (
+              <div className="p-4 border border-dashed border-gray-300 rounded-md text-center text-gray-500">
+                Aucun point défini pour ce circuit.
+              </div>
+            ) : (
+              <ul className="list-none p-0 m-0 space-y-2">
+                {points
+                  .sort((a, b) => (a.rang || 0) - (b.rang || 0))
+                  .map((point, index) => {
+                    const pointType =
+                      pointTypes.find((pt) => pt.value === point.type) ||
+                      pointTypes[4];
+                    return (
+                      <li
+                        key={index}
+                        className="flex border-b border-gray-200 py-3 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => {
+                          if (mapRef.current) {
+                            mapRef.current.setView([point.latitude, point.longitude], mapRef.current.getZoom());
+                          }
+                        }}
+                      >
+                        <div className="flex items-center mr-3">
                           <div
-                            className="mr-2 flex align-items-center justify-content-center"
-                            style={{ width: "24px" }}
+                            className="flex items-center justify-center p-2 bg-gray-200 rounded-full text-gray-700 mr-1"
                           >
                             {index + 1}
                           </div>
                           <div
-                            className="mr-2"
-                            style={{
-                              width: "24px",
-                              height: "24px",
-                              backgroundColor: pointType.color,
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "white",
-                            }}
+                            className="p-2 rounded-full flex items-center justify-center text-white"
+                            style={{ backgroundColor: pointType.color }}
                           >
                             <i
                               className={
@@ -482,23 +503,32 @@ const CircuitViewPage: React.FC = () => {
                               }
                             ></i>
                           </div>
-                          <div className="flex-grow-1">
-                            <div className="font-medium">{point.libelle}</div>
-                            <div className="text-xs text-500">
-                              {point.description
-                                ? point.description.slice(0, 30) +
-                                  (point.description.length > 30 ? "..." : "")
-                                : "Pas de description"}
-                            </div>
+                        </div>
+                        <div className="flex-grow min-w-0">
+                          <div className="font-medium text-sm truncate h-5 overflow-hidden">
+                            {point.libelle}
                           </div>
-                        </li>
-                      );
-                    })}
-                </ul>
-              )}
-            </Card>
+                          <div className="text-xs text-gray-500 h-4 overflow-hidden text-ellipsis whitespace-nowrap">
+                            {point.description || "Pas de description"}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </ul>
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Bouton flottant pour afficher/masquer le panneau sur mobile */}
+      <div className="fixed bottom-4 right-4 md:hidden z-30">
+        <Button
+          icon={isPanelVisible ? "pi pi-times" : "pi pi-bars"}
+          className="bg-green-800 rounded-lg text-white h-11 w-13"
+          aria-label={isPanelVisible ? "Masquer le panneau" : "Afficher le panneau"}
+          onClick={() => setIsPanelVisible(!isPanelVisible)}
+        />
       </div>
     </div>
   );
