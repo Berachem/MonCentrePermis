@@ -214,6 +214,10 @@ const DetailsCentre: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useRef<Toast>(null);
+  const [tileLayerUrl] = useState(
+    localStorage.getItem("tileLayerUrl") ||
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  );
 
   // Distance maximale pour filtrer les circuits (en km)
   const MAX_DISTANCE = 6;
@@ -512,7 +516,7 @@ const DetailsCentre: React.FC = () => {
           <MapView center={mapCenter} />
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url={tileLayerUrl}
           />
           {circuitPoints.length > 0 && (
             <RoutingMachineControl points={circuitPoints} />

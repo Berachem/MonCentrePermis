@@ -236,6 +236,10 @@ const CircuitEditionPage: React.FC = () => {
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState<boolean>(false);
   const [pointToDeletePosition, setPointToDeletePosition] = useState<number | null>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const [tileLayerUrl] = useState(
+    localStorage.getItem("tileLayerUrl") ||
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  );
 
   // Chargement des données du circuit
   useEffect(() => {
@@ -627,7 +631,7 @@ const CircuitEditionPage: React.FC = () => {
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url={tileLayerUrl}
           />
 
           <MapInitializer />

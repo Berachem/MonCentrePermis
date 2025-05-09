@@ -1,14 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { Dropdown } from "primereact/dropdown";
-import { Card } from "primereact/card";
 import { Divider } from "primereact/divider";
 import { MapContainer, TileLayer } from "react-leaflet";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import "leaflet/dist/leaflet.css";
 import SideBarCustom from "../components/Home/SideBarCustom";
-import logoApp from "../assets/images/branding/logo_moncentrepermis.png";
-import "../assets/css/settings.css";
+import logoApp from "../assets/images/branding/logo_moncentrepermis_green.png";
 
 export default function Settings() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
@@ -19,7 +17,7 @@ export default function Settings() {
     localStorage.getItem("tileLayerUrl") ||
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   );
-  const toast = useRef(null);
+  const toast = useRef<Toast>(null);
 
   // Options pour chaque paramètre
   const languageOptions = [
@@ -72,26 +70,28 @@ export default function Settings() {
 
   const handleSave = () => {
     // Sauvegarde déjà effectuée via useEffect, on affiche juste une confirmation
-    toast.current.show({
-      severity: "success",
-      summary: "Succès",
-      detail: "Modifications sauvegardées",
-      life: 3000,
-    });
+    if (toast.current) {
+      toast.current.show({
+        severity: "success",
+        summary: "Succès",
+        detail: "Modifications sauvegardées",
+        life: 3000,
+      });
+    }
   };
 
   return (
-    <div className="settings-page p-4">
+    <div className="bg-white dark:bg-gray-900 min-h-screen p-4">
       <Toast ref={toast} />
-      <div className="flex align-items-center justify-content-center col-12 mt-4">
+      <div className="flex items-center justify-center w-full mt-4">
         <SideBarCustom />
-        <img src={logoApp} alt="logo" className="mx-auto md:w-2 w-13rem" />
+        <img src={logoApp} alt="logo" className="mx-auto w-52" />
       </div>
-      <div className="flex flex-column lg:flex-row gap-4 justify-content-center mt-4">
+      <div className="flex flex-col lg:flex-row gap-6 justify-center mt-4 max-w-7xl mx-auto">
         {/* Paramètres à gauche */}
-        <div className=" w-full lg:w-3">
-          <h2 className="text-primary">Paramètres</h2>
-          <Divider />
+        <div className="w-full lg:w-1/3 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold text-green-600 mb-4">Paramètres</h2>
+          <Divider className="my-4" />
           {/* Langue */}
           {/*  <div className="field mb-4">
             <label htmlFor="language" className="text-900 font-bold">
@@ -121,8 +121,8 @@ export default function Settings() {
             />
           </div> */}
           {/* Fond de Plan de la Carte */}
-          <div className="field">
-            <label htmlFor="mapBackground" className="text-900 font-bold">
+          <div className="mb-6">
+            <label htmlFor="mapBackground" className="block text-gray-800 dark:text-gray-200 font-bold mb-2">
               Fond de Carte
             </label>
             <Dropdown
@@ -131,43 +131,37 @@ export default function Settings() {
               options={mapBackgroundOptions}
               onChange={(e) => setTileLayerUrl(e.value)}
               placeholder="Sélectionner le fond de plan"
-              className="w-full"
+              className="w-full border p-2 rounded-lg"
             />
           </div>
           {/* Bouton de sauvegarde */}
-          <div className="mt-4">
+          <div className="mt-6">
             <Button
               icon="pi pi-save"
               label="Sauvegarder les modifications"
               onClick={handleSave}
-              className="w-full"
+              className="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg"
             />
           </div>
         </div>
         {/* Aperçu en direct à droite */}
-        <div className="w-full lg:w-7 flex align-items-center justify-content-center">
-          <Card
-            title="Aperçu en Direct"
-            className={`preview-card theme-${theme}`}
-          >
-            <p className="font-semibold text-700">
-              Voici un aperçu en direct des changements de fond de carte et de
-              thème.
-            </p>
-            <div
-              className="preview-map mt-4"
-              style={{ width: "100%", height: "300px" }}
+        <div className="w-full lg:w-2/3 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold text-green-600 mb-4">Aperçu en Direct</h2>
+          <p className="font-semibold text-gray-700 dark:text-gray-300 mb-4">
+            Voici un aperçu en direct des changements de fond de carte et de thème.
+          </p>
+          <div className="w-full h-[300px] rounded-lg overflow-hidden border-2 border-green-200">
+            <MapContainer
+              center={[48.8566, 2.3522]}
+              zoom={12}
+              className="h-full w-full"
             >
-              <MapContainer
-                center={[48.8566, 2.3522]}
-                zoom={12}
-                style={{ height: "100%", borderRadius: "8px" }}
-              >
-                <TileLayer url={tileLayerUrl} />
-              </MapContainer>
-            </div>
-            <p className="text-500 mt-3">Langue actuelle : {language}</p>
-          </Card>
+              <TileLayer url={tileLayerUrl} />
+            </MapContainer>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 mt-4">
+            Langue actuelle : {language}
+          </p>
         </div>
       </div>
     </div>
