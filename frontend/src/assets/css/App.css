@@ -1,2 +1,21 @@
 @import "tailwindcss";
-  
+
+/* Styles pour les popups Leaflet */
+.leaflet-popup-content-wrapper {
+  background-color: #2e7d32 !important; 
+  color: white !important; 
+}
+
+.leaflet-popup-tip {
+  background-color: #2e7d32 !important;
+}
+
+.leaflet-popup-content {
+  color: white !important; 
+}
+
+.leaflet-popup-close-button {
+  color: white !important;
+}
+
+
