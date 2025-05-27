@@ -189,7 +189,7 @@ function SideBarCustom({}: SideBarCustomProps) {
                 ))}
 
                 {/* Menu de développement pour tester les profils */}
-                {process.env.NODE_ENV === "development" && (
+                {/* {process.env.NODE_ENV === "development" && (
                   <li
                     onClick={() => handleOtherProfileClick("4")}
                     className="cursor-pointer"
@@ -200,7 +200,7 @@ function SideBarCustom({}: SideBarCustomProps) {
                       <Ripple />
                     </a>
                   </li>
-                )}
+                )} */}
                 
             
               </ul>

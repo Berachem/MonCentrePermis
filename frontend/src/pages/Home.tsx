@@ -9,6 +9,7 @@ import { deleteRequest, getRequest, postRequest } from "../interfaces/api";
 import SearchBar from "../components/Home/SearchBar";
 import SideBarCustom from '../components/Home/SideBarCustom';
 import FavoritesCentresList from "../components/Home/FavoritesCentresList";
+import ProfileModal from "../components/Profils/ProfileModal";
 
 const Home = () => {
   const toast = useRef<Toast>(null);
@@ -20,11 +21,15 @@ const Home = () => {
   const [selectedCentre, setSelectedCentre] = useState<CentreExamen | null>(null);
   const [centerPosition, setCenterPosition] = useState<[number, number] | null>(null);
   const [centresData, setCentresData] = useState<CentreExamen[]>([]);
-  
+
   // Gestion favoris
   const { isAuthenticated, userId, userRole } = useAuth();
   const [favoriteCentres, setFavoriteCentres] = useState<CentreExamen[]>([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
+
+  // États pour le modal de profil depuis la recherche
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [profileIdRequested, setProfileIdRequested] = useState("");
 
   //récupération de la localisation
   useEffect(() => {
@@ -195,18 +200,46 @@ const Home = () => {
     setShouldRecenterToUser(true);
   };
 
+  // Fonction pour ouvrir le modal de profil depuis la recherche
+  const handleOpenProfileModal = (userId: string) => {
+    setProfileIdRequested(userId);
+    setProfileModalVisible(true);
+  };
+
+  // Fonction pour ouvrir le modal de centre depuis la recherche
+  const handleOpenCentreModal = async (centreId: number) => {
+    try {
+      // Récupérer les détails du centre depuis l'API
+      const centreData = await getRequest<CentreExamen>(`/custom/centre_examens/${centreId}`);
+      if (centreData) {
+        handleMarkerClick(centreData);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération du centre:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erreur",
+        detail: "Impossible de charger les détails du centre",
+        life: 3000,
+      });
+    }
+  };
+
   return (
     <div className="relative w-full h-screen">
       <Toast ref={toast} />
-      
+
       {/* Barre de recherche positionnée en haut */}
-      <SearchBar />
-      
+      <SearchBar
+        onOpenProfileModal={handleOpenProfileModal}
+        onOpenCentreModal={handleOpenCentreModal}
+      />
+
       {/* Menu latéral - now handles its own profile modal */}
       <SideBarCustom />
-      
+
       {/* Carte en arrière-plan - prend toute la hauteur et largeur */}
-      <HomePageMap 
+      <HomePageMap
         position={position}
         userLocated={userLocated}
         shouldRecenterToUser={shouldRecenterToUser}
@@ -219,7 +252,7 @@ const Home = () => {
         centresData={centresData}
         onCentresDataUpdate={handleCentresDataUpdate}
       />
-      
+
       {/* Panneau des favoris */}
       {isAuthenticated && !loadingFavorites && favoriteCentres.length > 0 && (
         <FavoritesCentresList
@@ -228,7 +261,7 @@ const Home = () => {
           onRemoveFavorite={handleToggleFavorite}
         />
       )}
-      
+
       {/* Modal des détails du centre */}
       {selectedCentre && (
         <DetailsCentreMap
@@ -245,6 +278,13 @@ const Home = () => {
           onToggleFavorite={handleToggleFavorite}
         />
       )}
+
+      {/* Modal de profil depuis la recherche */}
+      <ProfileModal
+        visible={profileModalVisible}
+        onHide={() => setProfileModalVisible(false)}
+        idRequested={profileIdRequested}
+      />
     </div>
   );
 };

@@ -43,6 +43,20 @@ export interface AutoEcole {
   distance: number | null;
 }
 
+// Interfaces pour les résultats de recherche
+export interface SearchResult {
+  type: 'exam_centers' | 'monitors' | 'courses' | 'circuits';
+  id: number;
+  label: string;
+  address?: string;
+  relevance: number;
+}
+
+export interface SearchResponse {
+  results: SearchResult[];
+  total: number;
+}
+
 export interface ApiResponse {
   token?: string; // Le token peut être présent ou non
   message?: string;
